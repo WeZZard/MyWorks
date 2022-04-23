@@ -149,7 +149,6 @@ extension Text : View {
 
 在這裏我將介紹其中的一個以幫助大家理解上面斐波那契数列範例中 SwiftUI 所提供的語言結構：`Fibonacci` `body` 中 `if..else...` 語句背後的語言結構 —— `_ConditionalContent`。
 
-
 ```swift
 struct Fibonacci: View {
 
