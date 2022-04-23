@@ -6,7 +6,7 @@ tags: [SwiftUI, Swift]
 
 ## 前言
 
-蘋果在 WWDC 2019 向開發者介紹了 SwiftUI。多數人也許會將 SwiftUI 看成如 _Flutter_ 或者 _React.js_ 又或者 _Vue.js_ 這樣踩在聲明式、無狀態 UI 編程潮流浪尖的的另一種 UI 框架。雖然 SwiftUI 與上述框架有着非常多的共同點，但是 SwiftUI 從設計到實現上都與上述框架有着本質的不同。
+蘋果在 WWDC 2019 向開發者介紹了 SwiftUI。多數人也許會將 SwiftUI 看成又一個如 _Flutter_ 或者 _React.js_ 又或者 _Vue.js_ 這樣踩在聲明式、無狀態 UI 編程潮流浪尖的 UI 框架。雖然 SwiftUI 與上述框架有着非常多的共同點，但是 SwiftUI 從設計到實現上都與上述框架有着本質的不同。
 
 實際上，相較於是一個編程框架，SwiftUI 更加像是一種編程語言。不相信？讓我來看看一個用「原生」SwiftUI 代碼編寫的斐波那契数列計算程序。
 
@@ -243,7 +243,7 @@ struct Fibonacci: View {
 - 一個帶來可遞歸執行模式的 `View` 協議。
 - 一個遵從 `View` 協議的類型 `_ConditionalContent`。它負責處理條件分支。
 
-這就很像一門真實的編程語言了。所以我們可以說相較是一個 UI framework，SwiftUI 更像是一門語言。
+這就很像一門真實的編程語言了。所以我們可以說相較是一個 UI 框架，SwiftUI 更像是一門語言。
 
 ## 一個形式化的視角
 
