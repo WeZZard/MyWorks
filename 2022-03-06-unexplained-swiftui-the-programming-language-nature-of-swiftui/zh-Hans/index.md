@@ -243,7 +243,7 @@ struct Fibonacci: View {
 - 一个带来可递归执行模式的 `View` 协议。
 - 一个遵从 `View` 协议的类型 `_ConditionalContent`。它负责处理条件分支。
 
-这就很像一门真实的编程语言了。所以我们可以说相较是一个 UI framework，SwiftUI 更像是一门语言。
+这就很像一门真实的编程语言了。所以我们可以说相较是一个 UI 框架，SwiftUI 更像是一门语言。
 
 ## 一个形式化的视角
 
