@@ -1,7 +1,7 @@
 ---
 title: SwiftUI 探祕 - SwiftUI 的編程語言本質
 category: 編程
-tags: [SwiftUI, Swift]
+tags: [SwiftUI 探祕, SwiftUI, Swift]
 ---
 
 ## 前言

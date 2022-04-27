@@ -1,7 +1,7 @@
 ---
 title: SwiftUI 探秘 - SwiftUI 的编程语言本质
 category: 编程
-tags: [SwiftUI, Swift]
+tags: [SwiftUI 探秘, SwiftUI, Swift]
 ---
 
 ## 前言
