@@ -190,7 +190,7 @@ extension ConditionalContent : View where TrueContent : View, FalseContent : Vie
 
 > `swiftinterface` 文件之於 Swift module 就像頭文件之於 clang module。
 
-同時，SwiftUI 的 `ViewBuilder` 擁有一個 `extension`。裏面的內容告訴我們，當我們在一個被 `@ViewBuiler` 標記的函數內使用使用 `if...else...` 語句時，Swift 編譯器將會在編譯時生成一個 `_ConditionalContent` 實例來包裹 `if...else...` 兩側分支內的內容 —— 當 `if` 後的表達式爲 `true` 的時候，生成代碼喚起第一個 `buildEither` 函數；爲 `false` 時，生成代碼喚起第二個 `buildEither` 函數。
+同時，SwiftUI 的 `ViewBuilder` 擁有一個 `extension`。裏面的內容告訴我們，當我們在一個被 `@ViewBuiler` 標記的函數內使用 `if...else...` 語句時，Swift 編譯器將會在編譯時生成一個 `_ConditionalContent` 實例來包裹 `if...else...` 兩側分支內的內容 —— 當 `if` 後的表達式爲 `true` 的時候，生成代碼喚起第一個 `buildEither` 函數；爲 `false` 時，生成代碼喚起第二個 `buildEither` 函數。
 
 ```swift
 extension ViewBuilder {
