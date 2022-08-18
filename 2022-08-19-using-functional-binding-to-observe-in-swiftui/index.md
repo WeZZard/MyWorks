@@ -127,7 +127,7 @@ struct ContentView: View {
 
 ## Conclusion
 
-Here is a couple of reasons that why I recommend this way of user behavior
+Here is a couple of reasons why I recommend this way of user behavior
 observation:
 
 - SwiftUI is driven by value changes. This means that value changes are
