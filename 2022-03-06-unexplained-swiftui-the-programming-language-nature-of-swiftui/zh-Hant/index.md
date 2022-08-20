@@ -111,7 +111,7 @@ public protocol View {
 
 但是什麼時候遞歸結束呢？
 
-SwiftUI 擴展了標準庫中的 `Never` 類型以遵從 `View` 協議。在這個擴展中，`Never` 的 `body` 同時會返回 `Never`。所以我們可以知道這就是遞歸的重點。
+SwiftUI 擴展了標準庫中的 `Never` 類型以遵從 `View` 協議。在這個擴展中，`Never` 的 `body` 同時會返回 `Never`。所以我們可以知道這就是遞歸的終點。
 
 ```swift
 extension Never: View { }

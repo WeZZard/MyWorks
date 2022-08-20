@@ -6,7 +6,7 @@ tags: [SwiftUI 探秘, SwiftUI, Swift]
 
 ## 前言
 
-苹果在 WWDC 2019 向开发者介绍了 SwiftUI。多数人也许会将 SwiftUI 看成如 _Flutter_ 或者 _React.js_ 又或者 _Vue.js_ 这样踩在声明式、无状态 UI 编程潮流浪尖的的另一种 UI 框架。虽然 SwiftUI 与上述框架有着非常多的共同点，但是 SwiftUI 从设计到实现上都与上述框架有着本质的不同。
+苹果在 WWDC 2019 向开发者介绍了 SwiftUI。多数人也许会将 SwiftUI 看成又一个如 _Flutter_ 或者 _React.js_ 又或者 _Vue.js_ 这样踩在声明式、无状态 UI 编程潮流浪尖的 UI 框架。虽然 SwiftUI 与上述框架有着非常多的共同点，但是 SwiftUI 从设计到实现上都与上述框架有着本质的不同。
 
 实际上，相较于是一个编程框架，SwiftUI 更加像是一种编程语言。不相信？让我来看看一个用「原生」SwiftUI 代码编写的斐波那契数列计算程序。
 
@@ -111,7 +111,7 @@ public protocol View {
 
 但是什么时候递归结束呢？
 
-SwiftUI 扩展了标准库中的 `Never` 类型以遵从 `View` 协议。在这个扩展中，`Never` 的 `body` 同时会返回 `Never`。所以我们可以知道这就是递归的重点。
+SwiftUI 扩展了标准库中的 `Never` 类型以遵从 `View` 协议。在这个扩展中，`Never` 的 `body` 同时会返回 `Never`。所以我们可以知道这就是递归的终点。
 
 ```swift
 extension Never: View { }
