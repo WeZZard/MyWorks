@@ -117,7 +117,7 @@ struct ContentView: View {
 
 - SwiftUI 是值变更驱动的。这意味着值变更在一个运行中的 SwiftUI 程序中无处不在，并且为我们提供了很多观察点。
 
-- `Binding` 比你想象的更强大。它支持针对 key-path 和 `Collection` 下标的 projection。这让开发者可以将局部的值变更传导到一个控件或者 `View` 上。这也意味着你可以通过函数式 `Binding` 来观察苹果一方控件以及良好设计的三方控件上所有类型的值变更。
+- `Binding` 比你想象的更强大。它支持针对 key-path 和 `Collection` 下标的 projection。这让开发者可以将局部的值变更传导到一个控件或者 `View` 上。这也意味着你可以通过嵌套函数式 `Binding` 来观察苹果一方控件以及良好设计的三方控件上的上述各种各样的 `Binding` 传导的变更。
 
 - `Binding` 可以观察所有驱动 SwiftUI 进行视图更新的内容变更。相比之下，`onChange(of:, perform:)` 要求开发者观察 `Equatable` 的值。但是有许多不遵从 `Equatable` 的类型也可以驱动 SwiftUI 进行视图更新。这里有一个例子：闭包。
 
