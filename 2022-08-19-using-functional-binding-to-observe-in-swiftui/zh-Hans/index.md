@@ -59,7 +59,7 @@ struct ContentView: View {
 
 ## 解决方案
 
-为了解决这个问题，我建议我的同事将 `$selection` 通过下述的 `Binding` 的一个 initializer 包装起来。
+为了解决这个问题，我建议我的同事将 `$selection` 通过下面这个 `Binding` 的 initializer 包装起来。
 
 ```swift
 public struct Binding<Value> {
@@ -72,7 +72,7 @@ public struct Binding<Value> {
 }
 ```
 
-这就是我所说的 `Binding`。
+这就是我所说的函数式 `Binding`。
 
 以下是结合文章开头范例代码之后的这个 initializer 的用例：
 
