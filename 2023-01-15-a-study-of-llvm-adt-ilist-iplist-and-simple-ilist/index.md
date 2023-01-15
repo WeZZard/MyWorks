@@ -6,9 +6,9 @@ tags: [LLVM, ADT, C++]
 
 ## Introduction
 
-`ilist` is an intrusive doubely linked list -- which means that each linked node stores its data the node pointers in the same structure. There are no such a kind of linked-list implemented containers shipped with C++ standard library.
+`ilist` is an intrusive double-linked list -- which means that each linked node stores its data and the node pointers in the same structure. There is no such kind of linked-list implemented containers shipped with the C++ standard library.
 
-`iplist` is a purely intrusive list. Currently `ilist` delegates its implementation to `iplist` with `using` grammar.
+`iplist` is a purely intrusive list. Currently, `ilist` delegates its implementation to `iplist` with `using` grammar.
 
 `simple_ilist` is a simple intrusive list implementation that never takes ownership of anything inserted in it. Moreover, unlike `iplist` and `ilist`, a `simple_ilist` never deletes values and has no callback traits.
 
@@ -16,15 +16,15 @@ tags: [LLVM, ADT, C++]
 
 ### Intrusiveness
 
-Unlike like C++ standard library containers not requiring their elements to inherit a base class, `iplist` and its derived classes require their nodes to inherit `ilist_node`.
+Unlike like C++ standard library containers not require their elements to inherit a base class, `iplist` and its derived classes require their nodes to inherit `ilist_node`.
 
 > Privately inherited classes shall friend `llvm::ilist_detail::NodeAccess`.
 
-`ilist_node` eventually inheirts `ilist_node_base<bool>` which contains the `Prev` and `Next` pointer points the the previous node and the next node.
+`ilist_node` eventually inherits `ilist_node_base<bool>` which contains the `Prev` and `Next` pointer that points to the previous node and the next node.
 
-This makes that the data carried by the node class get laied out right below the previous node pointer and the next node pointer of its superclass - `ilist_node`. This is what we called intrusive list.
+This makes the data carried by the node class get laid out right below the previous node pointer and the next node pointer of its superclass - `ilist_node`. This is what we called an intrusive list.
 
-At the same time, if you want to override the standard behaviors of the containing intrusive list do against the node class which include deleting a node, adding a node to the list, removing a node form the list and moving a node from one list to another, your can also offer a traits of `ilist_node` as a template argument of the list.
+At the same time, if you want to override the standard behaviors of the containing intrusive list do against the node class which includes deleting a node, adding a node to the list, removing a node from the list and moving a node from one list to another, you can also offer traits of `ilist_node` as a template argument of the list.
 
 ```cpp
 template <typename NodeTy>
@@ -80,7 +80,7 @@ public:
 
 ### Tagging
 
-Since there only one pair of node pointers on an `ilist_node`-inherited class, we can imply that instances of such a class are only able to be added in one intrusive list at the same time. But with `ilist_tag`, a node can be stored in multiple LLVM intrusive lists.
+Since there is only one pair of node pointers on an `ilist_node`-inherited class, we can imply that instances of such a class are only able to be added to one intrusive list at the same time. But with `ilist_tag`, a node can be stored in multiple LLVM intrusive lists.
 
 Here is an example in LLVM's doc:
 
@@ -98,7 +98,7 @@ void foo() {
 }
 ```
 
-This is because, for `ilist_node` subclasses, multiple inheritance of `ilist_node` gives the node multiple pair of node pointers.
+This is because, for `ilist_node` subclasses, multiple inheritances of `ilist_node`` gives the node multiple pair of node pointers.
 
 Then for `simple_ilist<NodeTy, ilist_tag<TagTy>>`, the implementation of intrusive list's ultimate content managing interfaces manipulate the node by casting it into `node_pointer` which eventually interpreted into `ilist_node_impl<ilist_detail::node_options<NodeTy, false, false, ilist_tag<TagTy>>>`.
 
@@ -153,7 +153,7 @@ public:
 - `iterator insert(iterator, pointer)`
 - `iterator insert(iterator, const_reference)`
 - `iterator insertAfter(iterator, pointer)`
-- `removepointer (const iterator&)`
+- `pointer remove(const iterator&)`
 - `pointer remove(pointer)`
 - `pointer remove(reference)`
 - `iterator erase(iterator)`
@@ -208,9 +208,9 @@ public:
 
 ## Intrusive List Classes
 
-- iplist
-  - ilist
-- simple_ilist
+- `iplist`
+  - `ilist`
+- `simple_ilist`
 
 ## Source Files
 
