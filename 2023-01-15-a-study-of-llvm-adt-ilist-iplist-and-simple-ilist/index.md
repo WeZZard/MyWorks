@@ -1,5 +1,5 @@
 ---
-title: A Study of LLVM ADT: ilist, iplist and simple_ilist
+title: "A Study of LLVM ADT: ilist, iplist and simple_ilist"
 category: Programming
 tags: [LLVM, ADT, C++]
 ---
@@ -16,7 +16,7 @@ tags: [LLVM, ADT, C++]
 
 ### Intrusiveness
 
-Unlike like C++ standard library containers not require their elements to inherit a base class, `iplist` and its derived classes require their nodes to inherit `ilist_node`.
+Unlike C++ standard library containers not require their elements to inherit a base class, `iplist` and its derived classes require their nodes to inherit `ilist_node`.
 
 > Privately inherited classes shall friend `llvm::ilist_detail::NodeAccess`.
 
