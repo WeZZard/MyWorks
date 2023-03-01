@@ -1,7 +1,7 @@
 ---
 title: "Adapting Reference Semantics Model in SwiftUI - The Basics"
 category: Programming
-tags: SwiftUI, Swift, Adaptor Pattern, Reference Semantics, Binding
+tags: [SwiftUI, Swift, Adaptor, "Reference Semantics", Binding]
 ---
 
 ## Introduction
