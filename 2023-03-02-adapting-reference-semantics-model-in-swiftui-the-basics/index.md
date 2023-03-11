@@ -63,7 +63,7 @@ class Model: ObservableObject {
         isOn: Binding {
           LegecyModel.shared.isOn
         } set: { newValue, tnx in
-          // The value is set asynchronousely
+          // The value is set asynchronously
           LegecyModel.shared.setOn(newValue) {
             DispatchQueue.main.async {
               self.objectWillChange.send()
@@ -194,7 +194,7 @@ class Model: ObservableObject {
         isOn: Binding {
           LegecyModel.shared.isOn
         } set: { newValue, tnx in
-          // The value is set asynchronousely
+          // The value is set asynchronously
           LegecyModel.shared.setOn(newValue) {
             DispatchQueue.main.async {
               self.objectWillChange.send()
@@ -327,9 +327,9 @@ This mechanism makes the `Model.Item` raised its second issue: the `Binding` alw
 
 ### Make a Hack That Works
 
-Is there a way that takes minimal effort to hack the code to work?
+So is there still a way that takes minimal effort to hack the code to work?
 
-Yes, there is.
+Yes, there still is.
 
 For third-party defined types that conform to `DynamicProperty` protocol, there is an `update` method would be invoked before the installed `View`'s `body` gets evaluated. With it, we still have an opportunity to manually "manage" the update of the `Binding` property on `Model.Item` before the evaluation of `ItemView.body` began.
 
@@ -399,7 +399,7 @@ struct ContentView: View {
   
   @RemakableStateObject
   @StateObject
-  var model = ModelHackedForDynamicPropertyUpdate()
+  var model = Model()
   
   ...
   
@@ -434,9 +434,9 @@ class Model: ObservableObject {
 
 But how to deal with the asynchronous setter on the reference semantics model? The solution is that: we need to set the new value with a "reference" to the `Model.Item` in `@StateObject var model: Model` after the asynchronous setter completes its work.
 
-As I mentioned above, the "reference" here means `Bindng`.
+As I mentioned above, the "reference" here means `Binding`.
 
-Firstly, we need to get the `Bindng` of the data we want to modify after the asynchronous setter is completed. We can call `$item` in the `ItemView` to get a `Binding` of `Model.Item`.
+Firstly, we need to get the `Binding` of the data we want to modify after the asynchronous setter is completed. We can call `$item` in the `ItemView` to get a `Binding` of `Model.Item`.
 
 ```swift
 struct ItemView: View {
@@ -525,19 +525,26 @@ You may have spotted that there is no invocation of `self.objectWillChange.send(
 Even though we have iterated 3 versions of the solution but the final one is still not good enough. We can spot that:
 
 - The user interaction of the button-behaved toggle is weird. Some user interactions on `Toggle` disappeared in this implementation.
-- The `Toggle`'s toggle-off animation begins after the asynchronous setter is completed. This is not a good design for things that are going out of the user's attraction. It could be better if the `Toggle` can be toggled off immediately and reset to toggled on when failure happens.
+
+- The `Toggle`'s toggle-off animation begins after the asynchronous setter is completed which means that users may wait for the toggle-off animation to happen before moving their focus away from the `Toggle` -- this is not a good design for things that are going out of the user's attraction. It could be better if the `Toggle` can be toggled off immediately and reset to toggled on when failure happens.
+
 - We have to hand-wire the asynchronous set logic in `Item.Model.setOn`. This is error-prone;
-- What if there is a reference semantics model that offers an asynchronous getter?
-- What if the asynchronous access can be failed?
+
+- What if there is a reference semantics model that offers an asynchronous getter? How do we deal with it?
+
+- What if the asynchronous access can be failed? How do we deal with it?
+
 - There is boilerplate code in the `action` closure of the `Button` in the `ItemView`.
 
 On the other hand, real-world reference semantics models may come with:
 
 - Only the getter method and no setter method
+
 - Only the setter method and no getter method
+
 - May be modified outside SwiftUI without any notifications
 
-With them, we have to write additional codes to get a qualified source of truth in SwiftUI work.
+To deal with reference semantics models like this, we have to write additional codes to get a source of truth in SwiftUI work.
 
 To keep this post concise and focused, all the points mentioned above would be tackled in the following posts.
 
@@ -546,5 +553,7 @@ To keep this post concise and focused, all the points mentioned above would be t
 In this post, I've shown you that:
 
 - The source of truth in SwiftUI are dynamic properties that can project `Binding`s.
+
 - To compose a qualified source of truth, we have to directly install the dynamic properties on `View`, `Gesture` or other structural user interface types shipped with SwiftUI
+
 - With the help of `Binding`, we can naïvely deal with asynchronous methods in SwiftUI.
