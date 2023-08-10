@@ -1,432 +1,9 @@
 ---
-title: "Swift Macro: Revisited - The Concept"
+title: "Swift Macro: Revisited - Traps and Pitfalls"
 category: Programming
 tags: [Swift, Macro]
+isPublished: false
 ---
-
----
-
-- Further directions:
-  - More IDE collaboration: syntax highlighting
-
----
-
-From relative sessions of WWDC 2023, we've learned that Swift macro aims
-to:
-
-- Eliminate boilerplates
-- Make tedious things easy
-- Share with other developers in packages
-
-However, these goals are not exclusive to Swift macro; they are common
-targets for most common language features in Swift such as function, type
-and module. One could argue that all high-level programming languages
-aspire to these ends. There must be something else that Swift Macro excels
-at, otherwise, it would be redundant.
-
-So, what is it that Swift Macro does exceptionally well?
-
-The answer to this question is critical. It would inspire us to create
-Swift macros that hit the points, tell us the boundaries of behaviors
-while creating Swift macros, and ultimately guide us to ship
-better-designed Swift macros. This is the essence of Swift macro.
-
-To have this answer, we must first comprehend the problems that existing
-Swift language features like function, type and module have managed to
-solve and their limitations. The key to understanding Swift macro lies in
-this exploration.
-
-## An Exploration of Existing Reuse Features
-
-TODO: Function & structured programming could be merged
-
-"Function" is a common concept in almost all programming languages. Though
-it may have different names in different languages like subroutine,
-routine, subprogram or procedure, those names are sharing the same idea
-which is to offer reusable execution units for the programmers. This has
-not been changed since the concept of function was initially conceived
-during the work of ENIAC — the world's first computer, and introduced in
-FORTRAN with the name "subroutine".
-
-TODO: An example of the FORTRAN subroutine.
-
-But people then have found that programs would be better understood if:
-
-- Variables are only accessible within the block of a control structure
-  like the `IF` statement or loop.
-- Control structures could be more expressive like using
-  `IF-THEN-ELSE-END` instead of a simple `IF` statement.
-- The `GOTO` statement could be eliminated by more advanced control
-  structures.
-- The "function" could be defined within other "functions".
-
-All these points above comprised the concept of structured programming,
-which was coined by Edwards W. Dijkstra. In the meanwhile, he also imbued
-these ideas into the ALGO 60 programming language.
-
-TODO: An example of ALGO 60's structured programming
-
-The joining of structured programming broadened the number of programmers
-since the programs were easier to understand than before. When people were
-trying to use computer programs to solve more and more real-world
-problems, difficulties in code management ensued because there were only
-functions available for organizing the code -- this means that people can
-only reuse the code at the smallest granular level.
-
-A programming language called Simula, which encoded designing for
-simulating real-world processes in its name, enriched the granularity in
-code reuse by introducing a concept called object-oriented programming.
-With this concept, developers can create types that have a bunch of
-variables and functions declared as members of a type that are accessed
-via dot notations. The members of a type is scoped within the type. You
-can only access them with the instance name. On top of that, a type can
-reuse a type by inheriting it.
-
-TODO: Figure: dot notation and type inheritance
-
-However, there are still challenges lied before programmers. How to reuse
-code between projects? Copy and paste? How to accelerate compilation by
-avoiding the commonly reused code? Buy more powerful machines? Modula, a
-programming language as a decedent of Pascal, answered these questions by
-introducing a concept called module, which keeps developers away from
-tedious pushes on keyboards and money talks.
-
-Modules brought by Modula enabled encapsulation of code on a granular
-level greater than types. More than that, this feature also brought
-separate compilation and segregation between interfaces and
-implementations which bring faster build speed and better software design.
-These advantages now emerge in Swift modules.
-
-TODO: Figure: module-level code reuse and lexical scope
-
-## What Swift Macros Do Exceptionally Well?
-
-By exploring the development history of code reusing, we can find that
-people tend to create concepts that aggregate the smaller ones and
-"umbrella" them with a protection mechanism. Let me give you examples:
-
-- Functions aggregate execution flows and variables and "umbrella" them
-  with control structures and lexical scopes;
-- Types aggregate variables and functions and "umbrella" them with
-  instance name or type name;
-- Modules aggregate variables, types and functions and "umbrellas" them
-  with the module's namespaces;
-
-These help us keep the program easy to understand as the code size
-increases.
-
-But we can find there are still many critical programming concepts that
-cannot be encapsulated with them. Let me show you some examples.
-
-### Compile-Time Checked Literals
-
-Since design software like Figma or Sketch represents the RGB color with 6
-hexadecimal digits, the developers would often have the following
-extension in Swift such that they can directly copy and paste the RGB
-value displayed in the design software to the code:
-
-```swift
-import SwiftUI
-
-// Color extension
-extension Color {
-
-  public init(_ hex: UInt)
-
-}
-
-// Use example
-Color(0xFFEEAA)
-```
-
-But how do I know this is a valid RGB color? Since we are copying and
-pasting, the digits themselves could be shorter than what it was in the
-original place.
-
-```swift
-// Invalid color.
-Color(0xFFEEA)
-```
-
-With Swift macro, these "literals" could be checked at compile-time:
-
-TODO: Replace it with a diagram
-
-```swift
-#Color(0xFFEEAA) // compiled
-#Color(0xFFEEA) // invalid, not compiled
-```
-
-### Code Style
-
-In real-world programming, we always want to get rid of the following
-code:
-
-```swift
-func foo(_ bar: Int?) {
-  print(bar!)
-}
-```
-
-Instead, we prefer the code like below:
-
-```swift
-func foo(_ bar: Int?) {
-  guard let bar else {
-    return
-  }
-  print(bar)
-}
-```
-
-But it's tedious. You may have to `guard let ... else` many times in one
-single function's body if you are overriding methods naïvely bridged from
-Objective-C, or a large-scale legacy code base finally chose to make
-parameters nullable by default because of the impossible workload of
-nullability verification. This heavy form of safety guarantee waters
-things down. We don't have to write a lot of code to do a trivial thing.
-
-However, since a function protects its internal execution flow for the
-sake of structured programming, we cannot encapsulate this
-`guard let ... else` in a function -- because the `return` statement in a
-function cannot make the caller site function to exit.
-
-```swift
-func guard<T>(_ value: T?) -> T {
-  guard let value else {
-    // This return cannot help `foo` to exit.
-    // More than that, this function does not compile.
-    return
-  }
-  return value
-}
-
-func foo(_ bar: Int?) {
-  let bar = guard(bar)
-  print(bar)
-}
-```
-
-But Swift Macro does not have this constraint. We can have a macro called
-`#unwrapped` which is used as the code shown below:
-
-```swift
-func foo(_ bar: Int?) {
-  #unwrapeped(bar) {
-    print(bar)
-  }
-}
-```
-
-And expanded as:
-
-```swift
-func foo(_ bar: Int?) {
-  // #unwrapped expansion began
-  guard let bar = bar else {
-    return
-  }
-  print(bar)
-  // #unwrapped expansion ended
-}
-```
-
-Then the control flow of the `foo` function could be affected by the
-`#unwrapped` macro now. More than that, the variable `bar` received by the
-`print` function is the variable declared by the `guard let bar` statement
-which is also brought by the expansion of `#unwrapped` macro. This shows
-that the expansions of Swift macros share the lexical scope of the applied
-site.
-
-From what we've learned, we can have a conclusion that with Swift macro we
-can encapsulate programming concepts that **involve control flow
-manipulations** and **lexical scope sharing**.
-
-### Extending Type's Behavior
-
-The capabilities of Swift Macro are not limited to these. Let's consider
-another example to showcase the expansive potential of Swift Macro.
-
-In real-world programming stories, we always start from simple structs
-like the below:
-
-```swift
-struct User {
-
-  var name: String
-
-  var avatar: URL
-
-}
-```
-
-But as the size of the repository grows, the struct may grow at the same
-speed:
-
-```swift
-struct User {
-
-  var name: String
-
-  var avatar: URL
-
-  var avatarsInDifferentScales: [Int : URL]
-
-  var userID: String
-
-  var socialMedias: [String]
-
-  var brief: String
-
-  // ...
-
-}
-```
-
-Since each property in the `struct` I showed above engaged a heap storage
-allocation to store the data, the cost of copying this struct is increased
-at the same time -- the count of heap storage here means the count of
-object retain operations and retaining shall be guaranteed to be atomic.
-This may cause lagging in user interactions and waste in memory space. By
-adopting this technique to several heavily used `struct`s of a real app
-produced by ByteDance, I've improved the user interaction by increasing
-the fps from 48fps to 56fps and decreasing 600MB memory usage.
-
-TODO: Before-after comparison for the optimization of the app I mentioned
-
-To reduce the cost of copying the struct, we can aggregate the properties
-to a class instance which is supposed to be the storage, then implement
-the copy-on-write behavior on the original struct when we are mutating the
-contents in the storage:
-
-```swift
-struct User {
-
-  private class Storage {
-
-    var name: String
-
-    // other properties ...
-
-  }
-
-  private var _storage: Storage
-
-  init(name: String, ...) {
-    self._storage = Storage(name: name, ...)
-  }
-
-  private func makeStorageUniqueIfNeeded() {
-    if !isKnownUniquelyReferenced(&_storage) {
-      _storage = Storage(name: name, ...)
-    }
-  }
-
-  var name: String {
-    get { return _storage.name }
-    set {
-      makeStorageUniqueIfNeeded()
-      _storage.name = newValue
-    }
-  }
-
-}
-```
-
-But, again, this is tedious. We not only have to write a lot of code to
-reduce the cost of copying that struct but, worse still, it increased the
-cost of maintaining the program. With Swift Macro, we can do this more
-elegantly.
-
-```swift
-@COW
-struct User {
-
-  var name: String
-
-  var avatar: URL
-
-  var avatarsInDifferentScales: [Int : URL]
-
-  var userID: String
-
-  var socialMedias: [String]
-
-  var brief: String
-
-  // ...
-
-}
-```
-
-Yes. Just as simple as I've shown. By adding an `@COW` attribute to the
-struct, we have introduced the copy-on-write behavior to this struct. What
-this macro did is nothing more than what we have hand-wired in the
-previous code. However, the cost of maintaining the program has not
-increased this time.
-
-```swift
-struct User {
-
-  // @COW expansion began
-  private class Storage {
-
-    var name: String
-
-    // other properties ...
-
-  }
-
-  private var _$storage: Storage
-
-  private func makeStorageUniqueIfNeeded() {
-    if !isKnownUniquelyReferenced(&_$storage) {
-      _$storage = Storage(name: name, ...)
-    }
-  }
-
-  init(name: String, ...) {
-    self._storage = Storage(name: name, ...)
-  }
-  // @COW expansion ended
-
-  // @COW expansion began
-  @COWIncluded(storage: _$storage)
-  // @COW expansion ended
-  var name: String {
-    // @COWIncluded expansion began
-    get { return _$storage.name }
-    set {
-      makeStorageUniqueIfNeeded()
-      _$storage.name = newValue
-    }
-    // @COWIncluded expansion ended
-  }
-
-}
-```
-
-TODO: Introduce a more sophisticated encapsulation that I've done
-
-Till now, we can observe that:
-
-- Swift Macro is a way of encapsulation. What you are unable to do before
-  Swift Macro got introduced remains the same.
-- Swift Macro generates codes by understanding the programmer's code at
-  the compile time. This means that we can also do compile-time checking
-  with the programmer's code.
-- Freestanding Swift macros in a function can affect the control flow of a
-  function and implicitly share the lexical scope of the applied site.
-- Attached Swift macros can extend members to types or accessors to
-  properties. The extended contents also share the same "namespace" of the
-  extended point.
-
-These properties not only offer the programmers yet another option for
-code reuse but also enable them to encapsulate programming concepts that
-may involve compile-time checking, control flow manipulations and adding
-behaviors to types without inheritance or other runtime techniques. This
-has never been implemented in Swift before. Yet, they are the essence of
-Swift Macro.
 
 ## Pitfalls of Swift Macros
 
@@ -440,12 +17,43 @@ least several pitfalls that I've found could lead to dead ends.
 
 ### Control Flow in Chaos
 
-TODO: TBD
+In the previous example of `#unwrap`, the macro is put in the body of a
+function. What if we put it in a loop?
 
-### Name Conflicts
+```swift
+func foo(_ bar: Int?) {
+  for _ in 0..<10 {
+    #unwrap(bar) {
+      print(bar)
+    }
+  }
+}
+```
 
-In the previous example of `#unwrap`, the `bar` variable is re-bound by
-the `#unwarp` macro after the macro was expanded.
+Since the code would be expanded into:
+
+```swift
+func foo(_ bar: Int?) {
+  for _ in 0..<10 {
+    // #unwrapped expansion began
+    guard let bar = bar else {
+      return
+    }
+    print(bar)
+    // #unwrapped expansion ended
+  }
+}
+```
+
+If we pass a non-optional value to `foo`, the `bar` would only be printed
+once. This is because the macro expansion involved a `return` statement
+which would break the outer loop.
+
+### Name Conflicts in Freestanding Macro
+
+There is not only one potential pitfall in the `#``unwrap` macro -- the
+`bar` variable is re-bound by the `#unwarp` macro after the macro was
+expanded.
 
 ```swift
 func foo(_ bar: Int?) {
@@ -507,9 +115,11 @@ TODO: A figure shows the compilation failure for the code above
 The compiler reported that the second declaration of `updater` is an
 invalid redeclaration.
 
-More than that, this potential name conflict not only be possible when
-freestanding macros meet functions but also be possible when attached
-macros meet type declarations.
+### Name Conflicts in Attached Macro
+
+This potential name conflict not only be possible when freestanding macros
+meet functions but also be possible when attached macros meet type
+declarations.
 
 You may have noticed that there is a member added in the expansion of the
 `@COW` macro that uses a name pattern that prefixes with `_$`.
@@ -518,9 +128,10 @@ You may have noticed that there is a member added in the expansion of the
   private var _$storage: Storage
 ```
 
-This is a naming convention I learned from Apple's implementation of the
-macros in Swift Observation and SwiftData which keeps the implementation
-details of an attached macro from the programmer's unintentional access.
+This is a naming convention that I learned from Apple's implementation of
+the macros in Swift Observation and SwiftData which keeps the
+implementation details of an attached macro from the programmer's
+unintentional access.
 
 But this does not protect those members from unintentional redeclaration
 or access brought by other macros -- there could be another macro applied
@@ -1050,6 +661,13 @@ class Model {
 
 ## Future Directions
 
+---
+
+- Further directions:
+  - More IDE collaboration: syntax highlighting
+
+---
+
 We've understood the nature of Swift macro by learning so much more.
 But are these limitations still will be there in the future?
 
@@ -1161,45 +779,3 @@ simple and ergonomic to most Swift developers is quite a challenging task.
 Because there are a lot of detailed information about a type derived by
 the compiler which is used for SIL generation and upcoming optimizations.
 Macro authors should not care about them.
-
-## Recap
-
-In this post, we explored what existing Swift language features like
-function, type and module have managed to do and what the limitations they
-have. Then we explored some tasks that Swift macro excels at. Such that we
-learned that: Swift macro is yet another encapsulation technique
-introduced in Swift which can:
-
-- break control flows in function
-- share lexical scope within the call-site function
-- share the "name space" within the attached type
-- share the namespace within the module
-
-This bring Swift macro to be excelled at some tasks but also bring it
-limitations like:
-
-- Name conflicts
-- Semantic changes due to macro expansion
-
-To go beyond these limitations, we introduced tips that:
-
-- use in-place executed closure to create a lexical scope
-- use chained arguments to eliminate use of local variables
-- use `MacroExpansionContext.makeUniqueName(_:)` to create contextual
-  unique names
-
-to resolve name conflicts brought by application of freestanding macros.
-
-On top of that, we also introduced principles that:
-
-1. For non-standard library typed members generated by attached member
-   macros, we should enable to programmers to optionally customize its
-   name.
-2. For standard library typed members generated by attached member macros,
-   we should stop code generation if there has already been one.
-3. For attached member macros that generate members in attached types, we
-   should always offer an option to disable the code generation for
-   specified members by applying an attached member attribute macro.
-
-to resolve name conflicts and semantics changes brought by application of
-attached macros.
