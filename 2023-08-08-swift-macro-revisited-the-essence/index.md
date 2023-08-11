@@ -20,30 +20,31 @@ at, otherwise, it would be redundant.
 
 So, what is it that Swift Macro does exceptionally well?
 
-The answer to this question is critical. It would inspire us to create
-Swift macros that hit the points, tell us the boundaries of behaviors
-while creating Swift macros, and ultimately guide us to ship
-better-designed Swift macros. This is the essence of Swift Macro.
+Understanding the unique strengths of Swift Macro is crucial. It will
+guide us in crafting Swift macros that are effective, inform us of the
+boundaries when creating them, and ultimately lead us to produce
+well-designed Swift macros. This understanding is the essence of Swift
+Macro.
 
-To have this answer, we must first comprehend the problems that existing
-Swift language features like function, type and module have managed to
-solve and their limitations. The key to understanding Swift Macro lies in
-this exploration.
+To grasp this, we must first comprehend the problems that existing Swift
+language features like function, type and module have managed to solve and
+their limitations. The key to understanding what set Swift Macro apart
+lies in this exploration.
 
 ## An Exploration of Existing Reuse Features
 
 TODO: Function & structured programming could be merged
 
-"Function" is ubiquitos in high-level programming languages. They might
-have different names across languages — subroutine, routine, subprogram,
-or procedure — however, the essence remains the same: providing reusable
-units of execution. This has not been changed since the concept of
-function was initially brought to high-level programming languages by
+"Function" is ubiquitos in high-level programming languages. While they
+might be called subroutines, routines, subprograms, or procedures in
+different languages, their core purpose remains consistent: providing
+reusable units of execution. This has remained unchanged since the concept
+of function was initially brought to high-level programming languages by
 FORTRAN with the name "subroutine".
 
 TODO: An example of the FORTRAN subroutine.
 
-As programming evolved, people then have found that programs could be
+As programming evolved, programmers then have found that programs could be
 better understood if:
 
 - Variables are only accessible within the block of a control structure
@@ -54,27 +55,28 @@ better understood if:
   structures.
 - The "function" could be defined within other "functions".
 
-All these points above comprised the concept of structured programming.
-Structured programming was a broad movement in computer science. As a
-pioneer in this movement, ALGOL 60 adopted these principles at very early
-stage. Swift functions also take these principles as its fundamental
-pillars.
+All these points above comprised the concept of structured programming, a
+significant movement in computer science. ALGOL 60, a pioneer in this
+movement, adopted these principles at very early stage.
 
 TODO: An example of ALGOL 60's structured programming
+
+Nowadays, we can find these principles are like the air in Swift
+functions.
 
 The adoption of structured programming made programs more comprehensible,
 paving the way for more developers to join the field. As software
 solutions aimed to address increasingly complex real-world problems,
 managing code became a challenge since the only available tool for
 organizing code was functions, which meant code could only be reused at a
-very granular level or the entire file adn directory.
+very granular level or the entire files and directorys.
 
 Simula, which encoded designing for simulating real-world processes in its
 name, introduced the concept of object-oriented programming, allowing
 developers to create types with variables and functions as members. These
 members were accessed via dot notations and were scoped within the type.
 Additionally, one type could inherit from another, further enhancing code
-reusability. Swift types uphold these practices.
+reusability. Types in Swift also uphold these practices.
 
 TODO: Figure: dot notation and type inheritance
 
