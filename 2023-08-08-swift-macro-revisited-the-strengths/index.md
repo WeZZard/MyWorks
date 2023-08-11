@@ -35,7 +35,7 @@ lies in this exploration.
 
 TODO: Function & structured programming could be merged
 
-"Function" is ubiquitos in high-level programming languages. While they
+"Function" is ubiquitous in high-level programming languages. While they
 might be called subroutines, routines, subprograms, or procedures in
 different languages, their core purpose remains consistent: providing
 reusable units of execution. This has remained unchanged since the concept
@@ -44,8 +44,8 @@ FORTRAN with the name "subroutine".
 
 TODO: An example of the FORTRAN subroutine.
 
-As programming evolved, programmers then have found that programs could be
-better understood if:
+As programming evolved, programmers then found that code could be better
+understood if:
 
 - Variables are only accessible within the block of a control structure
   like the `IF` statement or loop.
@@ -57,7 +57,7 @@ better understood if:
 
 All these points above comprised the concept of structured programming, a
 significant movement in computer science. ALGOL 60, a pioneer in this
-movement, adopted these principles at very early stage.
+movement, adopted these principles at a very early stage.
 
 TODO: An example of ALGOL 60's structured programming
 
@@ -69,7 +69,7 @@ paving the way for more developers to join the field. As software
 solutions aimed to address increasingly complex real-world problems,
 managing code became a challenge since the only available tool for
 organizing code was functions, which meant code could only be reused at a
-very granular level or the entire files and directorys.
+very granular level or the entire files and directories.
 
 Simula, encoded designing for simulating real-world processes in its name,
 introduced the concept of object-oriented programming, allowing developers
@@ -110,15 +110,14 @@ mechanism. Let me give you examples:
 TODO: Figure: protection hierarchy of modules/types/functions
 
 These help us keep the program easy to understand as the code size
-increases. But we can still find that there are many critical programming
-concepts cannot be encapsulated with them. Let me show you some typical
-examples.
+increases. But we can still find that many critical programming concepts
+cannot be encapsulated with them. Let me show you some typical examples.
 
 ### Compile-Time Checked Literals
 
-Since design softwares like Figma or Sketch represent the RGB color with 6
-hexadecimal digits. Developers often extend Swift to allow direct copying
-and pasting of RGB values from design software for use in SwiftUI:
+Since design software like Figma and Sketch represent the RGB color with
+6 hexadecimal digits. Developers often extend Swift to allow direct
+copying and pasting of RGB values from design software for use in SwiftUI:
 
 ```swift
 import SwiftUI
@@ -134,8 +133,8 @@ extension Color {
 Color(0xFFEEAA)
 ```
 
-But how can one ensure the pasted value represents a valid RGB color? --
-since we are copying and pasting, the digits themselves could be shorter
+But how can one ensure the pasted value represents a valid RGB color?
+Since we are copying and pasting, the digits themselves could be shorter
 than what it was in the original place.
 
 ```swift
@@ -180,10 +179,10 @@ func foo(_ bar: Int?) {
 However, this can be cumbersome, especially with multiple optional
 parameters.
 
-As a nature of programmer, you may have desire to encapsulate this safe
-unwrapping process and reuse at will. Unfortunately, since a function
-protects its internal execution flow from inner functions return for the
-sake of structured programming, we cannot encapsulate this
+With the nature of the programmer, you may have a desire to encapsulate
+this safe unwrapping process and reuse it at will. Unfortunately, since a
+function protects its internal execution flow from inner functions' return
+for the sake of structured programming, we cannot encapsulate this
 `guard let ... else` in a function -- because the `return` statement in a
 function cannot make the caller site function exit.
 
@@ -230,9 +229,10 @@ func foo(_ bar: Int?) {
 Then the control flow of the `foo` function could be affected by the
 `#unwrapped` macro now. More than that, the variable `bar` received by the
 `print` function is the one declared by the `guard let bar` statement --
-which is also brought by the expansion of `#unwrapped` macro. This example
-shows the evidence that the expansion of a Swift macro could
-**involve control flow manipulation** and **lexical scope sharing**.
+which is also brought by the expansion of the `#``unwrapped` macro. This
+example shows the evidence that the expansion of a freestanding Swift
+macro could **involve control flow manipulation** and
+**lexical scope sharing**.
 
 ### Extending Type's Behavior
 
@@ -355,8 +355,7 @@ struct User {
 Yes. Just as simple as I've shown. By adding an `@COW` attribute to the
 struct, we have introduced the copy-on-write behavior to this struct. What
 this macro did is nothing more than what we have hand-wired in the
-previous code. However, the cost of maintaining the program has not
-increased this time.
+previous code.
 
 ```swift
 struct User {
@@ -399,12 +398,14 @@ struct User {
 }
 ```
 
+However, the cost of maintenance has not increased this time.
+
 ## Recap
 
 From the examples above, we can conclude:
 
 - Swift Macro is a form of encapsulation. What you are unable to implement
-  before Swift Macro was introduced remains being unable to implement.
+  before Swift Macro was introduced remains unable to implement.
 - Swift Macro generates codes by understanding the programmer's code at
   the compile time. This means that we can also do compile-time checking
   with the programmer's code.
