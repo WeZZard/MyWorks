@@ -415,8 +415,10 @@ From the examples above, we can conclude:
   with the programmer's code.
 - Does not like existing code reuse features in Swift, Swift Macro does
   not protect its expansion from existing contents of the applied site by
-  default. Macro authors shall watch out for potential traps and pitfalls
-  while implementing Swift macros.
+  default. Yet, it also can change the semantics of the applied site like
+  turning a stored property into computed property by adding the `get` and
+  `set` accessor. Macro authors shall watch out for potential traps and
+  pitfalls while implementing Swift macros.
   - Freestanding Swift macros in a function can affect the control flow of
     the applied site and implicitly share the lexical scope.
   - Attached Swift macros can extend members to types as well as accessors
@@ -429,8 +431,8 @@ These properties not only offer the programmers yet another option for
 code reuse but also enable them to encapsulate programming concepts that
 may involve compile-time checking, control flow manipulations and adding
 behaviors to types without inheritance or other runtime techniques. These
-properties have never been implemented in Swift before. Yet, they are the
-unique strengths of Swift Macro.
+properties have never been implemented in Swift before. Without a doubt,
+they are the unique strengths of Swift Macro.
 
 However, what brings Swift Macro advantages also brings traps and
 pitfalls. This is an independent topic that we will discuss in the
