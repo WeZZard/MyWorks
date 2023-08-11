@@ -30,7 +30,7 @@ language features, such as functions, types, and modules, have managed to
 solve and their limitations. The key to understanding what set Swift
 Macro apart lies in this exploration.
 
-## An Exploration of Existing Reuse Features
+## What Existing Code Reuse Methods Managed To Solve?
 
 ### Functions
 
@@ -117,14 +117,19 @@ mechanism. Here is the summary:
 TODO: Figure: protection hierarchy of modules/types/functions
 
 All these properties help us keep the code easy to understand as the code
-size increases.
+size increases. These code reuse methods also built the existing hierarchy
+of encapsulation in Swift.
 
-These code reuse methods also built the hierarchy of encapsulation in
-Swift. However, what gives them advantages also caps their capabilities.
-Due to the protective mechanisms over the encapsulation hierarchy, there
-are still programming concepts that cannot be encapsulated. Plus, none of
-these encapsulation methods can receive the programmer's source code as
-input -- they can only receive data or closures.
+However, what gives them advantages also caps their capabilities. Due to
+the protective mechanisms over the encapsulation hierarchy, there are
+still programming concepts that cannot be encapsulated -- because some
+concepts are requiring us to drop this protection. Plus, none of these
+code reuse methods can receive the programmer's source code as input --
+they can only receive data or closures.
+
+Now, we no longer can expand the types of encapsulate-able programming
+concepts by merely following the established trends of existing code reuse
+methods.
 
 ## What Swift Macros Do Exceptionally Well?
 
@@ -203,9 +208,9 @@ parameters.
 Given the nature of programming, there might be a desire to encapsulate
 this safe unwrapping process for reuse. Unfortunately, since a function
 protects its internal execution flow from inner functions' return for the
-sake of structured programming, we cannot encapsulate this `guard let ...
-else` in a function -- because the `return` statement in a function cannot
-make the caller site function exit.
+sake of structured programming, we cannot encapsulate this
+`guard let ... else` in a function -- because the `return` statement in a
+function cannot make the caller site function exit.
 
 ```swift
 func guard<T>(_ value: T?) -> T {
