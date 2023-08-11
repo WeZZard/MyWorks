@@ -355,7 +355,7 @@ struct User {
 Yes. Just as simple as I've shown. By adding an `@COW` attribute to the
 struct, we have introduced the copy-on-write behavior to this struct. What
 this macro did is nothing more than what we have hand-wired in the
-previous code.
+previous code -- adding members to the struct and accessors in the struct.
 
 ```swift
 struct User {
@@ -400,7 +400,7 @@ struct User {
 
 However, the cost of maintenance has not increased this time.
 
-## Recap
+## Conclusion
 
 From the examples above, we can conclude:
 
@@ -409,11 +409,17 @@ From the examples above, we can conclude:
 - Swift Macro generates codes by understanding the programmer's code at
   the compile time. This means that we can also do compile-time checking
   with the programmer's code.
-- Freestanding Swift macros in a function can affect the control flow of
-  the applied site and implicitly share the lexical scope.
-- Attached Swift macros can extend members to types as well as accessors
-  to properties. The extended contents also share the same "namespace" of
-  the extended point.
+- Does not like existing code reuse features in Swift, Swift Macro does
+  not protect its expansion from existing contents of the applied site by
+  default. Macro authors shall watch out for potential traps and pitfalls
+  while implementing Swift macros.
+  - Freestanding Swift macros in a function can affect the control flow of
+    the applied site and implicitly share the lexical scope.
+  - Attached Swift macros can extend members to types as well as accessors
+    to properties. The extended contents also share the same "namespace"
+    of the extended point.
+
+TODO: Figure: modules/types/functions v.s. macro
 
 These properties not only offer the programmers yet another option for
 code reuse but also enable them to encapsulate programming concepts that
@@ -421,3 +427,7 @@ may involve compile-time checking, control flow manipulations and adding
 behaviors to types without inheritance or other runtime techniques. These
 properties have never been implemented in Swift before. Yet, they are the
 unique strengths of Swift Macro.
+
+However, what brings Swift Macro advantages also brings traps and
+pitfalls. This is an independent topic that we will discuss in the
+following post.
