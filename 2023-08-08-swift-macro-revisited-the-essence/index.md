@@ -39,7 +39,6 @@ languages. Though it may have different names in different languages like
 subroutine, routine, subprogram or procedure, those names are sharing the
 same idea which is to offer reusable execution units for the programmers.
 This has not been changed since the concept of function was initially
-conceived during the work of ENIAC — the world's first computer, and
 brought to high-level programming languages by FORTRAN with the name
 "subroutine".
 
@@ -56,8 +55,10 @@ understood if:
   structures.
 - The "function" could be defined within other "functions".
 
-All these points above comprised the concept of structured programming and
-imbued into the ALGOL 60 programming language.
+All these points above comprised the concept of structured programming.
+Structured programming was a broader movement in computer science. As an
+pioneer in this movement, ALGOL 60 was one of several languages that
+adopted these principles at very early stage.
 
 TODO: An example of ALGOL 60's structured programming
 
