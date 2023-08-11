@@ -5,8 +5,7 @@ tags: [Swift, Macro]
 isPublished: false
 ---
 
-From relative sessions at WWDC 2023, we've learned that Swift Macro aims
-to:
+From the sessions at WWDC 2023, we've learned that Swift Macro aims to:
 
 - Eliminate boilerplates
 - Make tedious things easy
@@ -16,7 +15,7 @@ However, these goals are not exclusive to Swift Macro; they are common
 targets for most common language features in Swift such as function, type
 and module. One could argue that all high-level programming languages
 aspire to these ends. There must be something else that Swift Macro excels
-at, otherwise, it would be redundant.
+at; otherwise, it would be redundant.
 
 So, what is it that Swift Macro does exceptionally well?
 
@@ -27,9 +26,9 @@ well-designed Swift macros. This understanding is the essence of Swift
 Macro.
 
 To grasp this, we must first comprehend the problems that existing Swift
-language features like function, type and module have managed to solve and
-their limitations. The key to understanding what set Swift Macro apart
-lies in this exploration.
+language features, such as functions, types, and modules, have managed to
+solve and their limitations. The key to understanding what set Swift
+Macro apart lies in this exploration.
 
 ## An Exploration of Existing Reuse Features
 
@@ -42,8 +41,8 @@ FORTRAN with the name "subroutine".
 
 TODO: An example of the FORTRAN subroutine.
 
-But the "function" in FORTRAN -- subroutine -- has much room for
-improvement. As programming evolved, programmers then found that code
+But the "function" in FORTRAN, known as a subroutine, has significant room
+for improvement. As programming evolved, programmers then found that code
 could be better understood if:
 
 - Variables are only accessible within the block of a control structure
@@ -60,8 +59,7 @@ movement, adopted these principles at a very early stage.
 
 TODO: An example of ALGOL 60's structured programming
 
-Nowadays, we can find these principles are like the air in Swift
-functions.
+Nowadays, these principles are foundational in Swift functions.
 
 The adoption of structured programming made programs more comprehensible,
 paving the way for more developers to join the field. As software
@@ -84,11 +82,11 @@ TODO: Figure: dot notation and type inheritance
 These practices were then popularized by Smalltalk and later C++ and are
 currently upheld by Swift types.
 
-Yet there are still challenges lied before programmers. How to reuse code
-between projects? Copy and paste? How to accelerate compilation by
-avoiding the commonly reused code? Buy more powerful machines? Modula-2
-introduced the concept of modules to address these issues, keeping
-developers away from tedious pushes on keyboards and money talks.
+Yet, challenges still lay before programmers. How to reuse code between
+projects? Copy and paste? How to accelerate compilation by avoiding the
+commonly reused code? Buy more powerful machines? Modula-2 introduced the
+concept of modules to address these issues, keeping developers away from
+tedious pushes on keyboards and money talks.
 
 Modules brought by Modula-2 enabled encapsulation of code on a granular
 level greater than types. More than that, this feature also brought
@@ -285,9 +283,9 @@ retain operations. Since retaining shall be guaranteed to be atomic, this
 may cause lagging in user interactions and waste in memory space.
 
 To reduce the cost of copying the struct, we can aggregate the properties
-to a class instance which is supposed to be the storage, then implement
-the copy-on-write behavior on the original struct when we are mutating the
-contents in the storage:
+into a class instance which serves as the storage, implementing the
+copy-on-write behavior on the original struct when mutating the contents
+in the storage:
 
 ```swift
 struct User {
@@ -323,10 +321,9 @@ struct User {
 }
 ```
 
-By adopting this technique to several heavily used `struct`s of a real app
-produced by ByteDance, I've improved the user interaction by increasing
-the fps from 48fps to 56fps and decreasing 600MB memory usage at debug
-time.
+By adopting this technique for several heavily used structs in a real app
+produced by ByteDance, I improved user interaction, increasing the fps
+from 48 to 56 and reducing memory usage by 600MB during debugging.
 
 TODO: Before-after comparison for the optimization of the app I mentioned
 
@@ -429,10 +426,10 @@ From the examples above, we can conclude:
 
 TODO: Figure: modules/types/functions v.s. macro
 
-These properties not only offer the programmers yet another option for
-code reuse but also enable them to encapsulate programming concepts that
-may involve compile-time checking, control flow manipulations and adding
-behaviors to types without inheritance or other runtime techniques. These
+These properties offer programmers not only another option for code reuse
+but also the ability to encapsulate programming concepts that involve
+compile-time checking, control flow manipulations, and adding behaviors to
+types without relying on inheritance or other runtime techniques. These
 properties have never been implemented in Swift before. Without a doubt,
 they are the unique strengths of Swift Macro.
 
