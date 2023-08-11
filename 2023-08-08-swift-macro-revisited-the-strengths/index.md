@@ -33,8 +33,6 @@ lies in this exploration.
 
 ## An Exploration of Existing Reuse Features
 
-TODO: Function & structured programming could be merged
-
 "Function" is ubiquitous in high-level programming languages. While they
 might be called subroutines, routines, subprograms, or procedures in
 different languages, their core purpose remains consistent: providing
@@ -67,9 +65,9 @@ functions.
 The adoption of structured programming made programs more comprehensible,
 paving the way for more developers to join the field. As software
 solutions aimed to address increasingly complex real-world problems,
-managing code became a challenge since the only available tool for
-organizing code was functions, which meant code could only be reused at a
-very granular level or the entire files and directories.
+managing code became a challenge since available tools for organizing code
+were functions, files and directories, which meant code could only be
+reused at a very granular level or the entire files and directories.
 
 Simula, encoded designing for simulating real-world processes in its name,
 introduced the concept of object-oriented programming, allowing developers
