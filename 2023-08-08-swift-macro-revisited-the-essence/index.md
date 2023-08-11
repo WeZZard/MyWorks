@@ -1,18 +1,18 @@
 ---
-title: "Swift Macro: Revisited - The Essense"
+title: "Swift Macro: Revisited - The Strengths"
 category: Programming
 tags: [Swift, Macro]
 isPublished: false
 ---
 
-From relative sessions of WWDC 2023, we've learned that Swift macro aims
+From relative sessions at WWDC 2023, we've learned that Swift Macro aims
 to:
 
 - Eliminate boilerplates
 - Make tedious things easy
 - Share with other developers in packages
 
-However, these goals are not exclusive to Swift macro; they are common
+However, these goals are not exclusive to Swift Macro; they are common
 targets for most common language features in Swift such as function, type
 and module. One could argue that all high-level programming languages
 aspire to these ends. There must be something else that Swift Macro excels
@@ -23,29 +23,28 @@ So, what is it that Swift Macro does exceptionally well?
 The answer to this question is critical. It would inspire us to create
 Swift macros that hit the points, tell us the boundaries of behaviors
 while creating Swift macros, and ultimately guide us to ship
-better-designed Swift macros. This is the essence of Swift macro.
+better-designed Swift macros. This is the essence of Swift Macro.
 
 To have this answer, we must first comprehend the problems that existing
 Swift language features like function, type and module have managed to
-solve and their limitations. The key to understanding Swift macro lies in
+solve and their limitations. The key to understanding Swift Macro lies in
 this exploration.
 
 ## An Exploration of Existing Reuse Features
 
 TODO: Function & structured programming could be merged
 
-"Function" is a common concept in almost all high-level programming
-languages. Though it may have different names in different languages like
-subroutine, routine, subprogram or procedure, those names are sharing the
-same idea which is to offer reusable execution units for the programmers.
-This has not been changed since the concept of function was initially
-brought to high-level programming languages by FORTRAN with the name
-"subroutine".
+"Function" is ubiquitos in high-level programming languages. They might
+have different names across languages — subroutine, routine, subprogram,
+or procedure — however, the essence remains the same: providing reusable
+units of execution. This has not been changed since the concept of
+function was initially brought to high-level programming languages by
+FORTRAN with the name "subroutine".
 
 TODO: An example of the FORTRAN subroutine.
 
-As programming evolved, people have found that programs would be better
-understood if:
+As programming evolved, people then have found that programs could be
+better understood if:
 
 - Variables are only accessible within the block of a control structure
   like the `IF` statement or loop.
@@ -56,25 +55,26 @@ understood if:
 - The "function" could be defined within other "functions".
 
 All these points above comprised the concept of structured programming.
-Structured programming was a broader movement in computer science. As an
-pioneer in this movement, ALGOL 60 was one of several languages that
-adopted these principles at very early stage.
+Structured programming was a broad movement in computer science. As a
+pioneer in this movement, ALGOL 60 adopted these principles at very early
+stage. Swift functions also take these principles as its fundamental
+pillars.
 
 TODO: An example of ALGOL 60's structured programming
 
 The adoption of structured programming made programs more comprehensible,
 paving the way for more developers to join the field. As software
 solutions aimed to address increasingly complex real-world problems,
-managing code became a challenge. The only available tool for organizing
-code was functions, which meant code could only be reused at a very
-granular level.
+managing code became a challenge since the only available tool for
+organizing code was functions, which meant code could only be reused at a
+very granular level or the entire file adn directory.
 
 Simula, which encoded designing for simulating real-world processes in its
 name, introduced the concept of object-oriented programming, allowing
 developers to create types with variables and functions as members. These
 members were accessed via dot notations and were scoped within the type.
 Additionally, one type could inherit from another, further enhancing code
-reusability.
+reusability. Swift types uphold these practices.
 
 TODO: Figure: dot notation and type inheritance
 
@@ -88,34 +88,36 @@ Modules brought by Modula-2 enabled encapsulation of code on a granular
 level greater than types. More than that, this feature also brought
 separate compilation and segregation between interfaces and
 implementations which bring faster build speed and better software design.
-These advantages now emerge in Swift modules.
+These advantages now emerged in Swift modules.
 
 TODO: Figure: module-level code reuse and lexical scope
 
 ## What Swift Macros Do Exceptionally Well?
 
 By exploring the development history of code reusing, we can find that
-people tend to create concepts that aggregate the smaller ones and
-"umbrella" them with a protection mechanism. Let me give you examples:
+people tend to create concepts that aggregate the smaller ones with a
+protective mechanism. Let me give you examples:
 
-- Functions aggregate execution flows and variables and "umbrella" them
+- Functions aggregate execution flows and variables and protect them
   with control structures and lexical scopes;
-- Types aggregate variables and functions and "umbrella" them with
+- Types aggregate variables and functions and protect them with
   instance name or type name;
-- Modules aggregate variables, types and functions and "umbrellas" them
+- Modules aggregate variables, types and functions and protect them
   with the module's namespaces;
 
+TODO: Figure: protection hierarchy of modules/types/functions
+
 These help us keep the program easy to understand as the code size
-increases. But we can find there are still many critical programming
-concepts that cannot be encapsulated with them. Let me show you some
+increases. But we can still find that there are many critical programming
+concepts cannot be encapsulated with them. Let me show you some typical
 examples.
 
 ### Compile-Time Checked Literals
 
-Since design software like Figma or Sketch represents the RGB color with 6
+Since design softwares like Figma or Sketch represent the RGB color with 6
 hexadecimal digits, the developers would often have the following
 extension in Swift such that they can directly copy and paste the RGB
-value displayed in the design software to the code:
+values displayed in the design software and use them in SwiftUI:
 
 ```swift
 import SwiftUI
@@ -131,9 +133,9 @@ extension Color {
 Color(0xFFEEAA)
 ```
 
-But how do I know this is a valid RGB color? Since we are copying and
-pasting, the digits themselves could be shorter than what it was in the
-original place.
+But how do I know the pasted value represents a valid RGB color? Since we
+are copying and pasting, the digits themselves could be shorter than what
+it was in the original place.
 
 ```swift
 // Invalid color.
