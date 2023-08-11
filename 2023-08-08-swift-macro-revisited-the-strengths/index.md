@@ -362,6 +362,7 @@ this macro did is nothing more than what we have hand-wired in the
 previous code -- adding members to the struct and accessors in the struct.
 
 ```swift
+@COW
 struct User {
 
   // @COW expansion began
@@ -415,15 +416,16 @@ From the examples above, we can conclude:
   with the programmer's code.
 - Does not like existing code reuse features in Swift, Swift Macro does
   not protect its expansion from existing contents of the applied site by
-  default. Yet, it also can change the semantics of the applied site like
-  turning a stored property into computed property by adding the `get` and
-  `set` accessor. Macro authors shall watch out for potential traps and
-  pitfalls while implementing Swift macros.
+  default. Yet, it also can change the semantics of the applied site.
+  Macro authors shall watch out for potential traps and pitfalls while
+  implementing Swift macros.
   - Freestanding Swift macros in a function can affect the control flow of
-    the applied site and implicitly share the lexical scope.
+    the applied site as well as share the lexical scope.
   - Attached Swift macros can extend members to types as well as accessors
     to properties. The extended contents also share the same "namespace"
-    of the extended point.
+    of the extended point. More than that, accessor macros could turn a
+    stored property into a computed property by adding either the `get`,
+    `set` or whatever accessor.
 
 TODO: Figure: modules/types/functions v.s. macro
 
