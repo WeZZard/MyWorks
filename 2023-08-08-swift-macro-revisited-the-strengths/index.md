@@ -82,7 +82,7 @@ TODO: Figure: dot notation and type inheritance
 These practices were then popularized by Smalltalk and later C++ and are
 currently upheld by Swift types.
 
-Yet, challenges still lay before programmers. How to reuse code between
+Yet, challenges still lay ahead for programmers. How to reuse code between
 projects? Copy and paste? How to accelerate compilation by avoiding the
 commonly reused code? Buy more powerful machines? Modula-2 introduced the
 concept of modules to address these issues, keeping developers away from
@@ -96,11 +96,9 @@ These advantages now emerged in Swift modules.
 
 TODO: Figure: module-level code reuse and lexical scope
 
-## What Swift Macros Do Exceptionally Well?
-
 By tracing the evolution of code reuse, we can find that people tend to
 create concepts that aggregate the smaller ones with a protective
-mechanism. Let me give you examples:
+mechanism. Here is the summary:
 
 - Functions aggregate execution flows and variables and protect them
   with control structures and lexical scopes;
@@ -111,9 +109,19 @@ mechanism. Let me give you examples:
 
 TODO: Figure: protection hierarchy of modules/types/functions
 
-These help us keep the program easy to understand as the code size
-increases. But we can still find that many critical programming concepts
-cannot be encapsulated with them. Let me show you some typical examples.
+All these properties help us keep the code reusable and easy to understand
+as the code size increases.
+
+## What Swift Macros Do Exceptionally Well?
+
+But due to this protective mechanism over the encapsulation hierarchy,
+there are still programming concepts that cannot be encapsulated. Plus,
+none of these encapsulation methods can receive the programmer's source
+code as input -- they can only receive data or closures.
+
+With a different nature, Swift Macro enables encapsulation over many of
+them. To help you build a comprehensive understanding, I would like to
+show you the nature of Swift Macro with some typical examples.
 
 ### Compile-Time Checked Literals
 
@@ -411,8 +419,8 @@ From the examples above, we can conclude:
 - Swift Macro generates codes by understanding the programmer's code at
   the compile time. This means that we can also do compile-time checking
   with the programmer's code.
-- Does not like existing code reuse features in Swift, Swift Macro does
-  not protect its expansion from existing contents of the applied site by
+- Unlike existing code reuse features in Swift, Swift Macro does not
+  protect its expansion from the existing contents of the applied site by
   default. Yet, it also can change the semantics of the applied site.
   Macro authors shall watch out for potential traps and pitfalls while
   implementing Swift macros.
