@@ -32,6 +32,8 @@ Macro apart lies in this exploration.
 
 ## An Exploration of Existing Reuse Features
 
+### Functions
+
 "Function" is ubiquitous in high-level programming languages. While they
 might be called subroutines, routines, subprograms, or procedures in
 different languages, their core purpose remains consistent: providing
@@ -61,6 +63,8 @@ TODO: An example of ALGOL 60's structured programming
 
 Nowadays, these principles are foundational in Swift functions.
 
+### Types
+
 The adoption of structured programming made programs more comprehensible,
 paving the way for more developers to join the field. As software
 development evolved to tackle more complex problems, the traditional
@@ -82,17 +86,20 @@ TODO: Figure: dot notation and type inheritance
 These practices were then popularized by Smalltalk and later C++ and are
 currently upheld by Swift types.
 
+### Modules
+
 Yet, challenges still lay ahead for programmers. How to reuse code between
 projects? Copy and paste? How to accelerate compilation by avoiding the
 commonly reused code? Buy more powerful machines? Modula-2 introduced the
 concept of modules to address these issues, keeping developers away from
 tedious pushes on keyboards and money talks.
 
-Modules brought by Modula-2 enabled encapsulation of code on a granular
-level greater than types. More than that, this feature also brought
-separate compilation and segregation between interfaces and
-implementations which bring faster build speed and better software design.
-These advantages now emerged in Swift modules.
+Modules introduced by Modula-2 enabled the encapsulation of code at a
+granularity greater than that of types, being more convenient than files
+and directories. More than that, this feature also brought separate
+compilation and segregation between interfaces and implementations which
+bring faster build speed and better software design. These advantages now
+emerged in Swift modules.
 
 TODO: Figure: module-level code reuse and lexical scope
 
@@ -109,19 +116,19 @@ mechanism. Here is the summary:
 
 TODO: Figure: protection hierarchy of modules/types/functions
 
-All these properties help us keep the code reusable and easy to understand
-as the code size increases.
+All these properties help us keep the code easy to understand as the code
+size increases.
+
+These code reuse methods also built the hierarchy of encapsulation in
+Swift. However, what gives them advantages also caps their capabilities.
+Due to the protective mechanisms over the encapsulation hierarchy, there
+are still programming concepts that cannot be encapsulated. Plus, none of
+these encapsulation methods can receive the programmer's source code as
+input -- they can only receive data or closures.
 
 ## What Swift Macros Do Exceptionally Well?
 
-What gave existing code reuse methods in Swift advantages also capped
-their capabilities. Due to the protective mechanisms over the
-encapsulation hierarchy, there are still programming concepts that cannot
-be encapsulated. Plus, none of these encapsulation methods can receive the
-programmer's source code as input -- they can only receive data or
-closures.
-
-However, Swift Macro enables encapsulation over many of them by adopting
+But Swift Macro enables encapsulation over many of them by adopting
 different design philosophies. To help you build a comprehensive
 understanding of these design philosophies, I would like to show you the
 nature of Swift Macro with some typical examples.
@@ -193,12 +200,12 @@ func foo(_ bar: Int?) {
 However, this can be cumbersome, especially with multiple optional
 parameters.
 
-With the nature of the programmer, you may have a desire to encapsulate
-this safe unwrapping process and reuse it at will. Unfortunately, since a
-function protects its internal execution flow from inner functions' return
-for the sake of structured programming, we cannot encapsulate this
-`guard let ... else` in a function -- because the `return` statement in a
-function cannot make the caller site function exit.
+Given the nature of programming, there might be a desire to encapsulate
+this safe unwrapping process for reuse. Unfortunately, since a function
+protects its internal execution flow from inner functions' return for the
+sake of structured programming, we cannot encapsulate this `guard let ...
+else` in a function -- because the `return` statement in a function cannot
+make the caller site function exit.
 
 ```swift
 func guard<T>(_ value: T?) -> T {
