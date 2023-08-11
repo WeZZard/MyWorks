@@ -34,17 +34,19 @@ this exploration.
 
 TODO: Function & structured programming could be merged
 
-"Function" is a common concept in almost all programming languages. Though
-it may have different names in different languages like subroutine,
-routine, subprogram or procedure, those names are sharing the same idea
-which is to offer reusable execution units for the programmers. This has
-not been changed since the concept of function was initially conceived
-during the work of ENIAC — the world's first computer, and introduced in
-FORTRAN with the name "subroutine".
+"Function" is a common concept in almost all high-level programming
+languages. Though it may have different names in different languages like
+subroutine, routine, subprogram or procedure, those names are sharing the
+same idea which is to offer reusable execution units for the programmers.
+This has not been changed since the concept of function was initially
+conceived during the work of ENIAC — the world's first computer, and
+brought to high-level programming languages by FORTRAN with the name
+"subroutine".
 
 TODO: An example of the FORTRAN subroutine.
 
-But people then have found that programs would be better understood if:
+As programming evolved, people have found that programs would be better
+understood if:
 
 - Variables are only accessible within the block of a control structure
   like the `IF` statement or loop.
@@ -54,38 +56,34 @@ But people then have found that programs would be better understood if:
   structures.
 - The "function" could be defined within other "functions".
 
-All these points above comprised the concept of structured programming,
-which was coined by Edwards W. Dijkstra. In the meanwhile, he also imbued
-these ideas into the ALGO 60 programming language.
+All these points above comprised the concept of structured programming and
+imbued into the ALGOL 60 programming language.
 
-TODO: An example of ALGO 60's structured programming
+TODO: An example of ALGOL 60's structured programming
 
-The joining of structured programming broadened the number of programmers
-since the programs were easier to understand than before. When people were
-trying to use computer programs to solve more and more real-world
-problems, difficulties in code management ensued because there were only
-functions available for organizing the code -- this means that people can
-only reuse the code at the smallest granular level.
+The adoption of structured programming made programs more comprehensible,
+paving the way for more developers to join the field. As software
+solutions aimed to address increasingly complex real-world problems,
+managing code became a challenge. The only available tool for organizing
+code was functions, which meant code could only be reused at a very
+granular level.
 
-A programming language called Simula, which encoded designing for
-simulating real-world processes in its name, enriched the granularity in
-code reuse by introducing a concept called object-oriented programming.
-With this concept, developers can create types that have a bunch of
-variables and functions declared as members of a type that are accessed
-via dot notations. The members of a type is scoped within the type. You
-can only access them with the instance name. On top of that, a type can
-reuse a type by inheriting it.
+Simula, which encoded designing for simulating real-world processes in its
+name, introduced the concept of object-oriented programming, allowing
+developers to create types with variables and functions as members. These
+members were accessed via dot notations and were scoped within the type.
+Additionally, one type could inherit from another, further enhancing code
+reusability.
 
 TODO: Figure: dot notation and type inheritance
 
 However, there are still challenges lied before programmers. How to reuse
 code between projects? Copy and paste? How to accelerate compilation by
-avoiding the commonly reused code? Buy more powerful machines? Modula, a
-programming language as a decedent of Pascal, answered these questions by
-introducing a concept called module, which keeps developers away from
-tedious pushes on keyboards and money talks.
+avoiding the commonly reused code? Buy more powerful machines? Modula-2
+introduced the concept of modules to address these issues, keeping
+developers away from tedious pushes on keyboards and money talks.
 
-Modules brought by Modula enabled encapsulation of code on a granular
+Modules brought by Modula-2 enabled encapsulation of code on a granular
 level greater than types. More than that, this feature also brought
 separate compilation and segregation between interfaces and
 implementations which bring faster build speed and better software design.
