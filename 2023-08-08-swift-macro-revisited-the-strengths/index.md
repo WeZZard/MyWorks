@@ -97,7 +97,7 @@ These advantages now emerged in Swift modules.
 TODO: Figure: module-level code reuse and lexical scope
 
 By tracing the evolution of code reuse, we can find that people tend to
-create concepts that aggregate the smaller ones with a protective
+create concepts that aggregate the smaller ones using a protective
 mechanism. Here is the summary:
 
 - Functions aggregate execution flows and variables and protect them
@@ -114,20 +114,24 @@ as the code size increases.
 
 ## What Swift Macros Do Exceptionally Well?
 
-But due to this protective mechanism over the encapsulation hierarchy,
-there are still programming concepts that cannot be encapsulated. Plus,
-none of these encapsulation methods can receive the programmer's source
-code as input -- they can only receive data or closures.
+What gave existing code reuse methods in Swift advantages also capped
+their capabilities. Due to the protective mechanisms over the
+encapsulation hierarchy, there are still programming concepts that cannot
+be encapsulated. Plus, none of these encapsulation methods can receive the
+programmer's source code as input -- they can only receive data or
+closures.
 
-With a different nature, Swift Macro enables encapsulation over many of
-them. To help you build a comprehensive understanding, I would like to
-show you the nature of Swift Macro with some typical examples.
+However, Swift Macro enables encapsulation over many of them by adopting
+different design philosophies. To help you build a comprehensive
+understanding of these design philosophies, I would like to show you the
+nature of Swift Macro with some typical examples.
 
 ### Compile-Time Checked Literals
 
-Since design software like Figma and Sketch represent the RGB color with
-6 hexadecimal digits. Developers often extend Swift to allow direct
-copying and pasting of RGB values from design software for use in SwiftUI:
+Since design software like Figma and Sketch represent the RGB color with 6
+hexadecimal digits. Developers often extend the type of color to allow
+direct copying and pasting of RGB values from design software for use in
+Swift:
 
 ```swift
 import SwiftUI
@@ -414,8 +418,9 @@ However, the cost of maintenance has not increased this time.
 
 From the examples above, we can conclude:
 
-- Swift Macro is a form of encapsulation. What you are unable to implement
-  before Swift Macro was introduced remains unable to implement.
+- Swift Macro is a form of encapsulation. What you were unable to
+  implement before the introduction of Swift Macro remains
+  unimplementable.
 - Swift Macro generates codes by understanding the programmer's code at
   the compile time. This means that we can also do compile-time checking
   with the programmer's code.
@@ -441,6 +446,6 @@ types without relying on inheritance or other runtime techniques. These
 properties have never been implemented in Swift before. Without a doubt,
 they are the unique strengths of Swift Macro.
 
-However, what brings Swift Macro advantages also brings traps and
+However, what brings Swift Macro advantages also introduces traps and
 pitfalls. This is an independent topic that we will discuss in the
 following post.
