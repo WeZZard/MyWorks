@@ -42,8 +42,9 @@ FORTRAN with the name "subroutine".
 
 TODO: An example of the FORTRAN subroutine.
 
-As programming evolved, programmers then found that code could be better
-understood if:
+But the "function" in FORTRAN -- subroutine -- has much room for
+improvement. As programming evolved, programmers then found that code
+could be better understood if:
 
 - Variables are only accessible within the block of a control structure
   like the `IF` statement or loop.
@@ -64,19 +65,24 @@ functions.
 
 The adoption of structured programming made programs more comprehensible,
 paving the way for more developers to join the field. As software
-solutions aimed to address increasingly complex real-world problems,
-managing code became a challenge since available tools for organizing code
-were functions, files and directories, which meant code could only be
-reused at a very granular level or the entire files and directories.
+development evolved to tackle more complex problems, the traditional
+methods of organizing code — primarily through functions, files, and
+directories — became limiting. While functions allowed for a granular
+level of logic encapsulation, and files/directories provided a means to
+group related code, there was a growing need for more sophisticated
+mechanisms to manage and reuse code at different levels of granularity.
 
 Simula, encoded designing for simulating real-world processes in its name,
 introduced the concept of object-oriented programming, allowing developers
 to create types with variables and functions as members. These members
 were accessed via dot notations and were scoped within the type.
 Additionally, one type could inherit from another, further enhancing code
-reusability. Types in Swift also uphold these practices.
+reusability.
 
 TODO: Figure: dot notation and type inheritance
+
+These practices were then popularized by Smalltalk and later C++ and are
+currently upheld by Swift types.
 
 Yet there are still challenges lied before programmers. How to reuse code
 between projects? Copy and paste? How to accelerate compilation by
