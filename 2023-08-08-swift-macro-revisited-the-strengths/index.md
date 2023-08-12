@@ -39,9 +39,21 @@ might be called subroutines, routines, subprograms, or procedures in
 different languages, their core purpose remains consistent: providing
 reusable units of execution. This has remained unchanged since the concept
 of function was initially brought to high-level programming languages by
-FORTRAN with the name "subroutine".
+FORTRAN with the name "subroutine". The following example shows how to
+implement a function that sets the value of `RESULT` based on whether `A`
+is positive, negative, or zero.
 
-TODO: An example of the FORTRAN subroutine.
+```FORTRAN
+    SUBROUTINE CHECKNUM(A, RESULT)
+    IF (A - 0) 10, 20, 30
+10  RESULT = 0
+    RETURN
+20  RESULT = -1
+    RETURN
+30  RESULT = 1
+    RETURN
+    END
+```
 
 But the "function" in FORTRAN, known as a subroutine, has significant room
 for improvement. As programming evolved, programmers then found that code
@@ -57,11 +69,27 @@ could be better understood if:
 
 All these points above comprised the concept of structured programming, a
 significant movement in computer science. ALGOL 60, a pioneer in this
-movement, adopted these principles at a very early stage.
+movement, adopted these principles at a very early stage. Here is an
+example that shows how expressive the control structure could
+comparatively be in ALGOL 60.
 
-TODO: An example of ALGOL 60's structured programming
+```ALGOL
+begin
+  real procedure checknum(a);
+    real a;
+  begin
+    if a < 0 then
+      checknum := -1
+    else if a = 0 then
+      checknum := 0
+    else
+      checknum := 1
+  end checknum;
+end
+```
 
-Nowadays, these principles are foundational in Swift functions.
+Swift also adopted these principles and make them the fundamental pillars
+of its functions.
 
 ### Types
 
@@ -81,7 +109,42 @@ were accessed via dot notations and were scoped within the type.
 Additionally, one type could inherit from another, further enhancing code
 reusability.
 
-TODO: Figure: dot notation and type inheritance
+```Simula
+BEGIN
+  CLASS Animal;
+  BEGIN
+    Virtual: PROCEDURE Speak;
+      BEGIN
+        OutText("Some generic animal sound");
+        OutImage;
+      END Speak;
+  END Animal;
+
+  Animal CLASS Dog;
+  BEGIN
+    Virtual: PROCEDURE Speak;
+    BEGIN
+      OutText("Woof!");
+      OutImage;
+    END Speak;
+  END Dog;
+
+  Animal CLASS Cat;
+  BEGIN
+    Virtual: PROCEDURE Speak;
+    BEGIN
+      OutText("Meow!");
+      OutImage;
+    END Speak;
+  END Cat;
+
+  Dog myDog;
+  Cat myCat;
+
+  myDog.Speak;  ! This will output "Woof!"
+  myCat.Speak;  ! This will output "Meow!"
+END
+```
 
 These practices were then popularized by Smalltalk and later C++ and are
 currently upheld by Swift types.
@@ -96,12 +159,24 @@ tedious pushes on keyboards and money talks.
 
 Modules introduced by Modula-2 enabled the encapsulation of code at a
 granularity greater than that of types, being more convenient than files
-and directories. More than that, this feature also brought separate
+and directories. The following example shows how to import the `IO` module
+and print the "Hello, world!" in Modula-2.
+
+```Modula-2
+MODULE Main;
+
+IMPORT IO;
+
+BEGIN
+    IO.WriteString("Hello, world!");
+    IO.WriteLn;
+END Main.
+```
+
+More than that, the module that came with Modula-2 also brought separate
 compilation and segregation between interfaces and implementations which
 bring faster build speed and better software design. These advantages now
 emerged in Swift modules.
-
-TODO: Figure: module-level code reuse and lexical scope
 
 By tracing the evolution of code reuse, we can find that people tend to
 create concepts that aggregate the smaller ones using a protective
@@ -371,11 +446,15 @@ struct User {
 }
 ```
 
-TODO: An illustration that compares the behaviors before and after applying copy-on-write.
+We can also illustrate the difference between the working details before
+and after adopting the copy-on-write behavior:
 
-By adopting this technique for several heavily used structs in a real app
-produced by ByteDance, I improved user interaction, increasing the fps
-from 48 to 56 and reducing memory usage by 600MB during debugging.
+TODO: An illustration that compares the working details before and after adopting the copy-on-write behavior.
+
+In real-world testing, I improved the user experience of an app produced
+by ByteDance by adopting this technique, increasing the FPS of a
+particular scene from 48 to 56 and reducing the debug-time overall memory
+usage by 600MB.
 
 TODO: Before-after comparison for the optimization of the app I mentioned
 
@@ -411,12 +490,7 @@ this struct.
 What this macro did is nothing more than what we have hand-rolled in the
 previous code -- adding heap storage to the struct and transforming the
 stored properties into computed properties that forward access to the heap
-storage. However, these happen in an automatic process that the Swift
-compiler type-checks the `User` struct and then invokes the macro
-expansion by using the type-checked `User` struct as an argument. Finally,
-the `@COW` macro generates code by understanding the contents in the
-`User` struct. With this automatic mechanism, the cost of maintenance has
-not increased this time.
+storage:
 
 ```swift
 @COW
@@ -459,6 +533,13 @@ struct User {
 
 }
 ```
+
+However, all these above happen in an automatic process that the Swift
+compiler type-checks the `User` struct and then invokes the macro
+expansion by using the type-checked `User` struct as an argument. Finally,
+the `@COW` macro generates code by understanding the contents in the
+`User` struct. With this automatic mechanism, the cost of maintenance has
+not increased this time.
 
 From the macro expansion shown above, it can be observed that attached
 Swift macros can extend types with members and rewrite properties by
