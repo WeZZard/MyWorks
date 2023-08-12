@@ -133,14 +133,14 @@ methods.
 
 ## What Swift Macros Do Exceptionally Well?
 
-But Swift Macro enables encapsulation over many of them by adopting
-different design philosophies. To help you build a comprehensive
+On the other hand, Swift Macro enables encapsulation over many of them by
+adopting different design philosophies. To help you build a comprehensive
 understanding of these design philosophies, I would like to show you the
 nature of Swift Macro with some typical examples.
 
 ### Compile-Time Checked Literals
 
-Since design software like Figma and Sketch represent the RGB color with 6
+Design software like Figma and Sketch represent the RGB color with 6
 hexadecimal digits. Developers often extend the type of color to allow
 direct copying and pasting of RGB values from design software for use in
 Swift:
@@ -159,26 +159,34 @@ extension Color {
 Color(0xFFEEAA)
 ```
 
-But how can one ensure the pasted value represents a valid RGB color?
-Since we are copying and pasting, the digits themselves could be shorter
-than what it was in the original place.
+But how can we ensure the pasted value represents a valid RGB color? The
+copy-and-paste operation does not ensure the correctness of the result.
+The following code snippet shows a potential mistake that results in
+copy-and-paste.
 
 ```swift
 // Invalid color.
 Color(0xFFEEA)
 ```
 
-With Swift macro, these "literals" could be checked at compile-time:
-
-TODO: Replace it with a diagram
+However, since Swift macros perform syntactic transformations on their
+arguments to produce new code, we can simply add the syntax checking code
+in the syntactic transformation process to implement compile-time checking
+for the 6-digit hexadecimal RGB color "literal".
 
 ```swift
-#Color(0xFFEEAA) // compiled
-#Color(0xFFEEA) // invalid, not compiled
+#Color(0xFFEEAA) // Compiled
+// #Color expansion began
+SwiftUI.Color(red: 1, green: 0.93, blue: 0.67)
+// #Color expansion ended
+
+#Color(0xFFEEA) // Invalid RGB, not compiled
 ```
 
-In this example, we can know that we can do compile-time checking with
-Swift macros.
+TODO: Add a snapshot showing the Xcode reporting uncompiled code
+
+From this example, you may be inspired to see how this compile-time safety
+can be applied to other types of "literals".
 
 ### Code Style
 
@@ -205,7 +213,7 @@ func foo(_ bar: Int?) {
 However, this can be cumbersome, especially with multiple optional
 parameters.
 
-Given the nature of programming, there might be a desire to encapsulate
+Given the nature of a programmer, there might be a desire to encapsulate
 this safe unwrapping process for reuse. Unfortunately, since a function
 protects its internal execution flow from inner functions' return for the
 sake of structured programming, we cannot encapsulate this
@@ -229,11 +237,11 @@ func foo(_ bar: Int?) {
 ```
 
 But Swift Macro offers a viable way of such kind of encapsulation. We can
-have a macro called `#unwrapped` which is used as the code shown below:
+have a macro called `#unwrapped` which has the following use example:
 
 ```swift
 func foo(_ bar: Int?) {
-  #unwrapeped(bar) {
+  #unwrapped(bar) {
     print(bar)
   }
 }
@@ -252,18 +260,29 @@ func foo(_ bar: Int?) {
 }
 ```
 
-Then the control flow of the `foo` function could be affected by the
-`#unwrapped` macro now. More than that, the variable `bar` received by the
-`print` function is the one declared by the `guard let bar` statement --
-which is also brought by the expansion of the `#unwrapped` macro. This
-example shows the evidence that the expansion of a freestanding Swift
-macro could **involve control flow manipulation** and
+In the example above, the arguments of the `#unwrapped` macro: `bar` and
+the trailing closure would be type-checked before the compiler invokes the
+macro expansion process. This means the `bar` received by `print` in the
+trailing closure would be bound to the parameter `_ bar: Int?` of the
+`foo` function after the type-check.
+
+But after the macro expanded, since the expansion process itself could be
+seen as a syntax replacement resulted in copy-and-paste, the `bar`
+received by `print` now was bound to the one declared by the
+`guard let bar` statement and had nothing to do with the type-check result
+that the trailing closure of `#unwrapped` macro application previously
+got. More than that, the `return` statement brought by this macro
+expansion now can also affect the control flow of the applied site.
+
+This example shows the evidence that the expansion of a freestanding Swift
+macro could involve **control flow manipulation** and
 **lexical scope sharing**.
 
 ### Extending Type's Behavior
 
 The capabilities of Swift Macro are not limited to these. Let's consider
-another example to showcase the expansive potential of Swift Macro.
+another kind of Swift Macro: attached macros and showcase its potential
+with a real-life example.
 
 In real-world scenarios, we often start from simple structs:
 
@@ -352,6 +371,8 @@ struct User {
 }
 ```
 
+TODO: An illustration that compares the behaviors before and after applying copy-on-write.
+
 By adopting this technique for several heavily used structs in a real app
 produced by ByteDance, I improved user interaction, increasing the fps
 from 48 to 56 and reducing memory usage by 600MB during debugging.
@@ -385,11 +406,17 @@ struct User {
 
 Yes. Just as simple as I've shown. By adding an attached macro called
 `@COW` to the struct, we have introduced the copy-on-write behavior to
-this struct. What this macro did is nothing more than what we have
-hand-rolled in the previous code -- adding heap storage to the struct and
-transforming the stored properties into computed properties that forward
-access to the heap storage. However, the cost of maintenance has not
-increased this time.
+this struct.
+
+What this macro did is nothing more than what we have hand-rolled in the
+previous code -- adding heap storage to the struct and transforming the
+stored properties into computed properties that forward access to the heap
+storage. However, these happen in an automatic process that the Swift
+compiler type-checks the `User` struct and then invokes the macro
+expansion by using the type-checked `User` struct as an argument. Finally,
+the `@COW` macro generates code by understanding the contents in the
+`User` struct. With this automatic mechanism, the cost of maintenance has
+not increased this time.
 
 ```swift
 @COW
@@ -477,3 +504,10 @@ they are the unique strengths of Swift Macro.
 However, what brings Swift Macro advantages also introduces traps and
 pitfalls. This is an independent topic that we will discuss in the
 following post.
+
+## Resources
+
+- A playground project that implements the `#Color` and `#unwrapped`
+  macro:
+
+- The production level implementation of the `@COW` macro:
