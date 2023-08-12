@@ -255,7 +255,7 @@ func foo(_ bar: Int?) {
 Then the control flow of the `foo` function could be affected by the
 `#unwrapped` macro now. More than that, the variable `bar` received by the
 `print` function is the one declared by the `guard let bar` statement --
-which is also brought by the expansion of the `#``unwrapped` macro. This
+which is also brought by the expansion of the `#unwrapped` macro. This
 example shows the evidence that the expansion of a freestanding Swift
 macro could **involve control flow manipulation** and
 **lexical scope sharing**.
@@ -300,11 +300,11 @@ struct User {
 }
 ```
 
-Since each property in the `struct` I showed above engaged a heap storage
+Since each property in the `struct` I showed above engaged a heap
 allocation to store the data, the cost of copying this struct is increased
-at the same time -- how many heap storage allocations bring how many
-retain operations. Since retaining shall be guaranteed to be atomic, this
-may cause lagging in user interactions and waste in memory space.
+at the same time -- how many heap allocations bring how many retain
+operations. Since retaining shall be guaranteed to be atomic, this may
+cause lagging in user interactions and waste in memory space.
 
 To reduce the cost of copying the struct, we can aggregate the properties
 into a class instance which serves as the storage, implementing the
@@ -314,6 +314,8 @@ in the storage:
 ```swift
 struct User {
 
+  // The heap storage type that aggregates the original stored properties
+  // in the struct.
   private class Storage {
 
     var name: String
@@ -322,18 +324,21 @@ struct User {
 
   }
 
+  // The instance of the heap storage.
   private var _storage: Storage
 
   init(name: String, ...) {
     self._storage = Storage(name: name, ...)
   }
 
+  // Offers copy-on-write behavior.
   private func makeStorageUniqueIfNeeded() {
     if !isKnownUniquelyReferenced(&_storage) {
       _storage = Storage(name: name, ...)
     }
   }
 
+  // A rewritten property in the struct.
   var name: String {
     get { return _storage.name }
     set {
@@ -341,6 +346,8 @@ struct User {
       _storage.name = newValue
     }
   }
+
+  // Other rewritten properties ...
 
 }
 ```
@@ -351,10 +358,9 @@ from 48 to 56 and reducing memory usage by 600MB during debugging.
 
 TODO: Before-after comparison for the optimization of the app I mentioned
 
-But, again, this can be cumbersome. We not only have to write a lot of
-code to reduce the cost of copying that struct but, worse still, it
-increased the cost of maintaining the program. With Swift Macro, we can do
-this more elegantly.
+But, again, this can be cumbersome. It not only involves a lot of
+hand-roll code but, worse still, it increases the cost of maintaining the
+program. With Swift Macro, we can do this more elegantly.
 
 ```swift
 @COW
@@ -377,10 +383,13 @@ struct User {
 }
 ```
 
-Yes. Just as simple as I've shown. By adding an `@COW` attribute to the
-struct, we have introduced the copy-on-write behavior to this struct. What
-this macro did is nothing more than what we have hand-wired in the
-previous code -- adding members to the struct and accessors in the struct.
+Yes. Just as simple as I've shown. By adding an attached macro called
+`@COW` to the struct, we have introduced the copy-on-write behavior to
+this struct. What this macro did is nothing more than what we have
+hand-rolled in the previous code -- adding heap storage to the struct and
+transforming the stored properties into computed properties that forward
+access to the heap storage. However, the cost of maintenance has not
+increased this time.
 
 ```swift
 @COW
@@ -424,14 +433,21 @@ struct User {
 }
 ```
 
-However, the cost of maintenance has not increased this time.
+From the macro expansion shown above, it can be observed that attached
+Swift macros can extend types with members and rewrite properties by
+adding accessors. The extended contents not only bring new behaviors to
+the type but also share the "namespace" of the extended point. It is also
+worth noting that adding accessors to a stored property also changed its
+semantics from a stored property into a computed property.
 
 ## Conclusion
 
-From the examples above, we can conclude:
+By learning from the historical context of existing code reuse methods in
+Swift to the properties of the new blood -- Swift macros, we can conclude
+that:
 
-- Swift Macro is a form of encapsulation. What you were unable to
-  implement before the introduction of Swift Macro remains
+- Swift Macro is yet another form of encapsulation. What you were unable
+  to implement before the introduction of Swift Macro remains
   unimplementable.
 - Swift Macro generates codes by understanding the programmer's code at
   the compile time. This means that we can also do compile-time checking
@@ -441,13 +457,13 @@ From the examples above, we can conclude:
   default. Yet, it also can change the semantics of the applied site.
   Macro authors shall watch out for potential traps and pitfalls while
   implementing Swift macros.
-  - Freestanding Swift macros in a function can affect the control flow of
-    the applied site as well as share the lexical scope.
-  - Attached Swift macros can extend members to types as well as accessors
-    to properties. The extended contents also share the same "namespace"
-    of the extended point. More than that, accessor macros could turn a
-    stored property into a computed property by adding either the `get`,
-    `set` or whatever accessor.
+  - For freestanding Swift macros, they can affect the control flow of the
+    applied site as well as share the lexical scope.
+  - For attached Swift macros, they can extend members to types as well as
+    accessors to properties. The extended contents also share the same
+    "namespace" of the extended point. More than that, accessor macros
+    could turn a stored property into a computed property by adding either
+    the `get`, `set` or whatever accessor.
 
 TODO: Figure: modules/types/functions v.s. macro
 
