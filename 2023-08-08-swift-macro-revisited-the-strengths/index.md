@@ -557,14 +557,14 @@ the following conclusions:
 
 - Swift Macro is yet another form of encapsulation. It does not bring any
   new runtime capabilities.
-- Swift Macro generates codes by understanding the programmer's code at
-  the compile time. This means that we can also do compile-time checking
-  with the programmer's code.
+- Swift Macro generates codes by transforming the programmer's code at
+  the compile time. This means that we can also integrate other
+  computations like compile-time checking into it.
 - Unlike existing code reuse features in Swift, Swift Macro does not
   protect its expansion from the existing contents of the applied site by
   default. Yet, it also can change the semantics of the applied site.
   Macro authors shall watch out for potential traps and pitfalls while
-  implementing Swift macros.
+  implementing Swift macros. To be specific:
   - For freestanding Swift macros, they can affect the control flow of the
     applied site as well as share the lexical scope.
   - For attached Swift macros, they can extend members to types as well as
