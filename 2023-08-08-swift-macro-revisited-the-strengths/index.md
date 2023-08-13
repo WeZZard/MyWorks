@@ -39,9 +39,10 @@ might be called subroutines, routines, subprograms, or procedures in
 different languages, their core purpose remains consistent: providing
 reusable units of execution. This has remained unchanged since the concept
 of function was initially brought to high-level programming languages by
-FORTRAN with the name "subroutine". The following example shows how to
-implement a function that sets the value of `RESULT` based on whether `A`
-is positive, negative, or zero.
+FORTRAN with the name "subroutine".
+
+The following example shows how to implement a function that sets the
+value of `RESULT` based on whether `A` is positive, negative, or zero.
 
 ```FORTRAN
     SUBROUTINE CHECKNUM(A, RESULT)
@@ -67,11 +68,11 @@ could be better understood if:
   structures.
 - The "function" could be defined within other "functions".
 
-All these points above comprised the concept of structured programming, a
-significant movement in computer science. ALGOL 60, a pioneer in this
-movement, adopted these principles at a very early stage. Here is an
-example that shows how expressive the control structure could
-comparatively be in ALGOL 60.
+The points mentioned above collectively define the concept of structured
+programming, which sparked a major movement in computer science. ALGOL 60,
+a pioneer in this movement, adopted these principles at a very early
+stage. Here is an example that shows how expressive the control structure
+could comparatively be in ALGOL 60.
 
 ```ALGOL
 begin
