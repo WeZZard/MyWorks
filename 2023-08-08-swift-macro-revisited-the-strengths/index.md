@@ -555,9 +555,8 @@ By studying the historical context of code reuse methods in Swift and
 understanding the characteristics of the newer Swift macros, we can draw
 the following conclusions:
 
-- Swift Macro is yet another form of encapsulation. What you were unable
-  to implement before the introduction of Swift Macro remains
-  unimplementable.
+- Swift Macro is yet another form of encapsulation. It does not bring any
+  new runtime capabilities.
 - Swift Macro generates codes by understanding the programmer's code at
   the compile time. This means that we can also do compile-time checking
   with the programmer's code.

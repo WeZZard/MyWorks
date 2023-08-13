@@ -5,7 +5,9 @@ tags: [Swift, Macro]
 isPublished: false
 ---
 
-## Pitfalls of Swift Macros
+
+
+## Traps and Pitfalls
 
 The examples of Swift macro work "so far so good" till now. However, can
 we be confident and bold, implementing any Swift macro we want now?
@@ -378,7 +380,7 @@ With these examples, we can learn that the expansion of a Swift macro
 sometimes changes the semantics of the source code. This could lead to a
 semantics conflict and ultimately make the macro expansion not compile.
 
-## Overcome the Pitfalls
+## Solutions
 
 In the previous section, we've learned typical pitfalls that could be
 found in implementing a Swift macro. These pitfalls could be generalized
