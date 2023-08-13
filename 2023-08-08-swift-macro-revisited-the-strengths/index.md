@@ -5,15 +5,15 @@ tags: [Swift, Macro]
 isPublished: false
 ---
 
-From the sessions at WWDC 2023, we've learned that Swift Macro aims to:
+From the sessions at WWDC 2023, we learned that Swift Macro aims to:
 
 - Eliminate boilerplates
 - Make tedious things easy
 - Share with other developers in packages
 
-However, these goals are not exclusive to Swift Macro; they are common
-targets for most common language features in Swift such as function, type
-and module. One could argue that all high-level programming languages
+However, these goals aren't unique to Swift Macro. They are common
+objectives for many language features in Swift, such as functions, types,
+and modules. One could argue that all high-level programming languages
 aspire to these ends. There must be something else that Swift Macro excels
 at; otherwise, it would be redundant.
 
@@ -25,9 +25,9 @@ boundaries when creating them, and ultimately lead us to produce
 well-designed Swift macros. This understanding is the essence of Swift
 Macro.
 
-To grasp this, we must first comprehend the problems that existing Swift
-language features, such as functions, types, and modules, have managed to
-solve and their limitations. The key to understanding what set Swift
+To grasp this, we need to first recognize the challenges that existing
+Swift language features, like functions, types, and modules, have
+addressed and their limitations. The key to understanding what set Swift
 Macro apart lies in this exploration.
 
 ## What Existing Code Reuse Methods Managed To Solve?
@@ -37,9 +37,9 @@ Macro apart lies in this exploration.
 "Function" is ubiquitous in high-level programming languages. While they
 might be called subroutines, routines, subprograms, or procedures in
 different languages, their core purpose remains consistent: providing
-reusable units of execution. This has remained unchanged since the concept
-of function was initially brought to high-level programming languages by
-FORTRAN with the name "subroutine".
+reusable units of execution. This concept has remained consistent since
+FORTRAN introduced it to high-level programming languages under the name
+"subroutine".
 
 The following example shows how to implement a function that sets the
 value of `RESULT` based on whether `A` is positive, negative, or zero.
@@ -56,9 +56,9 @@ value of `RESULT` based on whether `A` is positive, negative, or zero.
     END
 ```
 
-But the "function" in FORTRAN, known as a subroutine, has significant room
-for improvement. As programming evolved, programmers then found that code
-could be better understood if:
+However, the FORTRAN "function," also known as a subroutine, had
+significant areas for improvement. As programming evolved, programmers
+then found that code could be better understood if:
 
 - Variables are only accessible within the block of a control structure
   like the `IF` statement or loop.
@@ -68,11 +68,11 @@ could be better understood if:
   structures.
 - The "function" could be defined within other "functions".
 
-The points mentioned above collectively define the concept of structured
-programming, which sparked a major movement in computer science. ALGOL 60,
-a pioneer in this movement, adopted these principles at a very early
-stage. Here is an example that shows how expressive the control structure
-could comparatively be in ALGOL 60.
+All the aforementioned points contribute to the concept of structured
+programming, a pivotal movement in computer science. ALGOL 60, a pioneer
+in this movement, adopted these principles at a very early stage. Here is
+an example that shows how expressive the control structure could
+comparatively be in ALGOL 60.
 
 ```ALGOL
 begin
@@ -89,19 +89,19 @@ begin
 end
 ```
 
-Swift also adopted these principles and make them the fundamental pillars
+Swift also adopted these principles, making them the foundational pillars
 of its functions.
 
 ### Types
 
-The adoption of structured programming made programs more comprehensible,
-paving the way for more developers to join the field. As software
-development evolved to tackle more complex problems, the traditional
-methods of organizing code — primarily through functions, files, and
-directories — became limiting. While functions allowed for a granular
-level of logic encapsulation, and files/directories provided a means to
-group related code, there was a growing need for more sophisticated
-mechanisms to manage and reuse code at different levels of granularity.
+The adoption of structured programming enhanced program clarity,
+encouraging more developers to enter the field. As software development
+evolved to tackle more complex problems, the traditional methods of
+organizing code — primarily through functions, files, and directories —
+became limiting. While functions allowed for a granular level of logic
+encapsulation, and files/directories provided a means to group related
+code, there was a growing need for more sophisticated mechanisms to manage
+and reuse code at different levels of granularity.
 
 Simula, encoded designing for simulating real-world processes in its name,
 introduced the concept of object-oriented programming, allowing developers
@@ -152,11 +152,11 @@ currently upheld by Swift types.
 
 ### Modules
 
-Yet, challenges still lay ahead for programmers. How to reuse code between
-projects? Copy and paste? How to accelerate compilation by avoiding the
-commonly reused code? Buy more powerful machines? Modula-2 introduced the
-concept of modules to address these issues, keeping developers away from
-tedious pushes on keyboards and money talks.
+However, programmers still faced challenges. How do you reuse code between
+projects? By copying and pasting? And how do you speed up compilation when
+frequently reusing code? By purchasing more powerful machines? Modula-2
+introduced the concept of modules to address these issues, keeping
+developers away from tedious pushes on keyboards and money talks.
 
 Modules introduced by Modula-2 enabled the encapsulation of code at a
 granularity greater than that of types, being more convenient than files
@@ -179,7 +179,7 @@ compilation and segregation between interfaces and implementations which
 bring faster build speed and better software design. These advantages now
 emerged in Swift modules.
 
-By tracing the evolution of code reuse, we can find that people tend to
+By examining the evolution of code reuse, we can find that people tend to
 create concepts that aggregate the smaller ones using a protective
 mechanism. Here is the summary:
 
@@ -210,7 +210,7 @@ methods.
 ## What Swift Macros Do Exceptionally Well?
 
 On the other hand, Swift Macro enables encapsulation over many of them by
-adopting different design philosophies. To help you build a comprehensive
+embracing different design philosophies. To help you build a comprehensive
 understanding of these design philosophies, I would like to show you the
 nature of Swift Macro with some typical examples.
 
@@ -235,7 +235,7 @@ extension Color {
 Color(0xFFEEAA)
 ```
 
-But how can we ensure the pasted value represents a valid RGB color? The
+But how do we verify that the pasted value is a valid RGB color? The
 copy-and-paste operation does not ensure the correctness of the result.
 The following code snippet shows a potential mistake that results in
 copy-and-paste.
@@ -245,10 +245,10 @@ copy-and-paste.
 Color(0xFFEEA)
 ```
 
-However, since Swift macros perform syntactic transformations on their
-arguments to produce new code, we can simply add the syntax checking code
-in the syntactic transformation process to implement compile-time checking
-for the 6-digit hexadecimal RGB color "literal".
+However, because Swift macros syntactically transform their arguments to
+generate new code, we can integrate syntax checking during this
+transformation. This allows for compile-time verification of 6-digit
+hexadecimal RGB color "literals".
 
 ```swift
 #Color(0xFFEEAA) // Compiled
@@ -266,8 +266,8 @@ can be applied to other types of "literals".
 
 ### Code Style
 
-In practice, we often want to avoid explicitly unwrapping optional values
-with an exclamation mark:
+In practice, we typically aim to avoid forcefully unwrapping optional
+values using an exclamation mark:
 
 ```swift
 func foo(_ bar: Int?) {
@@ -289,12 +289,12 @@ func foo(_ bar: Int?) {
 However, this can be cumbersome, especially with multiple optional
 parameters.
 
-Given the nature of a programmer, there might be a desire to encapsulate
-this safe unwrapping process for reuse. Unfortunately, since a function
+Given a programmer's inclination, there must be a desire to encapsulate
+this unwrapping process for reuse. Unfortunately, since a function
 protects its internal execution flow from inner functions' return for the
-sake of structured programming, we cannot encapsulate this
-`guard let ... else` in a function -- because the `return` statement in a
-function cannot make the caller site function exit.
+sake of structured programming, we cannot encapsulate this `guard let ...
+else` in a function -- because the `return` statement in a function cannot
+make the caller site function exit.
 
 ```swift
 func guard<T>(_ value: T?) -> T {
@@ -312,8 +312,9 @@ func foo(_ bar: Int?) {
 }
 ```
 
-But Swift Macro offers a viable way of such kind of encapsulation. We can
-have a macro called `#unwrapped` which has the following use example:
+However, Swift Macro provides a feasible method for this type of
+encapsulation. We can have a macro called `#unwrapped` which has the
+following use example:
 
 ```swift
 func foo(_ bar: Int?) {
@@ -337,18 +338,17 @@ func foo(_ bar: Int?) {
 ```
 
 In the example above, the arguments of the `#unwrapped` macro: `bar` and
-the trailing closure would be type-checked before the compiler invokes the
-macro expansion process. This means the `bar` received by `print` in the
-trailing closure would be bound to the parameter `_ bar: Int?` of the
+the trailing closure, undergo type-checking before the compiler initiates
+the macro expansion process. This means the `bar` received by `print` in
+the trailing closure would be bound to the parameter `_ bar: Int?` of the
 `foo` function after the type-check.
 
-But after the macro expanded, since the expansion process itself could be
-seen as a syntax replacement resulted in copy-and-paste, the `bar`
-received by `print` now was bound to the one declared by the
-`guard let bar` statement and had nothing to do with the type-check result
-that the trailing closure of `#unwrapped` macro application previously
-got. More than that, the `return` statement brought by this macro
-expansion now can also affect the control flow of the applied site.
+However, once the macro expanded, since the expansion process itself could
+be seen as a syntax replacement akin to copy-and-paste, the `bar` used by
+`print` now is bound to the one declared by the `guard let bar` statement,
+being unrelated to the type-check result before the macro expansion. More
+than that, the `return` statement brought by this macro expansion now can
+also affect the control flow of the applied site.
 
 This example shows the evidence that the expansion of a freestanding Swift
 macro could involve **control flow manipulation** and
@@ -356,9 +356,9 @@ macro could involve **control flow manipulation** and
 
 ### Extending Type's Behavior
 
-The capabilities of Swift Macro are not limited to these. Let's consider
-another kind of Swift Macro: attached macros and showcase its potential
-with a real-life example.
+The capabilities of Swift Macro are not bound to these boundaries. Let's
+consider another kind of Swift Macro: attached macros and showcase its
+potential with a real-life example.
 
 In real-world scenarios, we often start from simple structs:
 
@@ -372,8 +372,7 @@ struct User {
 }
 ```
 
-But as the size of the repository grows, the struct may grow at the same
-speed:
+However, as the repository grows, the struct might expand proportionally:
 
 ```swift
 struct User {
@@ -395,16 +394,17 @@ struct User {
 }
 ```
 
-Since each property in the `struct` I showed above engaged a heap
-allocation to store the data, the cost of copying this struct is increased
-at the same time -- how many heap allocations bring how many retain
-operations. Since retaining shall be guaranteed to be atomic, this may
-cause lagging in user interactions and waste in memory space.
+Since each property in the aforementioned struct requires heap allocation
+for data storage, the cost of copying this struct also rises. The number
+of heap allocations corresponds to the number of retaining operations
+during the copy. Since retaining shall be guaranteed to be atomic, this
+could potentially cause lagging in user interactions and waste in memory
+space.
 
-To reduce the cost of copying the struct, we can aggregate the properties
-into a class instance which serves as the storage, implementing the
-copy-on-write behavior on the original struct when mutating the contents
-in the storage:
+To minimize the struct's copying cost, we can aggregate the properties
+into a class instance that acts as storage. This approach implements the
+copy-on-write behavior in the original struct when altering the storage
+contents:
 
 ```swift
 struct User {
@@ -459,7 +459,7 @@ usage by 600MB.
 
 TODO: Before-after comparison for the optimization of the app I mentioned
 
-But, again, this can be cumbersome. It not only involves a lot of
+But, again, this approach can be cumbersome. It not only involves a lot of
 hand-roll code but, worse still, it increases the cost of maintaining the
 program. With Swift Macro, we can do this more elegantly.
 
@@ -551,9 +551,9 @@ semantics from a stored property into a computed property.
 
 ## Conclusion
 
-By learning from the historical context of existing code reuse methods in
-Swift to the properties of the new blood -- Swift macros, we can conclude
-that:
+By studying the historical context of code reuse methods in Swift and
+understanding the characteristics of the newer Swift macros, we can draw
+the following conclusions:
 
 - Swift Macro is yet another form of encapsulation. What you were unable
   to implement before the introduction of Swift Macro remains
@@ -583,8 +583,8 @@ types without relying on inheritance or other runtime techniques. These
 properties have never been implemented in Swift before. Without a doubt,
 they are the unique strengths of Swift Macro.
 
-However, what brings Swift Macro advantages also introduces traps and
-pitfalls. This is an independent topic that we will discuss in the
+However, the same features that give Swift Macro its advantages also come
+with potential traps and pitfalls. We will delve into this topic in the
 following post.
 
 ## Resources
