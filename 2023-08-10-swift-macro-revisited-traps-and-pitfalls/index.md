@@ -5,22 +5,53 @@ tags: [Swift, Macro]
 isPublished: false
 ---
 
-
-
-## Traps and Pitfalls
-
-The examples of Swift macro work "so far so good" till now. However, can
-we be confident and bold, implementing any Swift macro we want now?
+In the previous post, we learned the strengths that uniquely define Swift
+Macro. In the meanwhile, the examples in it work "so far so good".
+However, can we be confident and bold, implementing any Swift macros we
+want now?
 
 No.
 
-What brings Swift Macro advantages also brings pitfalls. There are at
-least several pitfalls that I've found could lead to dead ends.
+The features that bring Swift Macro advantages also introduce traps and
+pitfalls which could lead to dead ends. Next, I would like to show you
+several ones that I've found and how to overcome them.
 
-### Control Flow in Chaos
+## Traps and Pitfalls
 
-In the previous example of `#unwrap`, the macro is put in the body of a
-function. What if we put it in a loop?
+### Unexpected Control Flow Manipulation
+
+The `#unwrap` example in the previous post shows that Swift Macro
+expansion could involve **control flow manipulation** and
+**lexical scope sharing**:
+
+Before expansion:
+
+```swift
+func foo(_ bar: Int?) {
+  #unwrapped(bar) {
+    print(bar)
+  }
+}
+```
+
+After expansion:
+
+```swift
+func foo(_ bar: Int?) {
+  // #unwrapped expansion began
+  guard let bar = bar else {
+    return
+  }
+  print(bar)
+  // #unwrapped expansion ended
+}
+```
+
+Since the `return` statement in the macro expansion which manipulates the
+control flow is an intentional behavior, this would not make us surprised.
+But what if we put this macro in a loop? Here is an example:
+
+Before expansion:
 
 ```swift
 func foo(_ bar: Int?) {
@@ -32,7 +63,7 @@ func foo(_ bar: Int?) {
 }
 ```
 
-Since the code would be expanded into:
+After expansion:
 
 ```swift
 func foo(_ bar: Int?) {
@@ -47,15 +78,23 @@ func foo(_ bar: Int?) {
 }
 ```
 
-If we pass a non-optional value to `foo`, the `bar` would only be printed
-once. This is because the macro expansion involved a `return` statement
-which would break the outer loop.
+From the example shown above, we can learn that if we pass a non-optional
+value to `foo`, the `bar` would only be printed once. This is because the
+`return` statement involved by the macro expansion would break the outer
+loop.
+
+However, the `#unwrap` macro's name only shows its purpose is to unwrap
+optional values but not to return from a function. This might cause the
+programmer that uses this macro to think the returning is an
+**unintentional behavior**.
 
 ### Name Conflicts in Freestanding Macro
 
-There is not only one potential pitfall in the `#``unwrap` macro -- the
-`bar` variable is re-bound by the `#unwarp` macro after the macro was
-expanded.
+However, **unintentional control flow manipulation** is not only one
+potential pitfall in the expansion that I gave for the `#unwrap` macro.
+One more pitfall here is that the `bar` variable was re-bound by the
+`#unwarp` macro after the macro was expanded. Let's continue to examine
+the expansion result of the previous example:
 
 ```swift
 func foo(_ bar: Int?) {
@@ -70,13 +109,16 @@ func foo(_ bar: Int?) {
 
 This brought variable name shadowing where the `guard let bar: Int`
 shadows the argument `_ bar: Int?`. In the case of `#unwrap`, the variable
-name shadowing is trivial because it is an expected behavior. But
+name shadowing is trivial because it is an intentional behavior. However,
 shadowing variables other than the `Optional`s could be considered as
 unrecommended practice in real-world programming -- in fact, that would
 not be compiled in Swift. As I concluded before, freestanding Swift macro
-implicitly shares the lexical scope of the applied site. This enables
-potential variable shadowing in macro applications. Here is an example,
-the variable name `updater` is shadowed due to the macro expansion:
+expansions involve lexical scope sharing with the applied site. This
+enables potential variable shadowing in macro expansions. Here is a
+contrived example, the variable name `updater` is shadowed due to the
+macro expansion:
+
+Before expansion:
 
 ```swift
 func foo(_ bar: Int?) {
@@ -90,7 +132,7 @@ func foo(_ bar: Int?) {
 }
 ```
 
-This could be expanded as the following code:
+After expansion:
 
 ```swift
 func foo(_ bar: Int?) {
@@ -109,22 +151,62 @@ func foo(_ bar: Int?) {
 }
 ```
 
-By executing the build command in Xcode, you could find this expansion
-could not be compiled:
+With a clean build in Xcode, you could find this example could not be
+compiled:
 
 TODO: A figure shows the compilation failure for the code above
 
-The compiler reported that the second declaration of `updater` is an
-invalid redeclaration.
-
 ### Name Conflicts in Attached Macro
 
-This potential name conflict not only be possible when freestanding macros
+Potential name conflicts not only be possible when freestanding macros
 meet functions but also be possible when attached macros meet type
-declarations.
+declarations. Let's recall the expansion result of the `@COW` macro
+example in the previous post:
 
-You may have noticed that there is a member added in the expansion of the
-`@COW` macro that uses a name pattern that prefixes with `_$`.
+```swift
+@COW
+struct User {
+
+  // @COW expansion began
+  private class Storage {
+
+    var name: String
+
+    // other properties ...
+
+  }
+
+  private var _$storage: Storage
+
+  private func makeStorageUniqueIfNeeded() {
+    if !isKnownUniquelyReferenced(&_$storage) {
+      _$storage = Storage(name: name, ...)
+    }
+  }
+
+  init(name: String, ...) {
+    self._storage = Storage(name: name, ...)
+  }
+  // @COW expansion ended
+
+  // @COW expansion began
+  @COWIncluded(storage: _$storage)
+  // @COW expansion ended
+  var name: String {
+    // @COWIncluded expansion began
+    get { return _$storage.name }
+    set {
+      makeStorageUniqueIfNeeded()
+      _$storage.name = newValue
+    }
+    // @COWIncluded expansion ended
+  }
+
+}
+```
+
+You may have noticed that there is a member added in the expansion that is
+named with a pattern that has a `_$` prefix.
 
 ```swift
   private var _$storage: Storage
@@ -133,15 +215,15 @@ You may have noticed that there is a member added in the expansion of the
 This is a naming convention that I learned from Apple's implementation of
 the macros in Swift Observation and SwiftData which keeps the
 implementation details of an attached macro from the programmer's
-unintentional access.
+unintentional access. However, this does not protect those members from
+unintentional redeclaration or access brought by other macros -- there
+could be other macros that are applied by the programmer which add members
+with duplicate names or misuse members added by other macros.
 
-But this does not protect those members from unintentional redeclaration
-or access brought by other macros -- there could be another macro applied
-by the programmer that also adds members with the same name or uses the
-member added by other macros. Let's say there was a macro called
-`@DictionaryLike` which makes the applied type behaves like a dictionary
-by adding a pair of `subscript` getter and setter. Imagine
-`@DictionaryLike` was applied on the `User` struct I've shown above:
+For example, let's say there was a macro called `@DictionaryLike` which
+makes the applied type behaves like a dictionary by adding a pair of
+`subscript` getter and setter. Then we apply `@DictionaryLike` on the
+`User` struct we used in the `@COW` macro example:
 
 ```swift
 @DictionaryLike
@@ -174,7 +256,7 @@ struct User {
 
 Once we stack up `@COW` and `@DictionaryLike` together on the same type,
 then there come to the situation that both `@COW` and `@DictionaryLike`
-adds a member called `_$storage` to the applied type.
+adds a member named `_$storage` to the applied type.
 
 ```swift
 @COW
@@ -193,23 +275,25 @@ struct User {
 ```
 
 This obviously would not get compiled in Swift because Swift does not
-allow overloads on properties. We would get “invalid redeclaration of a
-variable” again.
+allow overloads on properties. We would get the “invalid redeclaration of
+a variable” error again.
 
 TODO: Compilation failure of the code above
 
-### Unique Language Structure Conflicts
+### Name Conflicts for Unique Language Structures
 
 The name collision is not the only pitfall of Swift Macro. Some language
 structures in Swift are unique under the superstructure. This means when
-two macros try to generate the same substructure in the same
-superstructure, the code does not compile.
+multiple macros try to generate the same substructure in the same
+superstructure, the code comes to be uncompilable.
 
 We can contrive this by starting from the previous `@DictionaryLike`
 example. Let's consider there is an attached accessor macro called
 `@UseDictionaryStorage` which generates `get` and `set` accessor for the
 attached property. The getter and setter forward access to the storage
 which is brought by the expansion of `@DictionaryLike`.
+
+Before macro expansion:
 
 ```swift
 @COW
@@ -222,7 +306,7 @@ struct User {
 }
 ```
 
-You might think that it would be expanded into:
+After macro expansion:
 
 ```swift
 @COW
@@ -244,7 +328,8 @@ struct User {
 }
 ```
 
-However, that's wrong. With `@COW` macro, the code would be expanded into:
+However, that's oversimplified what happened. The real expansion result
+with `@COW` macro is:
 
 ```swift
 @COW
@@ -276,17 +361,119 @@ struct User {
 }
 ```
 
-And this expansion could not be compiled.
+We can observe that two `get` and `set` accessors are generated under the
+`info` property. Since the Swift programming language grammar only allows
+one `get`/`set` accessor in one property, this expansion would lead to
+incorrect syntax in Swift and ultimately make the code not compile.
 
 TODO: Previous code snippet does not compile
 
+### Name Conflicts by Referring Declarations in Other Frameworks
+
+Since we've learned several cases of potential name conflicts caused by
+adding declarations, you might think that the list of name conflicts is
+ended up.
+
+But no. Name conflicts not only could be brought by declaring a variable,
+a member of a type or an accessor, but also could be brought by referring
+declarations in other frameworks. I would like to show you how we could
+be cornered into this case by refactoring the `@COW` macro example.
+
+The `@COW` macro example I've shown above is a naïve implementation. We
+can extract the `makeStorageUniqueIfNeeded` function to a type called
+`Box` that is bundled with the library containing the `@COW` macro. To
+streamline the use of this type in macro expansions, we could make it a
+property wrapper.
+
+```swift
+@propertyWrapper
+public struct Box<Contents> {
+  
+  private class Heap {
+    
+    var contents: Contents
+    
+    init(contents: Contents) { self.contents = contents }
+    
+  }
+  
+  private var heap: Heap
+  
+  public init(wrappedValue: Contents) {
+    heap = Heap(contents: wrappedValue)
+  }
+  
+  public var wrappedValue: Contents {
+    get { heap.contents }
+    set {
+      makeUniqueHeapIfNeeded()
+      heap.contents = newValue
+    }
+  }
+  
+  private mutating func makeUniqueHeapIfNeeded() {
+    guard !isKnownUniquelyReferenced(&heap) else { return }
+    heap = Heap(contents: heap.contents)
+  }
+  
+}
+```
+
+Then we can attach `@Box` in the `_$storage` property brought by the macro
+expansion such that we can eliminate generating the
+`makeStorageUniqueIfNeeded` function in place. This reduces redundant
+generated code and increased the speed of compilation.
+
+```swift
+@COW
+struct User {
+
+  // @COW expansion began
+  private struct Storage {
+
+    var name: String
+
+    // other properties ...
+
+  }
+
+  @Box
+  private var _$storage: Storage
+
+  init(name: String, ...) {
+    self._$storage = Storage(name: name, ...)
+  }
+  // @COW expansion ended
+
+  // @COW expansion began
+  @COWIncluded(storage: _$storage)
+  // @COW expansion ended
+  var name: String {
+    // @COWIncluded expansion began
+    get { return _$storage.name }
+    set { _$storage.name = newValue }
+    // @COWIncluded expansion ended
+  }
+
+}
+```
+
+However, the type name `Box` may be ambiguous -- there could be other
+frameworks that also have a type called `Box`. When ambiguity is
+encountered, the code would come to be uncompilable.
+
+TODO: Figure about the ambiguity of resolving `Box`
+
 ### Semantics Conflicts
 
-TODO: Paragraph conjunctions.
+In the `@DictionaryLike` macro example, we've learned that accessor macro
+would affect each other. However, this is not the only potential pitfall
+brought by accessor macros: some language features could also be
+interfered with by attached macros. Look at the following example: a
+property wrapper makes the code not compiled by being attached to a stored
+property in a struct applied `@COW` macro.
 
-Some language features could also interfere with attached macros. Look at
-the following example: a property wrapper that is attached to a stored
-property finally makes a `@COW` attached `struct` not compile:
+Before the expansion:
 
 ```swift
 @propertyWrapper
@@ -309,8 +496,7 @@ struct User {
 }
 ```
 
-Since the property wrapper "expansion" happens later than the macro
-expansion, the `struct` would be expanded into:
+After the expansion:
 
 ```swift
 @COW
@@ -333,17 +519,19 @@ struct User {
 }
 ```
 
-We can observe that the `@Capitalized` property wrapper is still attached
-to the `name` variable but the variable is changed from a stored property
-into a computed property. Eventually, we would get an error diagnosed by
-the compiler:
+We got this expansion result because the property wrapper "expansion"
+happens later than the macro expansion. With this result, the
+`@Capitalized` property wrapper is still attached to the `name` variable
+but the variable is changed from a stored property into a computed
+property due to the macro expansion. Eventually, we would get an error
+diagnosed by the compiler:
 
 > Property wrapper cannot be applied to a computed property
 
 TODO: Replace with Xcode screenshot
 
 This does not only happen along with property wrappers, the `lazy` keyword
-could also lead to the same end.
+could also lead to the same dead end.
 
 ```swift
 @COW
@@ -377,8 +565,8 @@ class User {
 TODO: Replace with Xcode screenshot
 
 With these examples, we can learn that the expansion of a Swift macro
-sometimes changes the semantics of the source code. This could lead to a
-semantics conflict and ultimately make the macro expansion not compile.
+could change the semantics of the source code. This could lead to a
+semantics conflict and ultimately make the expansion result not compile.
 
 ## Solutions
 

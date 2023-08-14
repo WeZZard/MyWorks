@@ -515,7 +515,7 @@ struct User {
   }
 
   init(name: String, ...) {
-    self._storage = Storage(name: name, ...)
+    self._$storage = Storage(name: name, ...)
   }
   // @COW expansion ended
 
