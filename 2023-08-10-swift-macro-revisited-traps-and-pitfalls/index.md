@@ -13,8 +13,9 @@ want now?
 No.
 
 The features that bring Swift Macro advantages also introduce traps and
-pitfalls which could lead to dead ends. Next, I would like to show you
-several ones that I've found and how to overcome them.
+pitfalls which could shoot the programmers themselves in the foot. Next, I
+would like to show you several ones that I've found and how to overcome
+them.
 
 ## Traps and Pitfalls
 
