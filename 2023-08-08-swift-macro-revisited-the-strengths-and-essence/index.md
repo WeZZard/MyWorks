@@ -1,5 +1,5 @@
 ---
-title: "Swift Macro: Revisited - The Strengths"
+title: "Swift Macro: Revisited - The Strengths and Essence"
 category: Programming
 tags: [Swift, Macro]
 isPublished: false
@@ -580,15 +580,19 @@ but also the ability to encapsulate programming concepts that involve
 compile-time checking, control flow manipulations, and adding behaviors to
 types without relying on inheritance or other runtime techniques. These
 properties have never been implemented in Swift before. Without a doubt,
-they are the unique strengths of Swift Macro.
+they are the unique strengths that defined Swift Macro.
 
-However, the same features that give Swift Macro its advantages also come
-with potential traps and pitfalls. We will delve into this topic in the
-following post.
+However, the same features that give Swift Macro its advantages also
+introduce potential traps and pitfalls. We will delve into this topic in
+the following post.
 
 ## Resources
 
 - A playground project that implements the `#Color` and `#unwrapped`
   macro:
 
+TODO: URL
+
 - The production level implementation of the `@COW` macro:
+
+TODO: URL
