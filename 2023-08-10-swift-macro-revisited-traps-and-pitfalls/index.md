@@ -18,7 +18,7 @@ several ones that I've found and how to overcome them.
 
 ## Traps and Pitfalls
 
-### Unexpected Control Flow Manipulation
+### Potential Chaos in Control Flow
 
 The `#unwrap` example in the previous post shows that Swift Macro
 expansion could involve **control flow manipulation** and
@@ -570,16 +570,30 @@ semantics conflict and ultimately make the expansion result not compile.
 
 ## Solutions
 
-In the previous section, we've learned typical pitfalls that could be
-found in implementing a Swift macro. These pitfalls could be generalized
-and categorized into several kinds:
+Till now, we've learned some typical traps and pitfalls that could be
+found while implementing a Swift macro. At a glance, they might seem
+overwhelming to you. However, all these traps and pitfalls could be solved
+with three tips and one principle.
 
-1. The macro expansion occupies non-unique names like `_$storage`.
-2. The macro expansion occupies unique names like `get` or `set`.
-3. The macro apply site also utilizes unstoppable source code generation
+First, the three tips are:
+
+1. Macros that manipulate control flow should have names that reflect this
+   purpose.
+
+Then the principle is "progressive control in type extension" -- which was
+derived from the term "progressive disclosure in API design" and "gradual
+typing":
+
+- Umbrella the names you defined when necessary:
+  - Use in-place defined closure or local function to wrap the expansion of
+    your freestanding macro.
+  - Use a type to wrap the names you defined if it is viable.
+- The macro expansion occupies non-unique names like `_$storage`.
+- The macro expansion occupies unique names like `get` or `set`.
+- The macro's apply site also utilizes unconditional AST transforming
   language features like property wrapper or `lazy` keyword.
-4. The macro expansion refers to non-standard-library types, functions or
-  variables.
+- The macro expansion refers to types, functions or variables outside the
+  standard library.
 
 All these pitfalls could be overcome by a set of methods that I called
 gradual control over code generation -- which was derived from the concept
