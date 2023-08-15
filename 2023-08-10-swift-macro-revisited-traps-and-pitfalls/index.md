@@ -85,7 +85,7 @@ loop.
 
 However, the `#unwrap` macro's name only shows its purpose is to unwrap
 optional values but not to return from a function. This might cause the
-programmer that uses this macro to think the returning is an
+programmer that uses this macro to think that returning is an
 **unintentional behavior**.
 
 ### Name Conflicts in Freestanding Macro
@@ -570,135 +570,69 @@ semantics conflict and ultimately make the expansion result not compile.
 
 ## Solutions
 
-Till now, we've learned some typical traps and pitfalls that could be
-found while implementing a Swift macro. At a glance, they might seem
-overwhelming to you. However, all these traps and pitfalls could be solved
-with three tips and one principle.
+Till now, we've had a list of typical traps and pitfalls that one could
+step into while implementing Swift macros. At a glance, this list might
+seem overwhelming to you. However, I concluded a simple way to get rid of
+them: progressive control in macro expansion -- which was derived from the
+idea behind "progressive disclosure in API design" and "gradual typing" as
+well as borrowed some ideas from the implementation of Apple's Swift
+Observation and SwiftData.
 
-First, the three tips are:
+The idea behind "progressive control in macro expansion" is quite simple:
+If there are no conflicts happen, then the programmer shall not care about
+resolving the conflicts. Or, there must be tools that allow the programmer
+to resolve the conflicts with minimal effort.
 
-1. Macros that manipulate control flow should have names that reflect this
-   purpose.
+### Maximize the Probability of the Lucky Case
 
-Then the principle is "progressive control in type extension" -- which was
-derived from the term "progressive disclosure in API design" and "gradual
-typing":
+If a programmer does not have to resolve any conflicts while applying
+Swift macros, then we can say the programmer gets a lucky case. To
+maximize the probability that the user of a Swift macro gets a lucky case,
+we must:
 
-- Umbrella the names you defined when necessary:
-  - Use in-place defined closure or local function to wrap the expansion of
-    your freestanding macro.
-  - Use a type to wrap the names you defined if it is viable.
-- The macro expansion occupies non-unique names like `_$storage`.
-- The macro expansion occupies unique names like `get` or `set`.
-- The macro's apply site also utilizes unconditional AST transforming
-  language features like property wrapper or `lazy` keyword.
-- The macro expansion refers to types, functions or variables outside the
-  standard library.
+> Item 1: Macros that manipulate control flow should have names that
+> reflect this purpose.
 
-All these pitfalls could be overcome by a set of methods that I called
-gradual control over code generation -- which was derived from the concept
-of progressive disclosure in API design and the concept of gradual typing.
-
-1. The first level of code generation control is no control which can be
-  achieved by using `MacroExpansionContext.makeUniqueName(_:)`.
-2. The second level of code generation control is that the code generation
-  should be stopped when the name is occupied by the programmer's code.
-3. The third level of code generation control is that the programmer can  
-  explicitly turn off it.
-4. The fourth level of code generation control is that the programmer can
-  explicitly customize the name used for code generation.
-5. Use the fully-qualified name when referring to non-standard-library
-  types, functions or variables.
-
-Let's see how this set of methods works in real examples:
-
-For the first kind of pitfall, we have seen enough examples in the
-previous section.
-
-TODO: TBD
-
-The second kind of pitfall could appear when there is an open-source
-version of Swift Observation that copied the source code of Swift
-Observation but renamed the `@Observable` macro into `@MyObservable` and a
-programmer wants to apply both `@Observable` and `@MyObservable` on a
-single class:
+This item is for getting avoid misuse of the previously mentioned
+`#unwrap` macro:
 
 ```swift
-@Observable
-@MyObservable
-class Model {
-
-  var name: String
-
-}
-```
-
-This would be expanded into:
-
-```swift
-@Observable
-@MyObservable
-class Model {
-
-  @ObservationTracked
-  @MyObservationTracked
-  var name: String {
-    init(initialValue) initializes (_name) {
-      _name = initialValue
-    }
-    get {
-      access(keyPath: \.name)
-      return _name
-    }
-    set {
-      withMutation(keyPath: \.name) {
-        _name = newValue
-      }
-    }
-    init(initialValue) initializes (_name) {
-      _name = initialValue
-    }
-    get {
-      access(keyPath: \.name)
-      return _name
-    }
-    set {
-      withMutation(keyPath: \.name) {
-        _name = newValue
-      }
+func foo(_ bar: Int?) {
+  for _ in 0..<10 {
+    #unwrap(bar) {
+      print(bar)
     }
   }
-
 }
 ```
 
-Attention, this is not a joke. Since Swift Observation is the killer app
-of Swift Macro and Swift Observation requires the minimum deployment
-target set to iOS 17.0. As a real example, the community has already built
-OpenCombine to use the APIs in Combine on lower versions of iOS.
+which is expanded into:
 
----
+```swift
+func foo(_ bar: Int?) {
+  for _ in 0..<10 {
+    // #unwrapped expansion began
+    guard let bar = bar else {
+      return
+    }
+    print(bar)
+    // #unwrapped expansion ended
+  }
+}
+```
 
-- When the macro expansion occupies non-unique names
-  - Compiler-generated names do not make trouble in debugging
-    - makeUniqueName
-  - Compiler-generated names make trouble in debugging
-    - Stop generation when the name was used by the programmer
-    - Programmers can explicitly stop the code generation
-    - Customizable names
-  - Consider moving to a framework type and access with a full-qualified
-    name
-- The macro expansion occupies unique names (`willSet`, `didSet`)
-  - Let the user be able to stop code generation
-- The macro expansion refers to non-standard-library names
-  - Use full-qualified names
+The programmers could be much easier to get rid of such a pitfall by
+renaming this macro into `#returnIfAnyOptional`.
 
----
+> Item 2: Put the macro expansion under an "umbrella" if this matches your
+> design.
 
-### Beyond the Limitations of Freestanding Macro
+This would make your macro expansion get rid of most member redeclaration
+errors. For example, to get avoid resolving the name conflict that is
+caused by the variable shadowing in the `#unwrap` macro, we can use a
+**closure** as the "umbrella" to protect the macro expansion:
 
-To fix this potential variable name shadowing for freestanding macros, we
-could create a closure and execute it immediately in place:
+Problematic expansion:
 
 ```swift
 func foo(_ bar: Int?) {
@@ -706,9 +640,28 @@ func foo(_ bar: Int?) {
   let updater = Updater()
   // #unwrap expansion began
   guard let bar else {
-    return true
+    return
   }
-  { (bar: Int) -> Void in
+  // `updater` defined the second time
+  let updater = Updater()
+  print(bar)
+  updater.update()
+  // #unwrap expansion ended
+  print(updater.description)
+}
+```
+
+Fixed expansion with closure:
+
+```swift
+func foo(_ bar: Int?) {
+  // `updater` defined the first time
+  let updater = Updater()
+  // #unwrap expansion began
+  guard let bar else {
+    return
+  }
+  { (bar) in
     // `updater` defined the second time
     let updater = Updater()
     print(bar)
@@ -719,17 +672,15 @@ func foo(_ bar: Int?) {
 }
 ```
 
-The manually created closure introduced a lexical scope for the embraced
-contents of the macro expansion which prevented the variable name from
-being shadowed in previous examples.
-
-But once the body of the closure contains control flows, the closure body
+However, once the body of the closure involves control flows, the closure
 would not get inlined by the optimizer in its performance inlining pass.
-This could leave the body of the closure out of the local analysis and
+This could leave the body of the closure out of the local analysis and the
 optimization of the macro's apply site. In some cases, this also means to
 larger code size. To get rid of this situation, we could use the local
 function instead of closure and attribute the local function as
-`@inline(__always)`.
+`@inline(__always)` to build the "umbrella".
+
+Fixed expansion with local function:
 
 ```swift
 func foo(_ bar: Int?) {
@@ -752,45 +703,180 @@ func foo(_ bar: Int?) {
 }
 ```
 
-However, we can quickly find that once the `#unwrap` macro is applied
-twice in a single function, the `unwrapped` function would collide. This
-could be solved by using `MacroExpansionContext.makeUniqueName(_:)` to
-generate a unique name for the `unwrapped` function.
+This "umbrella"-like structure could also be in expansions of attached
+macros -- the `@COW` macro's expansion declares a nested `Storage` type as
+the storage. This nested type is just the "umbrella" -- it protects its
+member from redeclaration with a type scope.
 
-### Beyond the Limitations of Attached Macros
+```swift
+@COW
+struct User {
 
-The issues of the attached macros I shown above are obviously of two
-categories:
+  // @COW expansion began
+  private struct Storage {
 
-- Name conflicts brought by sharing the "namespace".
-- Semantics conflicts brought by semantics change due to macro expansion.
+    var name: String
 
-Dealing with name conflicts brought by the attached macro seems not
-difficult since we've done that with freestanding macros. But how to deal
-with semantics conflicts?
+    // other properties ...
 
-In the real world, one single macro author cannot predict what names all
-other macro authors could pick, and in the real world, invariant semantics
-should not be a property of Swift macro expansion, because it could
-decrease the flexibility of the language feature. Based on this point, I
-concluded a concept to deal with both two issues: gradual control over
-code generation -- which is derived from the concept of progressive
-disclosure in API design and the concept of gradual typing.
+  }
 
-Just let me show you what is "gradual control over code generation" by
-example.
+  // Unnecessary expansions ...
 
-We still use the `@COW` example here. The conflicts could be resolved if
-we can control `@COW` to generate member names at the programmer's will.
-What might be something new to you is this could be done by macro
-overloading:
+  // @COW expansion ended
+  
+  // Unnecessary contents ...
+
+}
+```
+
+> Item 3: Referring types, functions or variables in frameworks other than
+> the standard library with fully-qualified names.
+
+In the example of introducing the `@Box` property wrapper to the expansion
+of the `@COW` macro, we can find the name `Box` itself could be ambiguous
+since there might be other imported frameworks also has a property wrapper
+called `Box`. We can fix this by using the fully-qualified name of the
+`Box` property wrapper bundled with the library of the `@COW` macro. Let's
+say the name of the library is just `COW` then the fully-qualified name of
+`Box` is `COW.Box`.
+
+The macro expansion before the fix:
+
+```swift
+@COW
+struct User {
+
+  // @COW expansion began
+
+  // Unnecessary expansions ...
+  
+  @Box
+  private var _$storage: Storage
+
+  // Unnecessary expansions ...
+
+  // @COW expansion ended
+
+
+  // Unnecessary contents ...
+
+}
+```
+
+The macro expansion after the fix:
+
+```swift
+@COW
+struct User {
+
+  // @COW expansion began
+
+  // Unnecessary expansions ...
+  
+  @COW.Box
+  private var _$storage: Storage
+
+  // Unnecessary expansions ...
+
+  // @COW expansion ended
+
+
+  // Unnecessary contents ...
+
+}
+```
+
+### Minimize the Effort of Resolving Conflicts
+
+However, we cannot ensure the programmers always get lucky cases. There
+must be cases that the programmers shall resolve the conflicts by
+themselves. By applying aforementioned items, there are still potential
+name and semantics conflicts lie ahead of us.
+
+Since we cannot assume that one single macro author can predict what names
+all other macro authors could pick, at the same time, invariant semantics
+definitely should not be a property of Swift macro expansion because it
+could decrease the flexibility of the Siwft Macro, we can only face these
+conflicts and resolve them. An ideal situation would be to have a set of
+confilcts resolving tools that lie on a smooth curve of the cost of use.
+And there they are:
+
+> Item 4: Use the programmer's implementation if something in your macro
+> expansion is declared by the programmer.
+
+With this item, the programmer still pays zero effort to resolve the
+conflict. The mechanism described in this item adopted by some AST
+transforming language features like `Equatable` and `Hashable` -- the
+compiler implements these protocols on behalf of the programmer if each
+member of the conformed type is `Equatable` or `Hashable`. It could also
+be observed in Swift Observation when the programmer implemented the
+`access` function or `withMutation` function. Since the mechanism itself
+is ubiquitous, the learning curve should also be very gentle.
+
+> Item 5: Offer a way to rename the declarations in your macro expansion
+> when renaming the declarations is possible.
+
+In the example of stacking up the `@COW` macro and the `@DictionaryLike`
+macro on a single type, the macro expansions of the two macros generate
+two `_$storage` variable. To add the renaming mechanism, we can naturally
+come up with the idea that to add an argument to the macro:
+
+```swift
+@attached(member, names: arbitrary)
+@attached(memberAttribute)
+public macro COW(storageName: String) =
+  #externalMacro(module: "COWMacros", type: "COWMacro")
+```
+
+But this would break the idea behind "progressive control in macro
+expansion": If there are no conflicts happen, then the programmer shall
+not care about resolving the conflicts -- the programmer shall always to
+apply this macro with an argument this time. What might be something new
+to you is this also could be done by macro overloading. This means there
+could be multiple macros with the same name but have different
+"signatures".
+
+```swift
+@attached(member, names: arbitrary)
+@attached(memberAttribute)
+public macro COW() =
+  #externalMacro(module: "COWMacros", type: "COWMacro")
+
+@attached(member, names: arbitrary)
+@attached(memberAttribute)
+public macro COW(storageName: String) =
+  #externalMacro(module: "COWMacros", type: "COWMacro")
+```
+
+Firstly, let's recall the expansion before adding renaming mechanism to
+each macro.
+
+```swift
+@COW
+@DictionaryLike
+struct User {
+
+  // Other contents ...
+
+  // Brought by @COW's expansion
+  var _$storage: Storage
+
+  // Brought by @DictionaryLike's expansion
+  var _$storage: [String : Any] = [:]
+
+}
+```
+
+Then, there is the expansion after adding renaming mechanism to each
+macro.
 
 ```swift
 @COW(storageName: "_$cowStorage")
 @DictionaryLike(storageName: "_$dictStorage")
 struct User {
 
-  // ...
+  // Other contents ...
 
   // Brought by @COW's expansion
   var _$cowStorage: Storage
@@ -801,185 +887,156 @@ struct User {
 }
 ```
 
-In the example above, we overloaded `@COW` and `@DictionaryLike` macros to
-have a parameter called `storageName` to specify the variable name of the
-generated storage of each macro.
+However, there could be generated declarations that couldn't be renamed,
+such as the `get` and `set` accessor. Then we would come to the most
+expansive tool to resolve conflicts:
 
-`MacroExpansionContext.makeUniqueName(_:)` is not recommended here because
-the name generated by `MacroExpansionContext.makeUniqueName(_:)` with real
-running compiler instance is a mangled string, which is OK for
-freestanding macros debugging but may introduce troubles into attached
-macros debugging.
+> Item 5: Offer a way to stop code generation when the generated code
+> involves unique language structures in a superstructure.
 
-TODO: A real example of generated unique name
-
-But what if there are potential conflicts of
-`makeStorageUniqueIfNeeded()`? I mean what if there are two macros
-
-There are the principles that we can learn from what we've done:
-
-1. For generated properties and non-standard library typed generated
-   functions brought by attached member macros, we should enable
-   programmers to optionally customize its name.
-2. For standard library typed generated functions brought by attached
-   member macros, we should stop code generation if there has already been
-   one.
-3. For attached member macros that generate members in type declarations,
-   we should always offer an option to disable the code generation for
-   specified members by applying an attached member attribute macro.
-
-All these principles fall into a goal that to enable the programmers to
-resolve conflicts by themselves. Again,
-`MacroExpansionContext.makeUniqueName(_:)` is not recommended here because
-it introduces unreadable names which may interfere with debugging.
-
-These principles could also be used for resolving conflicts brought by
-semantics changes due to macro expansion:
+Swift Observation offers a good example of this item. Here is an example
+of an `@Observable` macro attached class which also attached the
+`@Capitalized` property wrapper on one of its property:
 
 ```swift
-import Observation
+@propertyWrapper
+struct Capitalized {
+  
+  var wrappedValue: String {
+    didSet {
+      wrappedValue = wrappedValue.capitalized
+    }
+  }
+  
+}
 
 @Observable
-class Model {
+class User {
   
-  // Application of principle 3
-  // Resolve conflicts by hand
-  @ObservationIgnored
   @Capitalized
-  var _name: String = ""
+  var name: String
+
+  init(name: String) {
+    self.name = name
+  }
   
+}
+```
+
+The code above does not compile due to the property wrapper requires the
+`name` to be a stored property but `@Observable` transforms it into a
+computed property. Here is the neccesary part of the expansion result:
+
+```swift
+@Observable
+class User {
+
+  // Unrelated expansion ...
+  
+  @Capitalized
+  // @Observable expansion began
+  @ObservationTracked
+  // @Observable expansion ended
   var name: String {
+    // @ObservationTracked expansion began
+    init(initialValue) initializes(_name) {
+      _name = initialValue
+    }
     get {
       access(keyPath: \.name)
       return _name
-    }  
+    }
+    set {
+      withMutation(keyPath: \.name) {
+        _name = newValue
+      }
+    }
+    // @ObservationTracked expansion ended
+  }
+  
+  // Unrelated contents ...
+  
+}
+```
+
+However, since Swift Observation also offers an attached macro called
+`@ObservationIgnored` to stop code generation brought by `@Observable` on
+applied members, we can make use of this macro to manually resolve the
+conflicts.
+
+Firstly, we have to backward the `name` property with an underscore and
+then attach `@ObservationIgnored` on it.
+
+```swift
+@Observable
+class User {
+  
+  @Capitalized
+  @ObservationIgnored
+  var _name: String
+
+  // ...
+
+}
+```
+
+Then, we can add a `name` property, implementing the observation mechanism
+with Swift Observation:
+
+```swift
+@Observable
+class User {
+
+  // ...
+
+  var name: String {
+    init(initialValue) initializes(_name) {
+      _name = initialValue
+    }
+    get {
+      access(keyPath: \.name)
+      return _name
+    }
     set {
       withMutation(keyPath: \.name) {
         _name = newValue
       }
     }
   }
-  
-}
-```
 
-## Future Directions
-
----
-
-- Further directions:
-  - More IDE collaboration: syntax highlighting
-
----
-
-We've understood the nature of Swift macro by learning so much more.
-But are these limitations still will be there in the future?
-
-From what I've learned, my answer is yes. Because what brings Swift Macro
-advantages also brings limitations. These limitations are also a part of
-the essence of Swift macro.
-
-But there are several pieces of information that you might not know about
-which I collected from Swift evolution proposals and the latest source
-code changes in the Swift repository.
-
-### Init Accessor
-
-The `init` accessor is introduced to eliminate the limitation that the
-`@Observable` macro Swift Observation requires properties to have initial
-values. This change has been bundled with Xcode 15 beta 4:
-
-```swift
-import Observation
-
-@Observable
-class Model {
-
-  var foo: Int
-
-}
-```
-
-The code above is not compiled before Xcode 15 beta 4, but will be
-expanded into the following code after it:
-
-```swift
-import Observation
-
-@Observable
-class Model {
-
-  var _foo: Int
-
-  var foo: Int {
-    init(initialValue) initializes(_foo) {
-      _foo = initialValue
-    }
-    get {
-      return _foo
-    }
-    set {
-      _foo = newValue
-    }
-  }
-  
   // ...
-
+  
 }
 ```
 
-### Macro Argument Type Info
+Finally, we resolved this conflicts.
 
-The proposal SE-0382 Expression Macros was written that:
+> Item 6: A template implementation should be included in the macro's
+> documentation.
 
-> The arguments to a macro are fully type-checked before the macro
-> implementation is invoked. However, information produced while
-> performing that type-check is not provided to the macro, which only gets
-> the original source code. In some cases, it would be useful to also have
-> information determined during type checking, such as the types of the
-> arguments and their subexpressions, the full names of the declarations
-> referenced within those expressions, and any implicit conversions
-> performed as part of type checking.
+However, it is not enough to have the item 5 alone. The programmers still
+could be confused about how to manually "expand" the macro by itself. To
+address this, the macro authors should include a template implementation
+of the macro in the its documentation. This provides programmers with the
+guidance they need to proceed.
 
-And there is also a comprehensive example in the proposal which is there
-could be an `#assert` macro
+### Why I Didn't Recommend Using makeUniqueName(_:)
 
-```swift
-#assert(Color(parsing: "red") == .red)
-```
+From the session at WWDC 2203, we learned that there is a way to get rid
+of name colision: use `MacroExpansionContext.makeUniqueName(_:)`. However,
+the name generated by this API is unreadable by human. Here is an example:
 
-That can be expanded into:
+TODO: A screenshot shows `makeUniqueName` generated unreadable names
 
-```swift
-{
-  let _unique1 = Color(parsing: "red")
-  let _unique2 = .red
-  if !(_unique1 == _unique2) {
-    fatalError("assertion failed: \(_unique1) != \(_unique2)")
-  }
-}()
-```
+Do you know what it means? At least, I cannot make out what it means at
+first glance. We can only understand this by resolving it with
+`swift-demangle`:
 
-Since `let _unique2 = .red` does not have type annotation, the expanded
-code would not get compiled. By providing type info for the macro
-arguments, specifically about the 'Color' type in this example,
-this can be expanded as follows:
+TODO: A screenshot show the result of swift-demangle
 
-```swift
-{
-  let _unique1: Color = Color(parsing: "red")
-  let _unique2: Color = .red
-  if !(_unique1 == _unique2) {
-    fatalError("assertion failed: \(_unique1) != \(_unique2)")
-  }
-}()
-```
+Since this name could be used at debug-time, being human readable is
+critical for it since this guarantees the efficiency of understanding the
+purpose of the code. This is the reason why I did't recommend using
+`MacroExpansionContext.makeUniqueName(_:)`.
 
-This time the code would get compiled.
-
-But porting Swift type info which retained by the compiler that
-implemented in C++ to Swift and make the programming interface to be
-simple and ergonomic to most Swift developers is quite a challenging task.
-Because there are a lot of detailed information about a type derived by
-the compiler which is used for SIL generation and upcoming optimizations.
-Macro authors should not care about them.
+## Conslusion
