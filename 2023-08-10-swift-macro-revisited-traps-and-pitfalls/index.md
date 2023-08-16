@@ -5,10 +5,10 @@ tags: [Swift, Macro]
 isPublished: false
 ---
 
-In the previous post, we learned the strengths that uniquely define Swift
-Macro. In the meanwhile, the examples in it work "so far so good".
-However, can we be confident and bold, implementing any Swift macros we
-want now?
+In the previous post, we learned the strengths an essense that uniquely
+define Swift Macro. In the meanwhile, the examples in it work "so far so
+good". However, can we be confident and bold, implementing any Swift
+macros we want now?
 
 No.
 
@@ -573,17 +573,16 @@ semantics conflict and ultimately make the expansion result not compile.
 
 Till now, we've had a list of typical traps and pitfalls that one could
 step into while implementing Swift macros. At a glance, this list might
-seem overwhelming to you. However, I concluded a simple way to get rid of
+seem overwhelming to you. However, I invented a simple way to get rid of
 them: progressive control in macro expansion -- which was derived from the
-idea behind "progressive disclosure in API design" and "gradual typing" as
-well as borrowed some ideas from the implementation of Apple's Swift
+idea behind "progressive disclosure in API design" and "gradual typing",
+borrowed some ideas extracted from the implementation of Apple's Swift
 Observation and SwiftData.
 
 The idea behind "progressive control in macro expansion" is quite simple:
-If there are no conflicts happen, then the programmer shall not pay any
-efforts to workaround the conflicts resolving mechanisms. Or, there must
-be tools that allow the programmer to resolve the conflicts with minimal
-effort.
+If there are no conflicts, then the programmer shall not pay any efforts
+to workaround the conflicts resolving mechanisms. Or, there must be tools
+that allow the programmer to resolve the conflicts with minimal effort.
 
 ### Maximize the Probability of the Lucky Case
 
@@ -737,11 +736,11 @@ struct User {
 
 In the example of introducing the `@Box` property wrapper to the expansion
 of the `@COW` macro, we can find the name `Box` itself could be ambiguous
-since there might be other imported frameworks also has a property wrapper
-called `Box`. We can fix this by using the fully-qualified name of the
-`Box` property wrapper bundled with the library of the `@COW` macro. Let's
-say the name of the library is just `COW` then the fully-qualified name of
-`Box` is `COW.Box`.
+since there might be other imported frameworks that also has a property
+wrapper called `Box`. We can fix this by using the fully-qualified name of
+the `Box` property wrapper bundled with the library of the `@COW` macro.
+Let's say the name of the library is just `COW` then the fully-qualified
+name of `Box` is `COW.Box`.
 
 The macro expansion before the fix:
 
@@ -793,22 +792,22 @@ struct User {
 
 However, we cannot ensure the programmers always get lucky cases. There
 must be cases that the programmers shall resolve the conflicts by
-themselves. By applying aforementioned items, there are still potential
-name and semantics conflicts lie ahead of us.
+themselves. By applying the aforementioned items, there are still
+potential name and semantics conflicts that lie ahead of us.
 
 Since we cannot assume that one single macro author can predict what names
 all other macro authors could pick, at the same time, invariant semantics
 definitely should not be a property of Swift macro expansion because it
 could decrease the flexibility of the Siwft Macro, we can only face these
 conflicts and resolve them. An ideal situation would be to have a set of
-confilcts resolving tools that lie on a smooth curve of the cost of use.
+conflict-resolving tools that lie on a smooth curve of the cost of use.
 And there they are:
 
 > Item 4: Use the programmer's implementation if something in your macro
 > expansion is declared by the programmer.
 
 With this item, the programmer still pays zero effort to resolve the
-conflict. The mechanism described in this item adopted by some AST
+conflict. The mechanism described in this item is adopted by some AST
 transforming language features like `Equatable` and `Hashable` -- the
 compiler implements these protocols on behalf of the programmer if each
 member of the conformed type is `Equatable` or `Hashable`. It could also
@@ -821,7 +820,7 @@ is ubiquitous, the learning curve should also be very gentle.
 
 In the example of stacking up the `@COW` macro and the `@DictionaryLike`
 macro on a single type, the macro expansions of the two macros generate
-two `_$storage` variable. To add the renaming mechanism, we can naturally
+two `_$storage` variables. To add the renaming mechanism, we can naturally
 come up with the idea that to add an argument to the macro:
 
 ```swift
@@ -832,12 +831,11 @@ public macro COW(storageName: String) =
 ```
 
 But this would break the idea behind "progressive control in macro
-expansion": If there are no conflicts happen, then the programmer shall
-not care about resolving the conflicts -- the programmer shall always to
-apply this macro with an argument this time. What might be something new
-to you is this also could be done by macro overloading. This means there
-could be multiple macros with the same name but have different
-"signatures".
+expansion": If there are no conflicts, then the programmer shall not care
+about resolving the conflicts -- the programmer shall always apply this
+macro with an argument this time. What might be something new to you is
+this also could be done by macro overloading. This means there could be
+multiple macros with the same name but have different "signatures".
 
 ```swift
 @attached(member, names: arbitrary)
@@ -851,8 +849,8 @@ public macro COW(storageName: String) =
   #externalMacro(module: "COWMacros", type: "COWMacro")
 ```
 
-Firstly, let's recall the expansion before adding renaming mechanism to
-each macro.
+Firstly, let's recall the expansion before adding the renaming mechanism
+to each macro.
 
 ```swift
 @COW
@@ -870,7 +868,7 @@ struct User {
 }
 ```
 
-Then, there is the expansion after adding renaming mechanism to each
+Then, there is the expansion after adding the renaming mechanism to each
 macro.
 
 ```swift
@@ -898,7 +896,7 @@ expansive tool to resolve conflicts:
 
 Swift Observation offers a good example of this item. Here is an example
 of an `@Observable` macro attached class which also attached the
-`@Capitalized` property wrapper on one of its property:
+`@Capitalized` property wrapper on one of its properties:
 
 ```swift
 @propertyWrapper
@@ -927,7 +925,7 @@ class User {
 
 The code above does not compile due to the property wrapper requires the
 `name` to be a stored property but `@Observable` transforms it into a
-computed property. Here is the neccesary part of the expansion result:
+computed property. Here is the necessary part of the expansion result:
 
 ```swift
 @Observable
@@ -1011,22 +1009,23 @@ class User {
 }
 ```
 
-Finally, we resolved this conflicts.
+Finally, we resolved this conflict.
 
 > Item 7: A template implementation should be included in the macro's
 > documentation.
 
-However, it is not enough to have the item 5 alone. The programmers still
+However, it is not enough to have item 5 alone. The programmers still
 could be confused about how to manually "expand" the macro by itself. To
 address this, the macro authors should include a template implementation
-of the macro in the its documentation. This provides programmers with the
+of the macro in its documentation. This provides programmers with the
 guidance they need to proceed.
 
 ### Why I Didn't Recommend Using makeUniqueName(_:)
 
 From the session at WWDC 2203, we learned that there is a way to get rid
-of name colision: use `MacroExpansionContext.makeUniqueName(_:)`. However,
-the name generated by this API is unreadable by human. Here is an example:
+of name collision: use `MacroExpansionContext.makeUniqueName(_:)`.
+However, the name generated by this API is unreadable by humans. Here is
+an example:
 
 TODO: A screenshot shows `makeUniqueName` generated unreadable names
 
@@ -1034,28 +1033,28 @@ Do you know what it means? At least, I cannot make out what it means at
 first glance. We can only understand this by resolving it with
 `swift-demangle`:
 
-TODO: A screenshot show the result of swift-demangle
+TODO: A screenshot shows the result of `swift-demangle`
 
 Since this name could be used at debug-time, being human readable is
 critical for it since this guarantees the efficiency of understanding the
-purpose of code. This is the reason why I did't recommend using
+purpose of the code. This is the reason why I didn't recommend using
 `MacroExpansionContext.makeUniqueName(_:)`.
 
-## Conslusion
+## Conclusions
 
 In this post, we listed some typical traps and pitfalls that one could
 step into while authoring Swift macros. On top of that, we also discussed
-a tool set to resolve all of them: "progressive control in macro
+a toolset to resolve all of them: "progressive control in macro
 expansion", which includes 2 goals and 7 items.
 
-The goals of the tool set are:
+The goals of the toolset are:
 
 - If there are no conflicts happen, then the programmer shall not pay
   any efforts to workaround the conflicts resolving mechanisms.
 - Or, there must be tools that allow the programmer to resolve the
   conflicts with minimal effort.
 
-The items in the tool set are:
+The items in the toolset are:
 
 1. Macros that manipulate control flow should have names that reflect this
   purpose.
