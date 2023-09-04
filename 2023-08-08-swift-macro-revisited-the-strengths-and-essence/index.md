@@ -623,7 +623,7 @@ but also the ability to encapsulate programming concepts that involve
 compile-time checking, control flow manipulations, and adding behaviors to
 types without relying on inheritance or other runtime techniques. These
 properties have never been implemented in Swift before. Without a doubt,
-they are the unique strengths that defined Swift Macro.
+they are the unique strengths that define Swift Macro.
 
 However, the same features that give Swift Macro its advantages also
 introduce potential traps and pitfalls. We will delve into this topic in
