@@ -55,34 +55,33 @@ encapsulate basic algorithms by organizing sequences of execution flows
 with control structures such as `if ... else ...` statement, `while` loop,
 `for` loop and `return` statement. Variables declared within the block of
 a control structure have higher lookup priority than those declared
-outside.
+outside. There is a piece of code that illustrates an example of this.
+Each line represents a name lookup result.
 
 ```swift
 // A global variable decalred at the top level of a source file
 var bar: Int = 0
-
-func foo() {
-  func getHexDescription(for index: Int) -> String {
-    return "0x" + String(index, radix: 16)
-  }
-  for i in 0..<100 {
-    // A local variable declared with the same name of the previous
-    // global variable `bar`.
-    let bar = getHexDescription(for: i)
-    // The `bar` variable declared in the for loop block has a higher
-    // lookup priority than the one decalred at the top-level.
-    print("bar = \(bar)")
-  }
-  // The `bar` variable declared in the top-level hits in the name lookup
-  // since the `bar` variable decalred in the for loop are only accessible
-  // within the block of the loop.
+//   ^
+//   |
+//   +---------------------------------------------------+
+func foo() {                                          // |
+  func getHexDescription(for index: Int) -> String {  // |
+    return "0x" + String(index, radix: 16)            // |
+  }                                                   // |
+  for i in 0..<100 {                                  // |
+    // A local variable declared in a for loop           |
+    let bar = getHexDescription(for: i)               // |
+//       ^                                               |
+//       |                                               |
+//       +--------- +                                    |
+//                  |                                    |
+    print("bar = \(bar)")                             // |
+  }                                                   // |
+// +-----------------------------------------------------+
+// |
   bar += 1
 }
 ```
-
-// TODO: The following line is the title of the previous code block
-A code example shows the variable name lookup priority in Swift control
-structures.
 
 This scene has become familiar in our daily programming. However, this
 didn't come easy. The idea behind this design is called structured
