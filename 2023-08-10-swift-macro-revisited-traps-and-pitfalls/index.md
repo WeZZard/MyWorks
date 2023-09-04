@@ -153,7 +153,7 @@ func foo(_ bar: Int?) {
 With a clean build in Xcode, you could find this example could not be
 compiled:
 
-TODO: A figure shows the compilation failure for the code above
+TODO: A snapshot shows compilation failure due to redeclared variables
 
 ### Name Conflicts in Attached Macros
 
@@ -276,7 +276,7 @@ This obviously would not get compiled in Swift because Swift does not
 allow overloads on properties. In this case, we would get the “invalid
 redeclaration of a variable” error again.
 
-TODO: Compilation failure of the code above
+TODO: A snapshot shows the compilation failure due to duplicate _$storage property declarations
 
 ### Name Conflicts for Unique Language Structures
 
@@ -367,7 +367,7 @@ We can observe that two `get` and `set` accessors are generated under the
 one `get`/`set` accessor in one property, this expansion would lead to
 incorrect syntax in Swift and ultimately make the code not compile.
 
-TODO: The previous code snippet does not compile
+TODO: A snapshot shows duplicate get and set accessors in a property declaration does not compile
 
 ### Name Conflicts by Referring Declarations in Other Frameworks
 
@@ -465,7 +465,7 @@ However, the type name `Box` may be ambiguous -- there could be other
 frameworks that also have a type called `Box`. This ambiguity could also
 make the code uncompilable.
 
-TODO: Figure about the ambiguity of resolving `Box`
+TODO: A snapshot shows the ambiguity of resolving `Box` with the non-fully-qualified name
 
 ### Semantics Conflicts
 
@@ -532,7 +532,7 @@ diagnosed by the compiler:
 
 > Property wrapper cannot be applied to a computed property
 
-TODO: Replace with Xcode screenshot
+TODO: A snapshot shows the compile error: property wrapper cannot be applied to a computed property
 
 This does not only happen along with property wrappers, the `lazy` keyword
 could also lead to the same dead end.
@@ -566,7 +566,7 @@ class User {
 }
 ```
 
-TODO: Replace with Xcode screenshot
+TODO: A snapshot shows the compile error: lazy cannot be applied to a computed property
 
 With these examples, we can learn that the expansion of a Swift macro
 could change the semantics of the source code. This could lead to a
@@ -932,7 +932,7 @@ The code above does not compile due to the property wrapper requires the
 `name` to be a stored property but `@Observable` transforms it into a
 computed property.
 
-TODO: A screenshot shows the compile failure
+TODO: A screenshot shows the compile failure due to `@Observable` transforming a property-wrapper-wrapped property into a computed one.
 
 Here is the key part of the macro expansion:
 
@@ -1020,7 +1020,7 @@ class User {
 
 Finally, we resolved this conflict.
 
-TODO: A screenshot shows the compilation success
+TODO: A screenshot shows the compilation success after resolving the conflicts between `@Observable` and the property wrapper.
 
 > Item 7: An example expansion should be included in the macro's
 > documentation.
