@@ -13,7 +13,7 @@ we want now?
 No.
 
 The features that bring Swift Macro advantages also introduce traps and
-pitfalls which could shoot the programmers themselves in the foot. In this
+pitfalls that could shoot the programmers themselves in the foot. In this
 post, I would like to show you several ones that I've found and how to
 overcome them.
 
@@ -21,7 +21,7 @@ overcome them.
 
 ### Potential Chaos in Control Flow
 
-In the previous post, the `#unwrap` example shows that Swift Macro
+The `#unwrap` example in the previous post shows that Swift Macro
 expansion could involve **control flow manipulation** and
 **lexical scope sharing**:
 
@@ -80,16 +80,16 @@ func foo(_ bar: Int?) {
 ```
 
 From the macro expansion shown above, we can learn that if we pass a
-non-optional value to `foo`, the `bar` would only be printed once. This is
+non-optional value to `foo`, the `bar` will only be printed once. This is
 because the `return` statement involved by the macro expansion would break
 the outer loop.
 
 However, the `#unwrap` macro's name only conveys the purpose of unwrapping
-optional values. This might cause the programmer that uses this macro to
+optional values. This might cause the programmer who uses this macro to
 think that returning from the applied site is an
 **unintentional behavior**.
 
-### Name Conflicts in Freestanding Macro
+### Name Conflicts in Freestanding Macros
 
 The odd mentioned above is not the only potential pitfall in the expansion
 that I gave for the `#unwrap` macro. One more pitfall here is that the
@@ -155,7 +155,7 @@ compiled:
 
 TODO: A figure shows the compilation failure for the code above
 
-### Name Conflicts in Attached Macro
+### Name Conflicts in Attached Macros
 
 Potential name conflicts can arise not only from freestanding macros but
 also from attached macros. We can learn this from the `@COW` macro example
@@ -215,11 +215,11 @@ the macros in Swift Observation and SwiftData which keeps the
 implementation details of an attached macro from the programmer's
 unintentional access. However, this does not protect those members from
 unintentional redeclaration or access brought by other macros -- there
-could be other macros that are applied by the programmer which add members
+could be other macros that are applied by the programmer that add members
 with duplicate names or misuse members added by other macros.
 
 For example, let's say there was a macro called `@DictionaryLike` which
-makes the applied type behaves like a dictionary by adding a pair of
+makes the applied type behave like a dictionary by adding a pair of
 `subscript` getter and setter. Then we apply `@DictionaryLike` on the
 `User` struct we used in the `@COW` macro example:
 
@@ -282,11 +282,11 @@ TODO: Compilation failure of the code above
 
 Some language structures in Swift are unique under the superstructure.
 This means when multiple macros try to generate the same substructure in
-the same superstructure, the code comes to be uncompilable. For example,
-the `get` and `set` accessor in a property declaration -- if we add
-multiple `get` accessors in a property declaration, then the code goes not
-compile. This mistake merely happens in hand-rolled code but could be a
-concern when we are using macros.
+the same superstructure, the code becomes uncompilable. For example, the
+`get` and `set` accessor in a property declaration -- if we add multiple
+`get` accessors in a property declaration, then the code does not compile.
+This mistake merely happens in hand-rolled code but could be a concern
+when we are using macros.
 
 We can delve into this by starting from the previous `@DictionaryLike`
 example. Let's consider there is an attached accessor macro called
@@ -367,13 +367,13 @@ We can observe that two `get` and `set` accessors are generated under the
 one `get`/`set` accessor in one property, this expansion would lead to
 incorrect syntax in Swift and ultimately make the code not compile.
 
-TODO: Previous code snippet does not compile
+TODO: The previous code snippet does not compile
 
 ### Name Conflicts by Referring Declarations in Other Frameworks
 
 Since we've learned several cases of potential name conflicts caused by
-adding declarations, you might think that the list of name conflicts is
-ended up.
+adding declarations, you might think that the list of name conflicts has
+ended.
 
 But no. Name conflicts not only can arise from declarations like variables
 and property accessors but also references to declarations in other
@@ -424,7 +424,7 @@ public struct Box<Contents> {
 Then we can attach `@Box` in the `_$storage` property brought by the macro
 expansion such that we can eliminate generating the
 `makeStorageUniqueIfNeeded` function in place. This reduces the redundancy
-and increased the speed of compilation. The macro's implementation is more
+and increases the speed of compilation. The macro's implementation is more
 sophisticated now.
 
 ```swift
@@ -470,12 +470,12 @@ TODO: Figure about the ambiguity of resolving `Box`
 ### Semantics Conflicts
 
 In the `@DictionaryLike` macro example which competes `get` and `set`
-acessors with `@COW` macro, we've learned that accessor macros may affect
-each other. However, this is not the only potential pitfall brought by
-accessor macros: some language features could also be interfered with by
-attached macros. Look at the following example: a property wrapper makes
-the code not compiled by being attached to a stored property in a struct
-applied `@COW` macro.
+accessors with `@COW`` macro, we've learned that accessor macros may
+affect each other. However, this is not the only potential pitfall brought
+by accessor macros: some language features could also be interfered with
+by attached macros. Look at the following example: a property wrapper
+makes the code not compiled by being attached to a stored property in a
+struct applied `@COW` macro.
 
 Before the expansion:
 
@@ -583,10 +583,10 @@ and borrowed some ideas extracted from the implementation of Apple's Swift
 Observation and SwiftData.
 
 The idea behind "progressive control in macro expansion" is quite simple:
-if there are no conflicts happen, then the programmer shall not pay any
-effort to workaround them by using conflict-resolving mechanisms. Or,
-there must be tools that allow the programmer to resolve the conflicts
-with minimal effort.
+if there are no conflicts, then the programmer shall not make any effort
+to workaround them by using conflict-resolving mechanisms. Or, there must
+be tools that allow the programmer to resolve the conflicts with minimal
+effort.
 
 ### Maximize the Probability of the Lucky Case
 
@@ -626,16 +626,16 @@ func foo(_ bar: Int?) {
 }
 ```
 
-The programmers could be much easier to get rid of such a pitfall by
+The programmers could find it much easier to get rid of such a pitfall by
 renaming this macro into `#returnIfAnyOptional`.
 
 > Item 2: Put the macro expansion under an "umbrella" if this matches your
 > design.
 
 This would make your macro expansion get rid of most member redeclaration
-errors. For example, to get avoid resolving the name conflict that is
-caused by the variable shadowing in the `#unwrap` macro, we can use a
-**closure** as the "umbrella" to protect the macro expansion:
+errors. For example, to avoid resolving the name conflict that is caused
+by the variable shadowing in the `#unwrap` macro, we can use a **closure**
+as the "umbrella" to protect the macro expansion:
 
 Problematic expansion:
 
@@ -793,9 +793,8 @@ struct User {
 
 ### Minimize the Effort of Resolving Conflicts
 
-However, we cannot ensure the programmers always get lucky cases. There
-must be cases that the programmers shall resolve the conflicts by
-themselves.
+However, we cannot ensure the programmers always get the lucky case. There
+must be cases where programmers shall resolve the conflicts by themselves.
 
 By applying the aforementioned items, there are still potential name and
 semantics conflicts that lie ahead of us. The only thing we can do is to
@@ -809,7 +808,7 @@ tools that lie on a smooth curve of the cost of use. And there they are:
 > Item 4: Use the programmer's declarations if something in your macro
 > expansion is declared by the programmer.
 
-With this item, the programmer still pays zero effort to resolve the
+With this item, the programmer still makes zero effort to resolve the
 conflict. The mechanism described in this item is adopted by some AST
 transforming language features like `Equatable` and `Hashable` -- the
 compiler stops implementing these protocols on behalf of the programmers
@@ -1062,8 +1061,8 @@ expansion", which involves 2 goals and 7 items.
 
 The goals of this method are:
 
-- If there are no conflicts happen, then the programmer shall not pay any
-  effort to workaround them by using conflict-resolving mechanisms.
+- If there are no conflicts, then the programmer shall not make any effort
+  to work around them by using conflict-resolving mechanisms.
 - Or, there must be tools that allow the programmer to resolve the
   conflicts with minimal effort.
 

@@ -497,7 +497,7 @@ of maintaining the program.
 More than that, this technique cannot be encapsulated with any existing
 kind of types in Swift: no matter `class`, `struct`, `enum` or `protocol`.
 This is because what I've done to the struct is to extend the type's
-behaviors by transforming the existed members into another form. Since we
+behaviors by transforming the existing members into another form. Since we
 can only reuse a type with aggregation, inheritance and conformance, none
 of this could help us encapsulate this piece of logic.
 
