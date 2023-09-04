@@ -43,7 +43,7 @@ or types and unexpected execution order of the program.
 
 More than that, real-world code reuse stories often involve codes provided
 by various parties. This means for the compiled programming languages the
-code to reuse might be in variant distribution forms: whether the source
+code to reuse might be in variant distribution forms: either the source
 code or prebuilt libraries.
 
 Let's explore how existing Swift code reuse methods handle all these well.
