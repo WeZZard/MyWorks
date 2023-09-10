@@ -29,7 +29,7 @@ Before expansion:
 
 ```swift
 func foo(_ bar: Int?) {
-  #unwrapped(bar) {
+  #unwrap(bar) {
     print(bar)
   }
 }
@@ -39,12 +39,12 @@ After expansion:
 
 ```swift
 func foo(_ bar: Int?) {
-  // #unwrapped expansion began
+  // #unwrap expansion began
   guard let bar = bar else {
     return
   }
   print(bar)
-  // #unwrapped expansion ended
+  // #unwrap expansion ended
 }
 ```
 
@@ -69,12 +69,12 @@ After expansion:
 ```swift
 func foo(_ bar: Int?) {
   for _ in 0..<10 {
-    // #unwrapped expansion began
+    // #unwrap expansion began
     guard let bar = bar else {
       return
     }
     print(bar)
-    // #unwrapped expansion ended
+    // #unwrap expansion ended
   }
 }
 ```
@@ -98,12 +98,12 @@ expanded. Let's continue to examine that macro expansion:
 
 ```swift
 func foo(_ bar: Int?) {
-  // #unwrapped expansion began
+  // #unwrap expansion began
   guard let bar = bar else {
     return
   }
   print(bar)
-  // #unwrapped expansion ended
+  // #unwrap expansion ended
 }
 ```
 
@@ -624,12 +624,12 @@ which is expanded into:
 ```swift
 func foo(_ bar: Int?) {
   for _ in 0..<10 {
-    // #unwrapped expansion began
+    // #unwrap expansion began
     guard let bar = bar else {
       return
     }
     print(bar)
-    // #unwrapped expansion ended
+    // #unwrap expansion ended
   }
 }
 ```
@@ -1101,10 +1101,11 @@ debugging.
 
 ## Resources
 
-- A playground project that implements macros in this post:
+- A playground project that implements macros in this post (needs
+`git checkout traps-and-pitfalls`):
 
-TODO: URL
+[Swift/SwiftMacroRevisited](https://github.com/WeZZard/SwiftMacroRevisited)
 
 - The production level implementation of the `@COW` macro:
 
-TODO: URL
+[WeZZard/COW Macro](https://github.com/wezzard/cowmacro)

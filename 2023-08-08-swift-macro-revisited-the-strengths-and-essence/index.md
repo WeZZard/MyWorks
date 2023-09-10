@@ -341,12 +341,12 @@ func foo(_ bar: Int?) {
 ```
 
 However, Swift Macro provides a feasible method for this type of
-encapsulation. We can have a macro called `#unwrapped` which has the
+encapsulation. We can have a macro called `#unwrap` which has the
 following use example:
 
 ```swift
 func foo(_ bar: Int?) {
-  #unwrapped(bar) {
+  #unwrap(bar) {
     print(bar)
   }
 }
@@ -356,19 +356,19 @@ This could be expanded as:
 
 ```swift
 func foo(_ bar: Int?) {
-  // #unwrapped expansion began
+  // #unwrap expansion began
   guard let bar = bar else {
     return
   }
   print(bar)
-  // #unwrapped expansion ended
+  // #unwrap expansion ended
 }
 ```
 
-In the example above, the arguments of the `#unwrapped` macro -- `bar` and
-the trailing closure, are type-checked before the compiler initiates
-the macro expansion process. This means the `bar` received by `print` in
-the trailing closure would be bound to the parameter `_ bar: Int?` of the
+In the example above, the arguments of the `#unwrap` macro -- `bar` and
+the trailing closure, are type-checked before the compiler initiates the
+macro expansion process. This means the `bar` received by `print` in the
+trailing closure would be bound to the parameter `_ bar: Int?` of the
 `foo` function after the type-check.
 
 However, once the macro expanded, since the expansion process itself could
@@ -629,11 +629,11 @@ the following post.
 
 ## Resources
 
-- A playground project that implements the `#Color` and `#unwrapped`
-  macro:
+- A playground project that implements the `#Color` and `#unwrap`
+  macro (needs `git checkout strengths-and-essence`)
 
-TODO: URL
+[Swift/SwiftMacroRevisited](https://github.com/WeZZard/SwiftMacroRevisited)
 
 - The production level implementation of the `@COW` macro:
 
-TODO: URL
+[WeZZard/COW Macro](https://github.com/wezzard/cowmacro)
