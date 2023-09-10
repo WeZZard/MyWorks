@@ -213,9 +213,8 @@ bar()
 ```
 
 On top of that, the module is also a way to distribute your code. Since
-people may distribute their code either in source code form or prebuilt
-binary form, the Swift compiler may consider this while implementing the
-module.
+people may distribute their code either in source code or prebuilt binary,
+the Swift compiler may consider this while implementing the module system.
 
 TODO: Figure shows there are potential different forms of distribution for modules
 
@@ -288,7 +287,7 @@ SwiftUI.Color(red: 1, green: 0.93, blue: 0.67)
 #Color(0xFFEEA) // Invalid RGB, not compiled
 ```
 
-TODO: Add a snapshot showing the Xcode reporting uncompiled code
+![Invalid RGB Literal That Does Not Compiled](invalid-rgb-literal.png "Invalid RGB Literal That Does Not Compiled")
 
 From this example, you may be inspired to see how this compile-time
 computability can be applied to other types of "literals".

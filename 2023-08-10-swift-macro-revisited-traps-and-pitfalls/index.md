@@ -122,7 +122,7 @@ Before expansion:
 ```swift
 func foo(_ bar: Int?) {
   let updater = Updater()
-  #unwrap(fee, foe, fum) {
+  #unwrap(bar) {
     let updater = Updater()
     print(bar)
     updater.update()
@@ -153,7 +153,7 @@ func foo(_ bar: Int?) {
 With a clean build in Xcode, you could find this example could not be
 compiled:
 
-TODO: A snapshot shows compilation failure due to redeclared variables
+![A Compilation Failure Caused by Variable Redeclaration Brought By Expanding The #unwrap Macro](compilation-failure-variable-redeclaration-expanding-unwrap.png "A compilation failure caused by variable redeclaration brought by expanding the #unwrap macro.")
 
 ### Name Conflicts in Attached Macros
 
@@ -276,7 +276,7 @@ This obviously would not get compiled in Swift because Swift does not
 allow overloads on properties. In this case, we would get the “invalid
 redeclaration of a variable” error again.
 
-TODO: A snapshot shows the compilation failure due to duplicate _$storage property declarations
+![A Compilation Failure Caused by Variable Redeclaration Brought By Expanding The @DictionaryLike Macro](compilation-failure-variable-redeclaration-expanding-dictionary-like.png "A compilation failure caused by variable redeclaration brought by expanding the @DictionaryLike macro.")
 
 ### Name Conflicts for Unique Language Structures
 
@@ -363,11 +363,18 @@ struct User {
 ```
 
 We can observe that two `get` and `set` accessors are generated under the
-`info` property. Since the Swift programming language grammar only allows
-one `get`/`set` accessor in one property, this expansion would lead to
-incorrect syntax in Swift and ultimately make the code not compile.
+`info` property. Since the grammar of the Swift programming language only
+allows one `get`/`set` accessor in one property, this expansion would lead
+to incorrect syntax in Swift and ultimately make the code not compile.
 
-TODO: A snapshot shows duplicate get and set accessors in a property declaration does not compile
+However, this is actual seeing through a narrow lens. With the production
+level implementation of the COW macro, the `get` and `set` accessors are
+optimized into `_read` and `_modify` which could offer better performance
+in production environment, we can observe that the Swift programming
+language forbids the programmer to define accessors that not only with the
+same name but actually the same semantics.
+
+![A Compilation Failure Caused by Duplicate Accessor Brought By Expanding The @UseDictionaryStorage Macro](compilation-failure-duplicate-accessor-expanding-use-dictionary-storage.png "A compilation failure caused by duplicate accessor brought by expanding the @UseDictionaryStorage macro.")
 
 ### Name Conflicts by Referring Declarations in Other Frameworks
 
@@ -463,9 +470,10 @@ struct User {
 
 However, the type name `Box` may be ambiguous -- there could be other
 frameworks that also have a type called `Box`. This ambiguity could also
-make the code uncompilable.
+make the code uncompilable. The following snapshot shows how the
+production level implementation of the COW macro resolves this issue:
 
-TODO: A snapshot shows the ambiguity of resolving `Box` with the non-fully-qualified name
+![The Production Level of @COW Macro Resolves Potential Name Conflicts](prod-level-cow-macro-resolves-non-fully-qualified-name-conflicts.png "The production level of @COW macro resolves potential name conflicts.")
 
 ### Semantics Conflicts
 
@@ -532,7 +540,7 @@ diagnosed by the compiler:
 
 > Property wrapper cannot be applied to a computed property
 
-TODO: A snapshot shows the compile error: property wrapper cannot be applied to a computed property
+![Property Wrapper Cannot Be Applied To A Computed Property](compilation-failure-property-wrapper-applied-to-computed-property.png "Property wrapper cannot be applied to a computed property.")
 
 This does not only happen along with property wrappers, the `lazy` keyword
 could also lead to the same dead end.
@@ -566,7 +574,7 @@ class User {
 }
 ```
 
-TODO: A snapshot shows the compile error: lazy cannot be applied to a computed property
+![Lazy Cannot Be Applied To A Computed Property](compilation-failure-lazy-applied-to-computed-property.png "Lazy cannot be applied to a computed property.")
 
 With these examples, we can learn that the expansion of a Swift macro
 could change the semantics of the source code. This could lead to a
@@ -932,7 +940,7 @@ The code above does not compile due to the property wrapper requires the
 `name` to be a stored property but `@Observable` transforms it into a
 computed property.
 
-TODO: A screenshot shows the compile failure due to `@Observable` transforming a property-wrapper-wrapped property into a computed one.
+![@Observable Transforms Stored Property Into Computed](compilation-failure-observable-transforms-stored-property-into-computed.png "@Observable transforms stored property into computed.")
 
 Here is the key part of the macro expansion:
 
@@ -989,18 +997,22 @@ class User {
 }
 ```
 
-Then, we can add a `name` property, implementing the observation mechanism
-with Swift Observation:
+Then, we can add a `name` property, hand-rolling the observation
+mechanism:
 
 ```swift
 @Observable
 class User {
 
   // ...
+  
+  init(name: String) {
+    self.name = name
+  }
 
   var name: String {
-    init(initialValue) initializes(_name) {
-      _name = initialValue
+    init(initialValue) initializes(__name) {
+      __name = Capitalized(wrappedValue: initialValue)
     }
     get {
       access(keyPath: \.name)
@@ -1020,7 +1032,7 @@ class User {
 
 Finally, we resolved this conflict.
 
-TODO: A screenshot shows the compilation success after resolving the conflicts between `@Observable` and the property wrapper.
+![Resolving The Conflicts Brought by @Observable Macro Transforming Stored Properties Into Computed](resolve-observable-transform-computed-property-into-stored.png "Resolving the conflicts brought by @Observable macro transforming stored properties into computed.")
 
 > Item 7: An example expansion should be included in the macro's
 > documentation.
@@ -1039,13 +1051,13 @@ of name collision: use `MacroExpansionContext.makeUniqueName(_:)`.
 However, the name generated by this API is unreadable by humans. Here is
 an example:
 
-TODO: A screenshot shows `makeUniqueName` generated unreadable names
+![makeUniqueName Generates Unreadable Names](make-unique-name-result.png "makeUniqueName generates unreadable names.")
 
 Do you know what it means? At least, I cannot make out what it means at
 first glance. We can only understand this by resolving it with
 `swift-demangle`:
 
-TODO: A screenshot shows the result of `swift-demangle`
+![Result from swift-demangle For makeUniqueName Generated Names](result-from-swift-demangle-for-make-unqiue-name-generated-names.png "Result from swift-demangle for makeUniqueName generated names.")
 
 Since this name could be used at debug-time, being human-readable is
 crucial for the sake of the efficiency of understanding the code's
