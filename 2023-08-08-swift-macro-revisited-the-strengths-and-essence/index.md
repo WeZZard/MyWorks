@@ -2,7 +2,6 @@
 title: "Swift Macro: Revisited - The Strengths and Essence"
 category: Programming
 tags: [Swift, Macro]
-isPublished: false
 ---
 
 From the sessions at WWDC 2023, we learned that Swift Macro aims to:

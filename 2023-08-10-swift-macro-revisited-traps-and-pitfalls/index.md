@@ -2,7 +2,6 @@
 title: "Swift Macro: Revisited - Traps and Pitfalls"
 category: Programming
 tags: [Swift, Macro]
-isPublished: false
 ---
 
 In the previous post, we learned the strengths and the essence that
