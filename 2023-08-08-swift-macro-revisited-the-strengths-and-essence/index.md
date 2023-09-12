@@ -216,7 +216,7 @@ On top of that, the module is also a way to distribute your code. Since
 people may distribute their code either in source code or prebuilt binary,
 the Swift compiler may consider this while implementing the module system.
 
-TODO: Figure shows there are potential different forms of distribution for modules
+![Potential Different Forms of Distribution for Modules](./potential-different-forms-of-distribution-for-modules.png "Potential different forms of distribution for modules")
 
 ### Recap
 
@@ -480,7 +480,7 @@ To understand this technique further, there is an illustration shows the
 difference between the working details before and after adopting the
 copy-on-write behavior:
 
-TODO: An illustration that compares the working details before and after adopting the copy-on-write behavior.
+![Working Details Before and After Adopting The Copy-on-Write Behavior](./working-details-before-and-after-adopting-the-copy-on-write-behavior.png "Working details before and after adopting the copy-on-write behavior.")
 
 This is a useful technique to improve the performance when copying big
 `struct`s comes to be the bottleneck. In real-world testing, I improved
@@ -614,7 +614,7 @@ conclusions:
     the `get`, `set` or other undocumented accessors like `_read`,
     `_modify`, `unsafeAdressor` and `unsafeMutableAddressor`.
 
-TODO: Figure: modules/types/functions v.s. macro
+![How Swift Macro Works](./how-swift-macro-works.png "How Swift Macro works.")
 
 These properties offer programmers not only another option for code reuse
 but also the ability to encapsulate programming concepts that involve
