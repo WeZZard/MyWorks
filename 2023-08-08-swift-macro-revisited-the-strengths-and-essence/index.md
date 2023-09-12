@@ -87,9 +87,9 @@ didn't come easy. The idea behind this design is called structured
 programming, defined by several key principles:
 
 - Variables are only accessible within the block of a control structure.
-- Control structures could be more expressive like using
-  `if ... else ...` instead of a simple `if` statement.
-- The `goto` statement could be eliminated by more advanced control
+- Control structures could be more expressive like using `if ... else ...`
+  instead of a simple `if` statement.
+- The goto statement could be eliminated by more advanced control
   structures.
 - The function could be defined within other functions.
 
@@ -215,7 +215,7 @@ On top of that, the module is also a way to distribute your code. Since
 people may distribute their code either in source code or prebuilt binary,
 the Swift compiler may consider this while implementing the module system.
 
-![Potential Different Forms of Distribution for Modules](./potential-different-forms-of-distribution-for-modules.png "Potential different forms of distribution for modules")
+![Potential Different Forms of Distribution for Modules](./potential-different-forms-of-distribution-for-modules.png "Potential different forms of distribution for modules.")
 
 ### Recap
 
@@ -224,7 +224,7 @@ tend to aggregate smaller abstractions into greater ones with a particular
 protective mechanism to ensure reasonable name lookup results and expected
 program execution flow.
 
-TODO: Figure: Protection hierarchy of modules/types/functions
+![Established Trends of Modules/Types and Functions](./established-trends-of-modules-types-and-functions.png "Established trends of modules/types and functions.")
 
 However, what gives them advantages also caps their capabilities. Due to
 those protective mechanisms, there are still programming concepts that
