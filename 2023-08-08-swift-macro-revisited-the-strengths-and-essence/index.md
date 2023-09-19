@@ -302,7 +302,7 @@ func foo(_ bar: Int?) {
 }
 ```
 
-Instead, they prefer a safer approach -- use `guard let ... else`:
+Instead, we prefer a safer approach -- use `guard let ... else`:
 
 ```swift
 func foo(_ bar: Int?) {
@@ -601,9 +601,9 @@ conclusions:
   verification into it.
 - Unlike existing code reuse features in Swift, Swift Macro does not
   protect its expansion from the existing contents of the applied site by
-  default. Yet, it also can change the semantics of it. Macro authors
-  shall watch out for potential traps and pitfalls while implementing
-  Swift macros. To be specific:
+  default. Yet, it also can change the semantics of applied site. Macro
+  authors shall watch out for potential traps and pitfalls while
+  implementing Swift macros. To be specific:
   - For freestanding Swift macros, they can affect the control flow of the
     applied site as well as share the lexical scope.
   - For attached Swift macros, they can extend members to types as well as
