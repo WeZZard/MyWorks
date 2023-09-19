@@ -611,7 +611,7 @@ conclusions:
     "namespace" of the extended point. More than that, accessor macros
     could turn a stored property into a computed property by adding either
     the `get`, `set` or other undocumented accessors like `_read`,
-    `_modify`, `unsafeAdressor` and `unsafeMutableAddressor`.
+    `_modify`, `unsafeAddressor` and `unsafeMutableAddressor`.
 
 ![How Swift Macro Works](./how-swift-macro-works.png "How Swift Macro works.")
 
@@ -635,4 +635,4 @@ the following post.
 
 - The production level implementation of the `@COW` macro:
 
-[WeZZard/COW Macro](https://github.com/wezzard/cowmacro)
+[WeZZard/COWMacro](https://github.com/wezzard/cowmacro)
