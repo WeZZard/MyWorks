@@ -178,7 +178,7 @@ struct User {
   private var _$storage: Storage
 ```
 
-这是我从苹果的 Swift Observation 和 SwiftData 宏实现中学到的命名习惯，该习惯可以保护附加宏的实现细节不被程序员意外访问。然而，这并不能保护这些成员免受其他宏带来的意外重声明或访问 —— 因为程序员可能也应用了其他宏，而这些宏可能会添加重复名称的成员或者误用其他宏添加的成员。
+这是我从苹果的 Swift Observation 和 SwiftData 宏实现中学到的命名习惯，该习惯可以保护宏展开的实现细节不被程序员意外访问。然而，这并不能保护这些成员免受其他宏带来的意外重声明或访问 —— 因为程序员可能也应用了其他宏，而这些宏可能会添加重复名称的成员或者误用其他宏添加的成员。
 
 例如，假设有一个叫做 `@DictionaryLike` 的宏，它通过添加一对 `subscript` getter 和 setter，使被应用的类型表现得像一个字典。然后我们在 `@COW` 宏示例中使用的 `User` 结构体上应用 `@DictionaryLike` 宏：
 
@@ -235,9 +235,9 @@ struct User {
 
 ### 唯一语言结构的命名冲突
 
-在 Swift 中，一些语言结构在其父一级结构下是唯一的。这意味着当多个宏尝试在相同的父一级结构中生成相同的子结构时，代码会变得无法编译。例如，属性声明中的 `get` 和 `set` accessor 中 —— 如果我们在属性声明中添加多个 `get` accessor，那么代码将无法编译。这个错误一般很少在手写代码中发生，但在使用宏时需要引起注意。
+在 Swift 中，一些语言结构在其父一级结构下是唯一的。这意味着当多个宏尝试在相同的父一级结构中生成相同的子结构时，代码会变得无法编译。例如，属性声明中的 `get` 和 `set` accessor —— 如果我们在属性声明中添加多个 `get` accessor，那么代码将无法编译。这个错误一般很少在手写代码中发生，但在使用宏时需要引起注意。
 
-我们可以从之前的 `@DictionaryLike` 示例开始深入了解这个问题。假设有一个附加的 accessor macro 叫做 `@UseDictionaryStorage`，它为附加属性生成 `get` 和 `set` accessor。getter 和 setter 将访问转发到由 `@DictionaryLike` 宏展开带来的存储容器中。
+我们可以从之前的 `@DictionaryLike` 示例开始深入了解这个问题。假设有一个 accessor macro 叫做 `@UseDictionaryStorage`，它为所附着的属性生成 `get` 和 `set` accessor。getter 和 setter 将访问转发到由 `@DictionaryLike` 宏展开带来的存储容器中。
 
 宏展开之前：
 
@@ -679,7 +679,7 @@ struct User {
 
 > 条目 5：在可以重命名声明时，为你的宏展开内容提供重命名的途径。
 
-我们可以使用在单个类型上叠加 `@COW` 宏和 `@DictionaryLike` 宏的示例来测试此条目。这两个宏的扩展会生成两个 `_$storage` 变量。要添加重命名机制，我们可以自然而然地想到在宏中添加一个参数：
+我们可以在单个类型上叠加 `@COW` 宏和 `@DictionaryLike` 宏的示例来测试此条目。这两个宏的扩展会生成两个 `_$storage` 变量。要添加重命名机制，我们可以自然而然地想到在宏中添加一个参数：
 
 ```swift
 @attached(member, names: arbitrary)
