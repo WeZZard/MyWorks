@@ -190,7 +190,7 @@ Color(0xFFEEAA)
 Color(0xFFEEA)
 ```
 
-然而，由于 Swift 宏通过对其参数进行语法变形来生成新代码，或者说“展开宏”，我们可以在此变形期间集成语法检查。这使得可以对 6 位十六进制 RGB 颜色"字面量"进行编译时验证。
+然而，由于 Swift 宏通过对其参数进行语法变形来生成新代码，或者说「展开宏」，我们可以在此变形期间集成语法检查。这使得可以对 6 位十六进制 RGB 颜色「字面量」进行编译时验证。
 
 ```swift
 #Color(0xFFEEAA) // 可以编译
@@ -202,7 +202,7 @@ SwiftUI.Color(red: 1, green: 0.93, blue: 0.67)
 
 ![无效 RGB，无法编译](invalid-rgb-literal.png "无效 RGB，无法编译")
 
-通过这个例子，你也许已经获得了启发，可以去看看这种编译计算如何应用于其他种类的"字面量"。
+通过这个例子，你也许已经获得了启发，可以去看看这种编译计算如何应用于其他种类的「字面量」。
 
 ### 提供超越函数的行为
 
@@ -437,7 +437,7 @@ struct User {
 
 然而，所有这些都是在一个自动的过程中发生的：Swift 编译器对 `User` 结构体进行类型检查，然后使用经过类型检查的 `User` 结构体作为参数来调用宏展开。最后，`@COW` 宏通过理解 `User` 结构体中的内容生成代码。通过这个自动的机制，维护成本已经被消除。
 
-从上面展示的宏展开中可以观察到，attached Swift macro 可以扩展类型成员并通过添加 accessors 重写属性。扩展的内容不仅为类型带来了新的行为，还共享了扩展点的“命名空间”。值得注意的是，向存储属性添加 accessors 也将其语义从存储属性更改为计算属性。
+从上面展示的宏展开中可以观察到，attached Swift macro 可以扩展类型成员并通过添加 accessors 重写属性。扩展的内容不仅为类型带来了新的行为，还共享了扩展点的「命名空间」。值得注意的是，向存储属性添加 accessors 也将其语义从存储属性更改为计算属性。
 
 ## 结论
 
@@ -447,7 +447,7 @@ struct User {
 - Swift 宏通过在编译时转换程序员的代码来生成代码。这意味着我们也可以将编译时验证整合进去。
 - 与 Swift 中现有的代码重用特性不同， Swift 宏默认情况下不会保护其宏展开内容免受应用点现有内容的影响。另外，它也可以改变应用点语义。宏作者在实现 Swift 宏时应该注意潜在的陷阱和问题。具体而言：
   - 对于 freestanding Swift macro，它们不仅可以影响应用点的控制流，还可以共享词法作用域。
-  - 对于 attached Swift macro，它们不仅可以为类型扩展成员，还可以为属性提供 accessor。宏展开内容也共享扩展点的"命名空间"。此外，accessor macro 还可以通过添加 `get`、`set` 或其他文档中未记录的 accessor（如 `_read`、`_modify`、`unsafeAddressor` 和 `unsafeMutableAddressor`）将存储属性转换为计算属性。
+  - 对于 attached Swift macro，它们不仅可以为类型扩展成员，还可以为属性提供 accessor。宏展开内容也共享扩展点的「命名空间」。此外，accessor macro 还可以通过添加 `get`、`set` 或其他文档中未记录的 accessor（如 `_read`、`_modify`、`unsafeAddressor` 和 `unsafeMutableAddressor`）将存储属性转换为计算属性。
 
 ![ Swift 宏的工作原理](./how-swift-macro-works.png " Swift 宏的工作原理")
 
