@@ -149,13 +149,13 @@ bar()
 
 除此之外，模块也是分发代码的一种方式。由于人们可以将自己的代码分发为源代码或预构建的二进制文件，Swift 编译器在实现模块系统时会考虑这一点。
 
-![模块的潜在不同分发形式](./potential-different-forms-of-distribution-for-modules.png "模块的潜在不同分发形式。")
+![模块的潜在不同分发形式](./potential-different-forms-of-distribution-for-modules.png "模块的潜在不同分发形式")
 
 ### 总结
 
 通过回顾 Swift 中现有的代码重用手段，我们可以发现它们倾向于将较小的抽象聚合成更大的抽象，并采用特定的保护机制来确保合理的名字查找结果和预期的程序执行流程。
 
-![模块/类型和函数的设计倾向](./established-trends-of-modules-types-and-functions.png "模块/类型和函数的设计倾向。")
+![模块/类型和函数的设计倾向](./established-trends-of-modules-types-and-functions.png "模块/类型和函数的设计倾向")
 
 然而，正是这些优势也限制了它们的功能。由于这些保护机制，仍然有一些编程概念无法封装，因为有些概念要求我们放弃这种保护机制。
 
