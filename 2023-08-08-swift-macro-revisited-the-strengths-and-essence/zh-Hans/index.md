@@ -255,7 +255,7 @@ func foo(_ bar: Int?) {
 }
 ```
 
-这可以被扩展为：
+这可以被展开为：
 
 ```swift
 func foo(_ bar: Int?) {

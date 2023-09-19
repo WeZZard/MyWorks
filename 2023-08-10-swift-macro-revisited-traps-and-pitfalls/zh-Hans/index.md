@@ -74,7 +74,7 @@ func foo(_ bar: Int?) {
 
 ### Freestanding Macro 中的命名冲突
 
-以上提到的意外并不是我给出的 `#unwrap` 宏扩展中唯一存在的潜在陷阱。这里还有一个陷阱：在宏扩展后，`bar` 变量被 `#unwarp` 宏重新绑定。让我们继续检查该宏的扩展:
+以上提到的意外并不是我给出的 `#unwrap` 宏展开中唯一存在的潜在陷阱。这里还有一个陷阱：在宏展开后，`bar` 变量被 `#unwarp` 宏重新绑定。让我们继续检查该宏的展开:
 
 ```swift
 func foo(_ bar: Int?) {
@@ -87,7 +87,7 @@ func foo(_ bar: Int?) {
 }
 ```
 
-这个宏扩展引入了 variable name shadowing，其中 `guard let bar: Int` shadow 了参数 `_ bar: Int?`。对于 `#unwrap` 来说，variable name shadowing 是无足轻重的，因为这是一种有意的行为。然而，在真实世界的编程中，`Optional` 之外的 variable name shadowing 都会被认为是一种不好的实践 - 实际上，在 Swift 中这会无法通过编译。如我之前所总结，freestanding Swift macro 的宏展开涉及应用点的词法作用域共享。这使得宏展开中可能发生 variable name shadowing。以下是一个人造的例子：由于宏展开，变量名 `updater` 被 shadow 了。
+这个宏展开引入了 variable name shadowing，其中 `guard let bar: Int` shadow 了参数 `_ bar: Int?`。对于 `#unwrap` 来说，variable name shadowing 是无足轻重的，因为这是一种有意的行为。然而，在真实世界的编程中，`Optional` 之外的 variable name shadowing 都会被认为是一种不好的实践 - 实际上，在 Swift 中这会无法通过编译。如我之前所总结，freestanding Swift macro 的宏展开涉及应用点的词法作用域共享。这使得宏展开中可能发生 variable name shadowing。以下是一个人造的例子：由于宏展开，变量名 `updater` 被 shadow 了。
 
 展开之前:
 
@@ -398,7 +398,7 @@ struct User {
 
 在与 `@COW` 宏产生 `get` 和 `set` accessor 竞争的 `@DictionaryLike` 宏示例中，我们已经了解到 accessor macro 可能会相互影响。然而，这不是 accessor macro 所带来的唯一潜在问题：一些语言特性也可能会受到 accessor macro 的干扰。看下面的例子：一个 property wrapper 附着到一个应用了 `@COW` 宏的结构体中的存储属性上，导致代码无法编译通过。
 
-扩展之前的代码：
+展开之前的代码：
 
 ```swift
 @propertyWrapper
@@ -421,7 +421,7 @@ struct User {
 }
 ```
 
-扩展之后的代码：
+展开之后的代码：
 
 ```swift
 @COW
@@ -679,7 +679,7 @@ struct User {
 
 > 条目 5：在可以重命名声明时，为你的宏展开内容提供重命名的途径。
 
-我们可以在单个类型上叠加 `@COW` 宏和 `@DictionaryLike` 宏的示例来测试此条目。这两个宏的扩展会生成两个 `_$storage` 变量。要添加重命名机制，我们可以自然而然地想到在宏中添加一个参数：
+我们可以在单个类型上叠加 `@COW` 宏和 `@DictionaryLike` 宏的示例来测试此条目。这两个宏的展开会生成两个 `_$storage` 变量。要添加重命名机制，我们可以自然而然地想到在宏中添加一个参数：
 
 ```swift
 @attached(member, names: arbitrary)
@@ -688,7 +688,7 @@ public macro COW(storageName: String) =
   #externalMacro(module: "COWMacros", type: "COWMacro")
 ```
 
-但是这会破坏「渐进式控制宏扩展」的理念：如果没有冲突，那么程序员就不需要关心解决冲突 —— 有了这个宏声明，程序员每次使用该宏都需要附加一个额外的参数。然而，你可能还不知道，我们可以通过宏重载来解决这个问题。这意味着我们可以有多个同名但具有不同「签名」的宏。
+但是这会破坏「渐进式控制宏展开」的理念：如果没有冲突，那么程序员就不需要关心解决冲突 —— 有了这个宏声明，程序员每次使用该宏都需要附加一个额外的参数。然而，你可能还不知道，我们可以通过宏重载来解决这个问题。这意味着我们可以有多个同名但具有不同「签名」的宏。
 
 ```swift
 @attached(member, names: arbitrary)
