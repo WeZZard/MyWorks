@@ -5,7 +5,7 @@ tags: [Swift, Macro]
 ---
 
 In the previous post, we learned the strengths and the essence that
-uniquely define the Swift Macro. The examples in this post work so far so
+uniquely define the Swift Macro. The examples in that post work so far so
 good. However, can we be confident and bold, implementing any Swift macros
 we want now?
 
@@ -480,7 +480,7 @@ In the `@DictionaryLike` macro example which competes `get` and `set`
 accessors with `@COW` macro, we've learned that accessor macros may
 affect each other. However, this is not the only potential pitfall brought
 by accessor macros: some language features could also be interfered with
-by attached macros. Look at the following example: a property wrapper
+by accessor macros. Look at the following example: a property wrapper
 makes the code not compiled by being attached to a stored property in a
 struct applied `@COW` macro.
 
@@ -591,16 +591,15 @@ Observation and SwiftData.
 
 The idea behind "progressive control in macro expansion" is quite simple:
 if there are no conflicts, then the programmer shall not make any effort
-to workaround them by using conflict-resolving mechanisms. Or, there must
-be tools that allow the programmer to resolve the conflicts with minimal
-effort.
+to workaround the conflict-resolving mechanisms. Or, there must be tools
+that allow the programmer to resolve the conflicts with minimal effort.
 
 ### Maximize the Probability of the Lucky Case
 
 If a programmer does not have to resolve any conflicts while applying
 Swift macros, then we can say the programmer gets a lucky case. To
-maximize the likelihood that a Swift macro user encounters a favorable
-outcome, we must adhere to the following items:
+maximize the likelihood that a Swift macro user gets a favorable outcome,
+we must adhere to the following items:
 
 > Item 1: Macros that manipulate control flow should have names that
 > reflect this purpose.
@@ -769,7 +768,6 @@ struct User {
 
   // @COW expansion ended
 
-
   // Unnecessary contents ...
 
 }
@@ -791,7 +789,6 @@ struct User {
   // Unnecessary expansions ...
 
   // @COW expansion ended
-
 
   // Unnecessary contents ...
 
