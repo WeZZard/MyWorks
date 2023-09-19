@@ -308,7 +308,7 @@ struct User {
 
 我们可以观察到，在 `info` 属性下生成了两个 `get` 和 `set` accessor。由于 Swift 的语法只允许一个属性中有一个 `get`/`set` accessor，这个展开会导致 Swift 中的语法错误，最终使得代码无法编译。
 
-然而，这还是没有看到全貌。通过 COW 宏的生产级实现，`get` 和 `set` accessor 被优化为了 `_read` 和 `_modify` 以生产环境中提供更好的性能，同时我们可以观察到 Swift 不仅禁止程序员定义名称相同的多个 accessor 而且还禁止定义多个语义相同的 accessor。
+然而，这还是没有看到全貌。通过应用生产级实现的 COW 宏，我们可以看到 `get` 和 `set` accessor 被优化为了 `_read` 和 `_modify` 以生产环境中提供更好的性能，同时我们还可以观察到 Swift 不仅禁止程序员定义名称相同的多个 accessor 而且还禁止定义多个语义相同的 accessor。
 
 ![通过 @UseDictionaryStorage 宏展开产生的多重 accessor 从而引起的编译错误](compilation-failure-duplicate-accessor-expanding-use-dictionary-storage.png "通过 @UseDictionaryStorage 宏展开产生的多重 accessor 从而引起的编译错误")
 

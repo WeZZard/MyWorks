@@ -366,12 +366,13 @@ We can observe that two `get` and `set` accessors are generated under the
 allows one `get`/`set` accessor in one property, this expansion would lead
 to incorrect syntax in Swift and ultimately make the code not compile.
 
-However, this is actual seeing through a narrow lens. With the production
-level implementation of the COW macro, the `get` and `set` accessors are
-optimized into `_read` and `_modify` which could offer better performance
-in production environment, we can observe that the Swift programming
-language forbids the programmer to define multiple accessors that not only
-with the same name but actually the same semantics.
+However, this is actual seeing through a narrow lens. By applying the
+production level implementation of the COW macro, we can find that the
+`get` and `set` accessors are optimized into `_read` and `_modify` which
+could offer better performance in production environment. At the same
+time, we also can observe that the Swift programming language forbids the
+programmer to define multiple accessors that not only with the same name
+but actually the same semantics.
 
 ![A Compilation Failure Caused by Duplicate Accessor Brought By Expanding The @UseDictionaryStorage Macro](compilation-failure-duplicate-accessor-expanding-use-dictionary-storage.png "A compilation failure caused by duplicate accessor brought by expanding the @UseDictionaryStorage macro.")
 
