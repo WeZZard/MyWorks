@@ -4,7 +4,7 @@ category: 编程
 tags: [Swift, 宏]
 ---
 
-通过 2023 WWDC 的会议，我们了解到 Swift 宏的目标是：
+通过 WWDC 2023，我们了解到 Swift 宏的目标是：
 
 - 消除重复代码
 - 让繁琐的事情变得简单
@@ -43,7 +43,7 @@ func foo() {                                          // |
     return "0x" + String(index, radix: 16)            // |
   }                                                   // |
   for i in 0..<100 {                                  // |
-    // for 循环体内部声明的局部变量                            |
+    // for 循环体内部声明的局部变量                           |
     let bar = getHexDescription(for: i)               // |
 //       ^                                               |
 //       |                                               |
