@@ -93,9 +93,9 @@ think that returning from the applied site is an
 ### Name Conflicts in Freestanding Macros
 
 The odd mentioned above is not the only potential pitfall in the expansion
-that I gave for the `#unwrap` macro. One more pitfall here is that the
-`bar` variable was re-bound by the `#unwarp` macro after the macro was
-expanded. Let's continue to examine that macro expansion:
+that I gave for the `#unwrap` macro. One more pitfall here is that
+expanding the `#unwarp` macro may cuase variable redeclarations. Let's
+continue to examine that macro expansion:
 
 ```swift
 func foo(_ bar: Int?) {
