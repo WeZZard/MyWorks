@@ -78,8 +78,8 @@ func foo(_ bar: Int?) {
 }
 ```
 
-From the macro expansion shown above, we can learn that if we pass a
-non-optional value to `foo`, the `bar` will only be printed once. This is
+From the macro expansion shown above, we can learn that if we pass a `nil`
+to `foo`, the contents after the `for` loop would not be executed. This is
 because the `return` statement involved by the macro expansion would break
 the outer loop.
 
