@@ -231,7 +231,7 @@ struct User {
 }
 ```
 
-显然，这在 Swift 中无法编译，因为 Swift 不允许属性重载。在这种情况下，我们会再次获得 "invalid redeclaration of a variable" 错误。
+显然，这在 Swift 中无法编译，因为 Swift 不允许属性重载。在这种情况下，我们会再次得到 "invalid redeclaration of a variable" 错误。
 
 ![由于 @DictionaryLike 宏展开而导致的变量重复声明从而引发的编译失败](compilation-failure-variable-redeclaration-expanding-dictionary-like.png "由于 @DictionaryLike 宏展开而导致的变量重复声明从而引发的编译失败")
 
