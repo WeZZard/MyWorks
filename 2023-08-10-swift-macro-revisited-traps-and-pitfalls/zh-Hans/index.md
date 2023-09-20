@@ -50,6 +50,7 @@ func foo(_ bar: Int?) {
       print(bar)
     }
   }
+  // 其余代码
 }
 ```
 
@@ -65,6 +66,7 @@ func foo(_ bar: Int?) {
     print(bar)
     // #unwrap 宏展开结束
   }
+  // 其余代码
 }
 ```
 

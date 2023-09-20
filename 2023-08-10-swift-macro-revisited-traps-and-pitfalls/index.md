@@ -60,6 +60,7 @@ func foo(_ bar: Int?) {
       print(bar)
     }
   }
+  // Rest codes
 }
 ```
 
@@ -75,13 +76,14 @@ func foo(_ bar: Int?) {
     print(bar)
     // #unwrap expansion ended
   }
+  // Rest codes
 }
 ```
 
 From the macro expansion shown above, we can learn that if we pass a `nil`
-to `foo`, the contents after the `for` loop would not be executed. This is
-because the `return` statement involved by the macro expansion would break
-the outer loop.
+to `foo`, the rest codes after the `for` loop would not be executed. This
+is because the `return` statement involved by the macro expansion would
+break the outer loop.
 
 However, the `#unwrap` macro's name only conveys the purpose of unwrapping
 optional values. This might cause the programmer who uses this macro to
