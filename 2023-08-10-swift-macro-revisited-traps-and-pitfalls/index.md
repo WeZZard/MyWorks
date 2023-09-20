@@ -109,12 +109,11 @@ func foo(_ bar: Int?) {
 This brought variable name shadowing where the `guard let bar: Int`
 shadows the argument `_ bar: Int?`. In the case of `#unwrap`, the variable
 name shadowing is trivial because it is an intentional behavior. However,
-shadowing variables other than the `Optional`s could be considered a bad
-practice in real-world programming -- in fact, that would be uncompiled in
-Swift. As I concluded before, freestanding Swift macro expansions involve
-lexical scope sharing with the applied site. This enables potential
-variable shadowing in macro expansions. Here is a contrived example, the
-variable name `updater` is shadowed due to the macro expansion:
+since freestanding Swift macro expansions involve lexical scope sharing
+with the applied site, this could turn variable name shadowing into
+variable redeclaration in the expansions of naïvely implemented macros.
+Here is a contrived example, the variable name `updater` is shadowed
+before the macro expansion but redeclared after the expansion:
 
 Before expansion:
 
@@ -641,8 +640,9 @@ renaming this macro into `#returnIfAnyOptional`.
 
 This would make your macro expansion get rid of most member redeclaration
 errors. For example, to avoid resolving the name conflict that is caused
-by the variable shadowing in the `#unwrap` macro, we can use a **closure**
-as the "umbrella" to protect the macro expansion:
+by turning variable shadowing into variable redeclaration in the `#unwrap`
+macro, we can use a **closure** as the "umbrella" to protect the macro
+expansion:
 
 Problematic expansion:
 

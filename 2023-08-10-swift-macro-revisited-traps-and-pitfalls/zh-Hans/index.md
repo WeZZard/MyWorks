@@ -87,7 +87,7 @@ func foo(_ bar: Int?) {
 }
 ```
 
-这个宏展开引入了 variable name shadowing，其中 `guard let bar: Int` shadow 了参数 `_ bar: Int?`。对于 `#unwrap` 来说，variable name shadowing 是无足轻重的，因为这是一种有意的行为。然而，在真实世界的编程中，`Optional` 之外的 variable name shadowing 都会被认为是一种不好的实践 - 实际上，在 Swift 中这会无法通过编译。如我之前所总结，freestanding Swift macro 的宏展开涉及应用点的词法作用域共享。这使得宏展开中可能发生 variable name shadowing。以下是一个人造的例子：由于宏展开，变量名 `updater` 被 shadow 了。
+这个宏展开引入了变量名 shadowing，其中 `guard let bar: Int` shadow 了参数 `_ bar: Int?`。对于 `#unwrap` 来说，变量名 shadowing 是无足轻重的，因为这是一种有意的行为。然而，由于 freestanding Swift macro 的宏展开涉及应用点的词法作用域共享，这使得一些朴素实现的宏展开可能会使得变量名 shadowing 变成变量名重复声明。以下是一个人造的例子：由于宏展开，变量名 `updater` 从被 shadow 变成被重复声明。
 
 展开之前:
 
@@ -528,7 +528,7 @@ func foo(_ bar: Int?) {
 
 > 条目 2：如果符合你的设计，可以将宏展开放在一个「保护伞」下面。
 
-这样可以摆脱大多数成员重复声明错误。例如：为了避免 `#unwrap` 宏中由 variable name shadowing 引起的命名冲突问题，我们可以使用一个**闭包**作为「保护伞」来保护宏展开：
+这样可以摆脱大多数成员重复声明错误。例如：为了避免 `#unwrap` 宏中将变量名 shadowing 变成重复声明而引起的命名冲突问题，我们可以使用一个**闭包**作为「保护伞」来保护宏展开：
 
 问题展开：
 
