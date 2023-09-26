@@ -611,7 +611,7 @@ conclusions:
     "namespace" of the extended point. More than that, accessor macros
     could turn a stored property into a computed property by adding either
     the `get`, `set` or other undocumented accessors like `_read`,
-    `_modify`, `unsafeAddressor` and `unsafeMutableAddressor`.
+    `_modify`, `unsafeAddress` and `unsafeMutableAddress`.
 
 ![How Swift Macro Works](./how-swift-macro-works.png "How Swift Macro works.")
 
