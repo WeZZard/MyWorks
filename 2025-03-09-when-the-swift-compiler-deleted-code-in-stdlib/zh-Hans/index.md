@@ -308,13 +308,13 @@ public func _unsafeReferenceCast<T, U>(_ x: T, to: U.Type) -> U {
 %y = unchecked_ref_cast %x : $SourceSILType to $DesintationSILType
 ```
 
-问题产生是因为 `AutoreleasingUnsafeMutablePointer` 引入的情况使 `$SourceSILType` 和 `$DesintationSILType` 可能是 `Optional` 类型：
+因为 `AutoreleasingUnsafeMutablePointer` 的引入，使得 `$SourceSILType` 或 `$DesintationSILType` 可能是 `Optional` 类型，最终导致了问题：
 
 ```sil
 %y = unchecked_ref_cast %x : $Optional<AnyObject> to $Data
 ```
 
-此指令可以在 `Optional` 和非 `Optional` 类型之间进行转换，有效地包装或解包值。由于逃逸分析沿着 use-def chain (使用-定义链) 走，路径必须严格反映如何从定义点导出 `load` 操作数，这些隐式的 `Optional` 转换会创建路径不匹配，如图所示：
+此指令可以在 `Optional` 和非 `Optional` 类型之间进行转换，有效地包装或解包值。由于逃逸分析沿着 use-def chain (使用-定义链) 走，路径必须严格反映如何从定义点导出 `load` 操作数，这些隐式的 `Optional` 转换会创建的路径不匹配，如图所示：
 
 ![逃逸分析 2](../escape-analaysis-2.png '逃逸分析 2')
 
@@ -379,7 +379,7 @@ public mutating func walkUpDefault(value def: Value, path: Path) -> WalkResult {
 
 ![逃逸分析 3](../escape-analaysis-3.png '逃逸分析 3')
 
-在定义-使用链分析中，`walkDownDefault` 函数也需要类似的更改：
+在 def-use chain (定义-使用链) 分析中，`walkDownDefault` 函数也需要类似的更改：
 
 ```swift
 public mutating func walkDownDefault(value operand: Operand, path: Path) -> WalkResult {

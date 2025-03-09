@@ -370,7 +370,7 @@ ultimately represented as an `unchecked_ref_cast` instruction in SIL:
 ```
 
 The problem arises because `AutoreleasingUnsafeMutablePointer` introduces
-cases where `$SourceSILType` and `$DesintationSILType` may be `Optional`
+cases where `$SourceSILType` or `$DesintationSILType` may be `Optional`
 types:
 
 ```sil
