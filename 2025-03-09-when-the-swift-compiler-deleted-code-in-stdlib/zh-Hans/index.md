@@ -40,14 +40,14 @@ public class ValueStorage {
 }
 ```
 
-![Screenshot 2025-03-08 at 6.42.34 PM.png](../Screenshot_2025-03-08_at_6.42.34_PM.png)
+![Screenshot 2025-03-08 at 6.42.34 PM.png](../enable-asan-in-xcode.png)
 
-![Screenshot 2025-03-08 at 6.42.14 PM.png](../Screenshot_2025-03-08_at_6.42.14_PM.png)
+![UAF 问题出现](../uaf-issue.png)
 
 有趣的是，将 `AutoreleasingUnsafeMutablePointer` 替换为 `UnsafeMutablePointer`
 可以解决这个问题。
 
-![Screenshot 2025-03-08 at 7.02.53 PM.png](../Screenshot_2025-03-08_at_7.02.53_PM.png)
+![没有 UAF 问题](../no-uaf-issue.png)
 
 ## 调查崩溃的关键现场
 
@@ -72,7 +72,7 @@ mov qword [r12 + 0x10] rax
 
 以下是 `ValueStorage.append` 的完整反汇编代码：
 
-![Screenshot 2025-03-08 at 4.21.44 PM.png](../Screenshot_2025-03-08_at_4.21.44_PM.png)
+![ValueStorage.append 的反汇编码](../generated-target-code-with-uaf-issue.png)
 
 检查 Swift 标准库代码发现，其实际上是通过访问 `self` 上的 `_buffer` 属性来更新
 元素计数并插入新元素，而不是使用现有的旧缓冲区变量。Swift 编译器错误地删除了目标
@@ -117,7 +117,7 @@ internal mutating func _appendElementAssumeUniqueAndCapacity(
 程序的优化 SIL，我们发现使用 `AutoreleasingUnsafeMutablePointer` 时，数组存储的
 关键 `load` 指令缺失。
 
-![Screenshot 2025-03-08 at 6.53.52 PM.png](../Screenshot_2025-03-08_at_6.53.52_PM.png)
+![崩溃于不崩溃的 SIL 对比](../comparing-crashing-non-crashing-sil.png)
 
 为了确定哪个编译器过程移除了这个 `load` 指令，我们可以使用 `-Xllvm` 参数启用
 编译器中的调试打印。具体来说，我们可以使用 `--sil-print-function` 让编译器在
@@ -263,13 +263,13 @@ overwritten
 对于情况 2 所属场景，Swift 6 算法检查 `load` 的所有先前指令，以确定
 `load` 操作数的源和 `load` 指令本身之间的函数调用的副作用。
 
-![Screenshot 2025-03-09 at 1.22.28 PM.png](../Screenshot_2025-03-09_at_1.22.28_PM.png)
+![副作用分析](../side-effects-analysis.png)
 
 在这里，关键的发现是 Swift 编译器仅在 `load` 操作数的最终源头有未知逃逸结果时才会考虑函
 数的副作用。通过在 `AliasAnalysis.swift` 中的函数设置断点，我发现了两种指针类型之间的
 关键差异：
 
-![Screenshot 2025-03-09 at 12.05.08 AM.png](../Screenshot_2025-03-09_at_12.05.08_AM.png)
+![getApplyEffect 函数](../get-apply-effect-function.png)
 
 - 使用 `AutoreleasingUnsafeMutablePointer` 时，编译器检查 `load` 指令的操作数的
   定义源是否逃逸。当确定不逃逸时，编译器将错误地假设函数没有副作用。
@@ -281,7 +281,7 @@ overwritten
 于是我们需要对第 371 行的 `visit` 函数进行进一步调查。该行会对 `load` 指令的操作数执行
 逃逸分析。下图说明了这个过程：
 
-![escape-analaysis-1@3x.png](../escape-analaysis-1@3x.png)
+![逃逸分析 1](../escape-analaysis-1.png)
 
 这是逃逸分析的过程：
 1. 沿着 use-def chain (使用-定义链) 向上走，分析逃逸行为
@@ -350,7 +350,7 @@ public func _unsafeReferenceCast<T, U>(_ x: T, to: U.Type) -> U {
 由于逃逸分析沿着 use-def chain (使用-定义链) 走，路径必须严格反映如何从定义点导出
 `load` 操作数，这些隐式的 `Optional` 转换会创建路径不匹配，如图所示：
 
-![escape-analaysis-2@3x.png](../escape-analaysis-2@3x.png)
+![逃逸分析 2](../escape-analaysis-2.png)
 
 通过检查 `WalkUtils.swift` 中的 `walkUpDefault` 函数我们可以确认这一假设：该函数
 在向上走期间处理各种指令类型，但缺乏对 `unchecked_ref_cast` 中 `Optional`
@@ -415,7 +415,7 @@ public mutating func walkUpDefault(value def: Value, path: Path) -> WalkResult {
 当逃逸分析过程遇到 `Optional` 和非 `Optional` 类型之间的 `unchecked_ref_cast` 时，
 该修复通过调整路径以考虑枚举用例差异，确保了正确的路径转换。
 
-![escape-analaysis-3@3x.png](../escape-analaysis-3@3x.png)
+![逃逸分析 3](../escape-analaysis-3.png)
 
 在定义-使用链分析中，`walkDownDefault` 函数也需要类似的更改：
 

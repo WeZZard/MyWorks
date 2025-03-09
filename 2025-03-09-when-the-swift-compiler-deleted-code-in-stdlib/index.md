@@ -43,14 +43,14 @@ public class ValueStorage {
 }
 ```
 
-![Screenshot 2025-03-08 at 6.42.34 PM.png](Screenshot_2025-03-08_at_6.42.34_PM.png)
+![Screenshot 2025-03-08 at 6.42.34 PM.png](enable-asan-in-xcode.png)
 
-![Screenshot 2025-03-08 at 6.42.14 PM.png](Screenshot_2025-03-08_at_6.42.14_PM.png)
+![UAF Issue](uaf-issue.png)
 
 Interestingly, replacing `AutoreleasingUnsafeMutablePointer` with
 `UnsafeMutablePointer` eliminates the issue.
 
-![Screenshot 2025-03-08 at 7.02.53 PM.png](Screenshot_2025-03-08_at_7.02.53_PM.png)
+![No UAF Issue](no-uaf-issue.png)
 
 ## Investigating the Primary Scene of the Crash
 
@@ -77,7 +77,7 @@ mov qword [r12 + 0x10] rax
 
 Here is the complete disassembled code of `ValueStorage.append`:
 
-![Screenshot 2025-03-08 at 4.21.44 PM.png](Screenshot_2025-03-08_at_4.21.44_PM.png)
+![ValueStorage.append's Generated Target Code](generated-target-code-with-uaf-issue.png)
 
 Examining the Swift standard library reveals that the implementation
 actually updates elements count and inserts new elements by accessing the
@@ -126,7 +126,7 @@ Comparing the optimized SIL of programs using `AutoreleasingUnsafeMutablePointer
 `AutoreleasingUnsafeMutablePointer`, a critical `load` of the array
 storage was missing.
 
-![Screenshot 2025-03-08 at 6.53.52 PM.png](Screenshot_2025-03-08_at_6.53.52_PM.png)
+![Comparing Crashing and Non-Crashing SIL](comparing-crashing-non-crashing-sil.png)
 
 To identify which compiler pass removed this `load`, we can use the
 `-Xllvm` argument to enable debug prints in the compiler. Specifically,
@@ -282,7 +282,7 @@ For case 2 scenarios, the Swift 6 algorithm checks all prior instructions
 of the `load` to determine side effects of function calls between the
 source of the `load`'s operand and the `load` instruction itself.
 
-![Screenshot 2025-03-09 at 1.22.28 PM.png](Screenshot_2025-03-09_at_1.22.28_PM.png)
+![Side Effects Analysis](side-effects-analysis.png)
 
 The key insight is that the Swift compiler only evaluates function side
 effects when the ultimate source of the `load`'s operand has an unknown
@@ -290,7 +290,7 @@ escaping result. By setting breakpoints in the following function located
 in `AliasAnalysis.swift`, I found the critical difference between the two
 pointer types:
 
-![Screenshot 2025-03-09 at 12.05.08 AM.png](Screenshot_2025-03-09_at_12.05.08_AM.png)
+![The getApplyEffect Function](get-apply-effect-function.png)
 
 - With `AutoreleasingUnsafeMutablePointer`, the compiler checks if the
   definition source of the `load` instruction's operand is escaping. When
@@ -306,7 +306,7 @@ Further investigation led to the `visit` function at line 371, which
 performs escape analysis on the `load` instruction's operand. The
 following diagram illustrates this process:
 
-![escape-analaysis-1@3x.png](escape-analaysis-1@3x.png)
+![Escape Analysis 1](escape-analaysis-1.png)
 
 This is the escape analysis process:
 1. Walks up the use-def chain to analyze escaping behavior
@@ -381,7 +381,7 @@ use-def chain with a path that must strictly reflect how to derive the
 `load` operand from its definition point, these implicit `Optional`
 conversions create path mismatches, as illustrated:
 
-![escape-analaysis-2@3x.png](escape-analaysis-2@3x.png)
+![Escape Analysis 2](escape-analaysis-2.png)
 
 This hypothesis is confirmed by examining the `walkUpDefault` function in
 `WalkUtils.swift`, which handles various instruction types during the
@@ -450,7 +450,7 @@ analysis process encounters an `unchecked_ref_cast` between `Optional` and
 non-`Optional` types, the fix ensures proper path transformations by
 adjusting the path to account for enum case differences.
 
-![escape-analaysis-3@3x.png](escape-analaysis-3@3x.png)
+![Escape Analysis 3.png](escape-analaysis-3.png)
 
 A similar change is needed in the `walkDownDefault` function for def-use
 chain analysis:
