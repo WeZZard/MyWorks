@@ -476,7 +476,7 @@ swiftc -Xllvm '--sil-print-inlining-callee=true'
 
 ### 构建 Swift 编译器
 
-需要注意的是，在这篇文章中，我们正在调试编译器的详细行为，但 Swift 编程语言和标准库捆绑在一起。由于问题与 `Array.append` 函数的内联相关，我们应该构建一个 debug 版本的编译器和一个 release 版本的标准库，以确保 `Array.append` 的内联成本尽可能低。你可以使用以下命令实现：
+需要注意的是，在这篇文章中，我们是在调试编译器的行为细节，但 Swift 编程语言和标准库捆绑在一起。由于问题与 `Array.append` 函数的内联相关，我们应该构建一个 debug 版本的编译器和一个 release 版本的标准库，以确保 `Array.append` 的内联成本尽可能低。你可以使用以下命令实现：
 
 ```shell
 utils/build-script --no-swift-stdlib-assertions \
