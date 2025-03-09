@@ -244,7 +244,7 @@ differs from classic RLE approaches:
    - Available `load` instructions for optimization (like the second case)
      when no functions with side effects to the address were called between
      loads
-3. A complexity budget limits prior instruction scanning for each load
+3. A complexity budget limits instruction scanning for each load
 
 Comparing the detailed behaviors of RLE with `AutoreleasingUnsafeMutablePointer`
 and `UnsafeMutablePointer`, we can find:
