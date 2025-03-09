@@ -247,9 +247,9 @@ overwritten
 
 ![getApplyEffect 函数](../get-apply-effect-function.png 'getApplyEffect 函数')
 
-- 使用 `AutoreleasingUnsafeMutablePointer` 时，编译器检查 `load` 指令的操作数的定义源是否逃逸。当确定不逃逸时，编译器将错误地假设函数没有副作用。
+- 使用 `AutoreleasingUnsafeMutablePointer` 时，编译器检查 `load` 指令的操作数的定义源是否逃逸。当确定不逃逸时，编译器将错误地假设函数没有副作用。(line 376)
   
-- 使用 `UnsafeMutablePointer` 时，编译器将获取数组重新分配函数的全局副作用（可能来自 `@_effects` 属性）。只有标记为 `readOnly` 或 `readNone` 的函数会被视为无副作用。
+- 使用 `UnsafeMutablePointer` 时，编译器将获取数组重新分配函数的全局副作用（可能来自 `@_effects` 属性）。只有标记为 `readOnly` 或 `readNone` 的函数会被视为无副作用。(line 381)
 
 于是我们需要对第 371 行的 `visit` 函数进行进一步调查。该行会对 `load` 指令的操作数执行逃逸分析。下图说明了这个过程：
 

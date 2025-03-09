@@ -296,12 +296,12 @@ pointer types:
 - With `AutoreleasingUnsafeMutablePointer`, the compiler checks if the
   definition source of the `load` instruction's operand is escaping. When
   determined not to be escaping, the compiler incorrectly assumes the
-  function has no side effects.
+  function has no side effects (line 376).
   
 - With `UnsafeMutablePointer`, the compiler retrieves the global
   side-effects of the array reallocation function (likely from the
   `@_effects` attribute). Only functions marked `readOnly` or `readNone`
-  are considered side effect-free.
+  are considered side effect-free (line 381).
 
 Further investigation led to the `visit` function at line 371, which
 performs escape analysis on the `load` instruction's operand. The
