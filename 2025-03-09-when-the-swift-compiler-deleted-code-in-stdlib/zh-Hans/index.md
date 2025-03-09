@@ -8,8 +8,9 @@ tags: [Swift, Compiler]
 
 ```swift
 let storage = ValueStorage()
-// 运行时崩溃！
 storage.append(1)
+// 运行时崩溃！
+storage.append(2)
 
 public class ValueStorage {
     

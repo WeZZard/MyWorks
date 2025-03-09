@@ -14,8 +14,9 @@ address sanitizer during compilation.
 
 ```swift
 let storage = ValueStorage()
-// Crash at runtime!
 storage.append(1)
+// Crash at runtime!
+storage.append(2)
 
 public class ValueStorage {
     
