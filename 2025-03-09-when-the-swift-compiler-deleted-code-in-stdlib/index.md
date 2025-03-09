@@ -133,7 +133,7 @@ To identify which compiler pass removed this `load`, we can use the
 we can use `--sil-print-function` to make the compiler print the SIL of the
 specified function whenever a pass modified its contents:
 
-```bash
+```shell
 swiftc YOUR_SWIFT_SOURCE.swift -Osize \
     -Xllvm '--sil-print-function=$MangledSwiftFunctionName'
 ```
@@ -184,7 +184,7 @@ bb3(%17 : $Optional<AnyObject>):
 From these logs, we can clearly see that the "redundant load elimination"
 (RLE) pass deleted the following `load` instruction:
 
-```swift
+```sil
 %42 = load %25 : $*Builtin.BridgeObject
 ```
 
@@ -194,7 +194,7 @@ To develop a fix, we first needed to understand RLE. This pass optimizes
 code by eliminating redundant "get and set" operations for both virtual
 and real registers. Consider this example with virtual registers:
 
-```swift
+```sil
 %1 = load %x
 %2 = store %1
 %3 = load %2
@@ -205,14 +205,14 @@ An optimized equivalent would simply return `%1` immediately, as `%2` is
 just an intermediate result. This is a case RLE should handle correctly.
 Let's call this case 1.
 
-```swift
+```sil
 %1 = load %x
 return %1
 ```
 
 However, consider this more complex case:
 
-```swift
+```sil
 %1 = load %x
 call print(%1)
 call Foo(%x)
@@ -249,7 +249,7 @@ differs from classic RLE approaches:
 Comparing the detailed behaviors of RLE with `AutoreleasingUnsafeMutablePointer`
 and `UnsafeMutablePointer`, we can find:
 
-```swift
+```text
 // AutoreleasingUnsafeMutablePointer
 eliminating redundant loads in function: $s8Crashing12ValueStorageC6appendyySiFySAyAA4Data33_A856358C389441A2F6EA224BB743344FLLCGXEfU_
 ...
@@ -260,7 +260,7 @@ transparent
 // %35 = function_ref @$sSa36_reserveCapacityAssumingUniqueBuffer8oldCountySi_tFSi_Tg5 : $@convention(method) (Int, @inout Array<Int>) -> () // user: %36
 ```
 
-```swift
+```text
 // UnsafeMutablePointer
 eliminating redundant loads in function: $s11NonCrashing12ValueStorageC6appendyySiF
 ...
@@ -363,7 +363,7 @@ public func _unsafeReferenceCast<T, U>(_ x: T, to: U.Type) -> U {
 The compiler translates this to the `Builtin.castReference` function,
 ultimately represented as an `unchecked_ref_cast` instruction in SIL:
 
-```swift
+```sil
 %y = unchecked_ref_cast %x : $SourceSILType to $DesintationSILType
 ```
 
@@ -371,7 +371,7 @@ The problem arises because `AutoreleasingUnsafeMutablePointer` introduces
 cases where `$SourceSILType` and `$DesintationSILType` may be `Optional`
 types:
 
-```swift
+```sil
 %y = unchecked_ref_cast %x : $Optional<AnyObject> to $Data
 ```
 
@@ -494,7 +494,7 @@ After implementing this fix, compiling the `AutoreleasingUnsafeMutablePointer`
 code produces logs showing that RLE correctly recognizes potential side
 effects:
 
-```swift
+```text
 eliminating redundant loads in function: $s8Crashing12ValueStorageC6appendyySiF
 scanning prior instructions for the load:   %45 = load %28 : $*Builtin.BridgeObject         // users: %55, %46
 ...
@@ -505,7 +505,7 @@ overwritten
 The optimized SIL now retains the critical `load` instruction after the
 array reallocation:
 
-```swift
+```sil
 // ValueStorage.append(_:)
 // Isolation: unspecified
 sil [noinline] @$s8Crashing12ValueStorageC6appendyySiF : $@convention(method) (Int, @guaranteed ValueStorage) -> () {
@@ -531,7 +531,7 @@ bb3(%20 : $Optional<AnyObject>):
 To examine the Swift compiler's intermediate representations at each
 compilation stage:
 
-```bash
+```shell
 swiftc YourSwiftSource.swift -Osize -emit-silgen > YourSwiftSource.silgen.sil # Generating raw SIL
 swiftc YourSwiftSource.swift -Osize -emit-sil > YourSwiftSource.sil.sil # Generating optimized SIL
 swiftc YourSwiftSource.swift -Osize -emit-irgen > YourSwiftSource.irgen.ll # Generating raw LLVM IR
@@ -542,7 +542,7 @@ swiftc YourSwiftSource.swift -Osize -emit-ir > YourSwiftSource.ir.ll # Generatin
 
 LLVM provides numerous pass-through arguments that can be used with Swift:
 
-```bash
+```shell
 # Print SIL changes for the specified function
 swiftc -Xllvm '--sil-print-function=$MangledSwiftFunctionName'
 # Print the name of each SIL pass before it runs
@@ -561,7 +561,7 @@ compiler and a release version of the standard library to ensure the
 inlining cost of `Array.append` as low as possible. This could be done
 with the following command:
 
-```bash
+```shell
 utils/build-script --no-swift-stdlib-assertions \
     --skip-ios --skip-tvos --skip-watchos --skip-build-benchmarks
 ```

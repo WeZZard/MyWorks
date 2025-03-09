@@ -123,7 +123,7 @@ internal mutating func _appendElementAssumeUniqueAndCapacity(
 编译器中的调试打印。具体来说，我们可以使用 `--sil-print-function` 让编译器在
 每次有修改时打印指定函数的 SIL：
 
-```bash
+```shell
 swiftc YOUR_SWIFT_SOURCE.swift -Osize \
     -Xllvm '--sil-print-function=$MangledSwiftFunctionName'
 ```
@@ -174,7 +174,7 @@ bb3(%17 : $Optional<AnyObject>):
 从这些日志中，我们可以清楚地看到 redundant load elimination (冗余 load 指令消除，
 下称 RLE) 过程删除了以下 `load` 指令：
 
-```swift
+```sil
 %42 = load %25 : $*Builtin.BridgeObject
 ```
 
@@ -183,7 +183,7 @@ bb3(%17 : $Optional<AnyObject>):
 要开发修复方案，我们首先需要了解 RLE。这个优化过程通过消除虚拟寄存器和实际寄存器的冗余
 "get 和 set" 操作来优化代码。考虑这个虚拟寄存器的例子：
 
-```swift
+```sil
 %1 = load %x
 %2 = store %1
 %3 = load %2
@@ -193,14 +193,14 @@ return %3
 一个更优的等效版本会立即返回 `%1`，因为 `%2` 只是一个中间结果。这是 RLE 应该正确处理的情
 况。我们称之为情况 1。
 
-```swift
+```sil
 %1 = load %x
 return %1
 ```
 
 然而，考虑这个更复杂的情况：
 
-```swift
+```sil
 %1 = load %x
 call print(%1)
 call Foo(%x)
@@ -233,7 +233,7 @@ let redundantLoadElimination = FunctionPass(name: "redundant-load-elimination") 
 比较 RLE 与 `AutoreleasingUnsafeMutablePointer` 和 `UnsafeMutablePointer`
 的详细行为，我们发现：
 
-```swift
+```text
 // AutoreleasingUnsafeMutablePointer
 eliminating redundant loads in function: $s8Crashing12ValueStorageC6appendyySiFySAyAA4Data33_A856358C389441A2F6EA224BB743344FLLCGXEfU_
 ...
@@ -244,7 +244,7 @@ transparent
 // %35 = function_ref @$sSa36_reserveCapacityAssumingUniqueBuffer8oldCountySi_tFSi_Tg5 : $@convention(method) (Int, @inout Array<Int>) -> () // user: %36
 ```
 
-```swift
+```text
 // UnsafeMutablePointer
 eliminating redundant loads in function: $s11NonCrashing12ValueStorageC6appendyySiF
 ...
@@ -335,14 +335,14 @@ public func _unsafeReferenceCast<T, U>(_ x: T, to: U.Type) -> U {
 编译器将其转换为 `Builtin.castReference` 函数，最终在 SIL 中表示为
 `unchecked_ref_cast` 指令：
 
-```swift
+```sil
 %y = unchecked_ref_cast %x : $SourceSILType to $DesintationSILType
 ```
 
 问题产生是因为 `AutoreleasingUnsafeMutablePointer` 引入的情况使
 `$SourceSILType` 和 `$DesintationSILType` 可能是 `Optional` 类型：
 
-```swift
+```sil
 %y = unchecked_ref_cast %x : $Optional<AnyObject> to $Data
 ```
 
@@ -457,7 +457,7 @@ public mutating func walkDownDefault(value operand: Operand, path: Path) -> Walk
 实施此修复后，编译使用 `AutoreleasingUnsafeMutablePointer` 的代码产生的日志
 显示 RLE 正确识别潜在的副作用：
 
-```swift
+```text
 eliminating redundant loads in function: $s8Crashing12ValueStorageC6appendyySiF
 scanning prior instructions for the load:   %45 = load %28 : $*Builtin.BridgeObject         // users: %55, %46
 ...
@@ -467,7 +467,7 @@ overwritten
 
 优化后的 SIL 现在保留了数组重新分配后的关键 `load` 指令：
 
-```swift
+```sil
 // ValueStorage.append(_:)
 // Isolation: unspecified
 sil [noinline] @$s8Crashing12ValueStorageC6appendyySiF : $@convention(method) (Int, @guaranteed ValueStorage) -> () {
@@ -492,7 +492,7 @@ bb3(%20 : $Optional<AnyObject>):
 
 要检查 Swift 编译器在每个编译阶段的中间表示：
 
-```bash
+```shell
 swiftc YourSwiftSource.swift -Osize -emit-silgen > YourSwiftSource.silgen.sil # 生成原始 SIL
 swiftc YourSwiftSource.swift -Osize -emit-sil > YourSwiftSource.sil.sil # 生成优化 SIL
 swiftc YourSwiftSource.swift -Osize -emit-irgen > YourSwiftSource.irgen.ll # 生成原始 LLVM IR
@@ -503,7 +503,7 @@ swiftc YourSwiftSource.swift -Osize -emit-ir > YourSwiftSource.ir.ll # 生成优
 
 LLVM 提供了许多可与 Swift 一起使用的传递参数：
 
-```bash
+```shell
 # 打印指定函数的 SIL 更改
 swiftc -Xllvm '--sil-print-function=$MangledSwiftFunctionName'
 # 在运行每个 SIL 过程前打印其名称
@@ -519,7 +519,7 @@ swiftc -Xllvm '--sil-print-inlining-callee=true'
 debug 版本的编译器和一个 release 版本的标准库，以确保 `Array.append` 的内联成本尽可能低。
 可以使用以下命令实现：
 
-```bash
+```shell
 utils/build-script --no-swift-stdlib-assertions \
     --skip-ios --skip-tvos --skip-watchos --skip-build-benchmarks
 ```
