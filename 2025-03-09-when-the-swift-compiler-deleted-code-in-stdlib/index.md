@@ -301,8 +301,8 @@ pointer types:
   
 - With `UnsafeMutablePointer`, the compiler retrieves the global
   side-effects of the array reallocation function (likely from the
-  `@_effects` attribute). Only functions marked `readOnly` or `readNone`
-  are considered side effect-free (line 381).
+  `@_effects` attribute. Only functions marked `readOnly` or `readNone`
+  are considered side effect-free.) (line 381).
 
 Further investigation led to the `visit` function at line 371, which
 performs escape analysis on the `load` instruction's operand. The

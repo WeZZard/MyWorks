@@ -46,9 +46,9 @@ public class ValueStorage {
 
 ![没有 UAF 问题](../no-uaf-issue.png '没有 UAF 问题')
 
-## 调查崩溃的关键现场
+## 调查崩溃现场
 
-反汇编有问题的程序后，我们可以发现 `Array` 的追加函数内联到了 `ValueStorage.append` 函数中。关键问题是程序在重新分配后没有重新获取 `Array` 的缓冲区对象。这导致使用寄存器 `r12` 计算的地址指向旧缓冲区（如果确实发生了重新分配）。这段反汇编代码可以被简化为：
+反汇编有问题的程序后，我们可以发现 `Array` 的追加函数内联到了 `ValueStorage.append` 函数中。关键问题是程序在 `Array` 重新分配后没有重新获取 `Array` 的缓冲区对象。这导致使用寄存器 `r12` 计算的地址指向旧缓冲区（如果确实发生了重新分配）。这段反汇编代码可以被简化为：
 
 ```asm
 ; 将 `self.values: [Int]` 加载到 r12
@@ -250,7 +250,7 @@ overwritten
 
 - 使用 `AutoreleasingUnsafeMutablePointer` 时，编译器检查 `load` 指令的操作数的定义源是否逃逸。当确定不逃逸时，编译器将错误地假设函数没有副作用。(line 376)
   
-- 使用 `UnsafeMutablePointer` 时，编译器将获取数组重新分配函数的全局副作用（可能来自 `@_effects` 属性）。只有标记为 `readOnly` 或 `readNone` 的函数会被视为无副作用。(line 381)
+- 使用 `UnsafeMutablePointer` 时，编译器将获取数组重新分配函数的全局副作用（可能来自 `@_effects` 属性。只有标记为 `readOnly` 或 `readNone` 的函数会被视为无副作用。）(line 381)
 
 于是我们需要对第 371 行的 `visit` 函数进行进一步调查。该行会对 `load` 指令的操作数执行逃逸分析。下图说明了这个过程：
 
