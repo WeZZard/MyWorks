@@ -247,7 +247,7 @@ differs from classic RLE approaches:
 3. A complexity budget limits instruction scanning for each load
 
 Comparing the detailed behaviors of RLE with `AutoreleasingUnsafeMutablePointer`
-and `UnsafeMutablePointer`, we can find:
+and `UnsafeMutablePointer`, we can get the following log:
 
 ```text
 // AutoreleasingUnsafeMutablePointer

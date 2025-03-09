@@ -210,7 +210,7 @@ let redundantLoadElimination = FunctionPass(name: "redundant-load-elimination") 
 3. 指令扫描有复杂度预算限制
 
 比较 RLE 与 `AutoreleasingUnsafeMutablePointer` 和 `UnsafeMutablePointer`
-的详细行为，我们发现：
+的详细行为，我们可以获得如下日志：
 
 ```text
 // AutoreleasingUnsafeMutablePointer
