@@ -2,6 +2,7 @@
 title: "When the Swift Compiler Deleted Code in Stdlib - A Note on Fixing the Eliminate Redundant Load Pass in Swift 6"
 category: Programming
 tags: [Swift, Compiler]
+published: false
 ---
 
 Right before the Chinese New Year vacation of the Year of the Snake, a

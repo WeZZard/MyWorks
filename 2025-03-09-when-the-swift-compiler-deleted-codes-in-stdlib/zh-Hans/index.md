@@ -2,6 +2,7 @@
 title: "Swift 编译器删除了标准库中的代码 - 记修复 Swift 6 中 Redundant Load Elimination 优化步骤"
 category: Programming
 tags: [Swift, Compiler]
+published: false
 ---
 
 蛇年春节假期前，一位同事向我展示了一个由 use-after-free（使用后释放）错误导致的
