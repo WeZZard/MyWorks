@@ -4,12 +4,12 @@ category: Programming
 tags: [Swift, Compiler]
 ---
 
-Right before the Chinese New Year vacation of the Year of the Snake, a 
-colleague showed me a mysterious crash caused by a use-after-free error. 
-Recently, I found time to investigate this issue and discovered that the 
-crash resulted from a miscompilation by the Swift compiler. The minimal 
-reproducible code appears below and must be compiled with the `-Osize` 
-optimization level. We can detect the use-after-free by enabling the 
+Right before the Chinese New Year vacation of the Year of the Snake, a
+colleague showed me a mysterious crash caused by a use-after-free error.
+Recently, I found time to investigate this issue and discovered that the
+crash resulted from a miscompilation by the Swift compiler. The minimal
+reproducible code appears below and must be compiled with the `-Osize`
+optimization level. We can detect the use-after-free by enabling the
 address sanitizer during compilation.
 
 ```swift
@@ -47,18 +47,18 @@ public class ValueStorage {
 
 ![Screenshot 2025-03-08 at 6.42.14 PM.png](Screenshot_2025-03-08_at_6.42.14_PM.png)
 
-Interestingly, replacing `AutoreleasingUnsafeMutablePointer` with 
+Interestingly, replacing `AutoreleasingUnsafeMutablePointer` with
 `UnsafeMutablePointer` eliminates the issue.
 
 ![Screenshot 2025-03-08 at 7.02.53 PM.png](Screenshot_2025-03-08_at_7.02.53_PM.png)
 
 ## Investigating the Primary Scene of the Crash
 
-After disassembling the problematic program, we can find that the `Array` 
-appending function was inlined in the `ValueStorage.append` function. The 
-key issue is that the program failed to re-acquire the `Array`'s buffer 
-object after reallocation. This causes the address computed with register 
-`r12` to point to the old buffer if reallocation occurred. The 
+After disassembling the problematic program, we can find that the `Array`
+appending function was inlined in the `ValueStorage.append` function. The
+key issue is that the program failed to re-acquire the `Array`'s buffer
+object after reallocation. This causes the address computed with register
+`r12` to point to the old buffer if reallocation occurred. The
 disassembled code can be simplified as:
 
 ```nasm
@@ -79,10 +79,10 @@ Here is the complete disassembled code of `ValueStorage.append`:
 
 ![Screenshot 2025-03-08 at 4.21.44 PM.png](Screenshot_2025-03-08_at_4.21.44_PM.png)
 
-Examining the Swift standard library reveals that the implementation 
-actually updates elements count and inserts new elements by accessing the 
-property `_buffer` on `self`, not an existing old buffer variable. The 
-Swift compiler incorrectly eliminated the re-acquisition of the `_buffer` 
+Examining the Swift standard library reveals that the implementation
+actually updates elements count and inserts new elements by accessing the
+property `_buffer` on `self`, not an existing old buffer variable. The
+Swift compiler incorrectly eliminated the re-acquisition of the `_buffer`
 object in the target code.
 
 ```swift
@@ -118,19 +118,19 @@ internal mutating func _appendElementAssumeUniqueAndCapacity(
 
 ## Why the Swift Compiler Deleted the Code
 
-By examining the intermediate compilation products, we can find the 
-initial miscompilation in the "optimized SIL" output, which can be 
-obtained by adding the `-emit-sil` argument when invoking `swiftc`. 
-Comparing the optimized SIL of programs using `AutoreleasingUnsafeMutablePointer` 
-(left side) and `UnsafeMutablePointer` (right side) revealed that with 
-`AutoreleasingUnsafeMutablePointer`, a critical `load` of the array 
+By examining the intermediate compilation products, we can find the
+initial miscompilation in the "optimized SIL" output, which can be
+obtained by adding the `-emit-sil` argument when invoking `swiftc`.
+Comparing the optimized SIL of programs using `AutoreleasingUnsafeMutablePointer`
+(left side) and `UnsafeMutablePointer` (right side) revealed that with
+`AutoreleasingUnsafeMutablePointer`, a critical `load` of the array
 storage was missing.
 
 ![Screenshot 2025-03-08 at 6.53.52 PM.png](Screenshot_2025-03-08_at_6.53.52_PM.png)
 
-To identify which compiler pass removed this `load`, we can use the 
-`-Xllvm` argument to enable debug prints in the compiler. Specifically, 
-we can use `--sil-print-function` to make the compiler print the SIL of the 
+To identify which compiler pass removed this `load`, we can use the
+`-Xllvm` argument to enable debug prints in the compiler. Specifically,
+we can use `--sil-print-function` to make the compiler print the SIL of the
 specified function whenever a pass modified its contents:
 
 ```bash
@@ -181,7 +181,7 @@ bb3(%17 : $Optional<AnyObject>):
   store %41 to %45 : $*Int
 ```
 
-From these logs, we can clearly see that the "redundant load elimination" 
+From these logs, we can clearly see that the "redundant load elimination"
 (RLE) pass deleted the following `load` instruction:
 
 ```swift
@@ -190,8 +190,8 @@ From these logs, we can clearly see that the "redundant load elimination"
 
 ## Reasoning the Fix Solution
 
-To develop a fix, we first needed to understand RLE. This pass optimizes 
-code by eliminating redundant "get and set" operations for both virtual 
+To develop a fix, we first needed to understand RLE. This pass optimizes
+code by eliminating redundant "get and set" operations for both virtual
 and real registers. Consider this example with virtual registers:
 
 ```swift
@@ -201,7 +201,7 @@ and real registers. Consider this example with virtual registers:
 return %3
 ```
 
-An optimized equivalent would simply return `%1` immediately, as `%2` is 
+An optimized equivalent would simply return `%1` immediately, as `%2` is
 just an intermediate result. This is a case RLE should handle correctly.
 Let's call this case 1.
 
@@ -220,11 +220,11 @@ call Foo(%x)
 return %3
 ```
 
-Here, elimination depends on whether `Foo` modifies the contents of `%x`. 
-If it does, we cannot directly return `%1` because `%3 = load %x` loads 
+Here, elimination depends on whether `Foo` modifies the contents of `%x`.
+If it does, we cannot directly return `%1` because `%3 = load %x` loads
 the updated contents. Let's call this case 2.
 
-Examining the Swift compiler's RLE implementation in 
+Examining the Swift compiler's RLE implementation in
 `RedundantLoadElimination.swift`, we can find the entry point:
 
 ```swift
@@ -234,19 +234,19 @@ let redundantLoadElimination = FunctionPass(name: "redundant-load-elimination") 
 }
 ```
 
-Follow the code from this entry point, we can find that the algorithm 
+Follow the code from this entry point, we can find that the algorithm
 differs from classic RLE approaches:
 
-1. It iterates backward through instructions in each reverse-order basic 
+1. It iterates backward through instructions in each reverse-order basic
    block to find all `load` instructions
 2. For each `load`, it examines prior instructions to find:
    - Available `store` instructions for optimization (like the first case)
-   - Available `load` instructions for optimization (like the second case) 
-     when no functions with side effects to the address were called between 
+   - Available `load` instructions for optimization (like the second case)
+     when no functions with side effects to the address were called between
      loads
 3. A complexity budget limits prior instruction scanning for each load
 
-Comparing the detailed behaviors of RLE with `AutoreleasingUnsafeMutablePointer` 
+Comparing the detailed behaviors of RLE with `AutoreleasingUnsafeMutablePointer`
 and `UnsafeMutablePointer`, we can find:
 
 ```swift
@@ -272,49 +272,49 @@ overwritten
 ```
 
 This reveals that:
-- With `AutoreleasingUnsafeMutablePointer`, RLE considered the array 
-  reallocation function "transparent" to the address of the `load` 
+- With `AutoreleasingUnsafeMutablePointer`, RLE considered the array
+  reallocation function "transparent" to the address of the `load`
   instruction's operand, enabling elimination
-- With `UnsafeMutablePointer`, RLE correctly recognized that the function 
+- With `UnsafeMutablePointer`, RLE correctly recognized that the function
   overwrites the address, preventing elimination
 
-For case 2 scenarios, the Swift 6 algorithm checks all prior instructions 
-of the `load` to determine side effects of function calls between the 
+For case 2 scenarios, the Swift 6 algorithm checks all prior instructions
+of the `load` to determine side effects of function calls between the
 source of the `load`'s operand and the `load` instruction itself.
 
 ![Screenshot 2025-03-09 at 1.22.28 PM.png](Screenshot_2025-03-09_at_1.22.28_PM.png)
 
-The key insight is that the Swift compiler only evaluates function side 
-effects when the ultimate source of the `load`'s operand has an unknown 
+The key insight is that the Swift compiler only evaluates function side
+effects when the ultimate source of the `load`'s operand has an unknown
 escaping result. By setting breakpoints in the following function located
 in `AliasAnalysis.swift`, I found the critical difference between the two
 pointer types:
 
 ![Screenshot 2025-03-09 at 12.05.08 AM.png](Screenshot_2025-03-09_at_12.05.08_AM.png)
 
-- With `AutoreleasingUnsafeMutablePointer`, the compiler checks if the 
-  definition source of the `load` instruction's operand is escaping. When 
-  determined not to be escaping, the compiler incorrectly assumes the 
+- With `AutoreleasingUnsafeMutablePointer`, the compiler checks if the
+  definition source of the `load` instruction's operand is escaping. When
+  determined not to be escaping, the compiler incorrectly assumes the
   function has no side effects.
   
-- With `UnsafeMutablePointer`, the compiler retrieves the global 
-  side-effects of the array reallocation function (likely from the 
-  `@_effects` attribute). Only functions marked `readOnly` or `readNone` 
+- With `UnsafeMutablePointer`, the compiler retrieves the global
+  side-effects of the array reallocation function (likely from the
+  `@_effects` attribute). Only functions marked `readOnly` or `readNone`
   are considered side effect-free—a more conservative approach.
 
-Further investigation led to the `visit` function at line 371, which 
-performs escape analysis on the `load` instruction's operand. The 
+Further investigation led to the `visit` function at line 371, which
+performs escape analysis on the `load` instruction's operand. The
 following diagram illustrates this process:
 
 ![escape-analaysis-1@3x.png](escape-analaysis-1@3x.png)
 
 This escape analysis process:
 1. Walks up the use-def chain to analyze escaping behavior
-2. Constructs a path representing how to derive the `load` instruction's 
+2. Constructs a path representing how to derive the `load` instruction's
    operand from its definition point
 
-The complexity arises with `AutoreleasingUnsafeMutablePointer`'s `pointee` 
-getter implementation, which presents a non-trivial case for the walk-up 
+The complexity arises with `AutoreleasingUnsafeMutablePointer`'s `pointee`
+getter implementation, which presents a non-trivial case for the walk-up
 analysis:
 
 ```swift
@@ -347,9 +347,9 @@ public struct AutoreleasingUnsafeMutablePointer<Pointee /* TODO : class */>
 }
 ```
 
-The implementation details reveal that `AutoreleasingUnsafeMutablePointer` 
-must cast references from `Optional<Unmanaged<AnyObject>>` to the 
-`Pointee` type to maintain +0 reference counting. This casting is 
+The implementation details reveal that `AutoreleasingUnsafeMutablePointer`
+must cast references from `Optional<Unmanaged<AnyObject>>` to the
+`Pointee` type to maintain +0 reference counting. This casting is
 performed through the `_unsafeReferenceCast` function:
 
 ```swift
@@ -360,32 +360,32 @@ public func _unsafeReferenceCast<T, U>(_ x: T, to: U.Type) -> U {
 }
 ```
 
-The compiler translates this to the `Builtin.castReference` function, 
+The compiler translates this to the `Builtin.castReference` function,
 ultimately represented as an `unchecked_ref_cast` instruction in SIL:
 
 ```swift
 %y = unchecked_ref_cast %x : $SourceSILType to $DesintationSILType
 ```
 
-The problem arises because `AutoreleasingUnsafeMutablePointer` introduces 
-cases where `$SourceSILType` and `$DesintationSILType` may be `Optional` 
+The problem arises because `AutoreleasingUnsafeMutablePointer` introduces
+cases where `$SourceSILType` and `$DesintationSILType` may be `Optional`
 types:
 
 ```swift
 %y = unchecked_ref_cast %x : $Optional<AnyObject> to $Data
 ```
 
-This instruction can cast between `Optional` and non-`Optional` types, 
-effectively wrapping or unwrapping values. Since escape analysis walks the 
-use-def chain with a path that must strictly reflect how to derive the 
-`load` operand from its definition point, these implicit `Optional` 
+This instruction can cast between `Optional` and non-`Optional` types,
+effectively wrapping or unwrapping values. Since escape analysis walks the
+use-def chain with a path that must strictly reflect how to derive the
+`load` operand from its definition point, these implicit `Optional`
 conversions create path mismatches, as illustrated:
 
 ![escape-analaysis-2@3x.png](escape-analaysis-2@3x.png)
 
-This hypothesis is confirmed by examining the `walkUpDefault` function in 
-`WalkUtils.swift`, which handles various instruction types during the 
-walk-up but lacks proper handling for `Optional` conversions in 
+This hypothesis is confirmed by examining the `walkUpDefault` function in
+`WalkUtils.swift`, which handles various instruction types during the
+walk-up but lacks proper handling for `Optional` conversions in
 `unchecked_ref_cast`:
 
 ```swift
@@ -444,7 +444,7 @@ public mutating func walkUpDefault(value def: Value, path: Path) -> WalkResult {
 }
 ```
 
-The diagram below illustrates how this fix accommodates `Optional` and 
+The diagram below illustrates how this fix accommodates `Optional` and
 non-`Optional` type conversions during escape analysis. When the escape
 analysis process encounters an `unchecked_ref_cast` between `Optional` and
 non-`Optional` types, the fix ensures proper path transformations by
@@ -452,7 +452,7 @@ adjusting the path to account for enum case differences.
 
 ![escape-analaysis-3@3x.png](escape-analaysis-3@3x.png)
 
-A similar change is needed in the `walkDownDefault` function for def-use 
+A similar change is needed in the `walkDownDefault` function for def-use
 chain analysis:
 
 ```swift
@@ -490,8 +490,8 @@ public mutating func walkDownDefault(value operand: Operand, path: Path) -> Walk
 }
 ```
 
-After implementing this fix, compiling the `AutoreleasingUnsafeMutablePointer` 
-code produces logs showing that RLE correctly recognizes potential side 
+After implementing this fix, compiling the `AutoreleasingUnsafeMutablePointer`
+code produces logs showing that RLE correctly recognizes potential side
 effects:
 
 ```swift
@@ -502,7 +502,7 @@ visiting instruction:   %39 = apply %38(%37, %23) : $@convention(method) (Int, @
 overwritten
 ```
 
-The optimized SIL now retains the critical `load` instruction after the 
+The optimized SIL now retains the critical `load` instruction after the
 array reallocation:
 
 ```swift
@@ -528,7 +528,7 @@ bb3(%20 : $Optional<AnyObject>):
 
 ### Getting the Intermediate Products of the Swift Compiler
 
-To examine the Swift compiler's intermediate representations at each 
+To examine the Swift compiler's intermediate representations at each
 compilation stage:
 
 ```bash
@@ -553,13 +553,13 @@ swiftc -Xllvm '--sil-print-inlining-callee=true'
 
 ### Building the Swift Compiler
 
-What to notice is that, in this post, we are debugging the detailed 
-behaviors of the compiler, but the Swift programming language is bundled 
-with the standard library. Since the issue is coupled with the inlining 
-of the function `Array.append`, we shall build a debug version of the 
-compiler and a release version of the standard library to ensure the 
-inlining cost of `Array.append` as low as possible. This could be done 
-h the following command:
+What to notice is that, in this post, we are debugging the detailed
+behaviors of the compiler, but the Swift programming language is bundled
+with the standard library. Since the issue is coupled with the inlining
+of the function `Array.append`, we shall build a debug version of the
+compiler and a release version of the standard library to ensure the
+inlining cost of `Array.append` as low as possible. This could be done
+with the following command:
 
 ```bash
 utils/build-script --no-swift-stdlib-assertions \
@@ -568,6 +568,6 @@ utils/build-script --no-swift-stdlib-assertions \
 
 ### Syntax Highlights for SIL and LLVM IR
 
-You could search “WeZZard” in the extension market of VS Code (or Cursor) to get the syntax highlights for SIL in relative IDE.
+You could search "WeZZard" in the extension market of VS Code (or Cursor) to get the syntax highlights for SIL in relative IDE.
 
-You could find the “LLVM” extension by Ingvar Stepanyan in the extension market of VS Code (or Cursor) to get the syntax highlights for LLVM IR in relative IDE.
+You could find the "LLVM" extension by Ingvar Stepanyan in the extension market of VS Code (or Cursor) to get the syntax highlights for LLVM IR in relative IDE.
