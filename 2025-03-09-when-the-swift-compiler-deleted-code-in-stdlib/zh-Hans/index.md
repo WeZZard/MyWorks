@@ -206,8 +206,8 @@ let redundantLoadElimination = FunctionPass(name: "redundant-load-elimination") 
 1. 它在每个逆序的基本块中反向迭代所有指令，以查找所有 `load` 指令
 2. 对于每个 `load`，它检查其先前的指令以查找：
    - 可用的 `store` 指令进行优化（对应第一种情况）
-   - 可用的 `load` 指令进行优化（对应第二种情况），如果当两个加载之间没有对地址有副作用的函数调用的话
-3. 对每个加载指令的先前指令扫描有复杂度预算限制
+   - 可用的 `load` 指令进行优化（对应第二种情况），如果当两个 `load` 之间没有对地址有副作用的函数调用的话
+3. 对每个 `load` 指令的先前指令扫描有复杂度预算限制
 
 比较 RLE 与 `AutoreleasingUnsafeMutablePointer` 和 `UnsafeMutablePointer`
 的详细行为，我们发现：
