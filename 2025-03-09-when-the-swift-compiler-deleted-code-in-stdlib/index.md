@@ -43,14 +43,14 @@ public class ValueStorage {
 }
 ```
 
-![Screenshot 2025-03-08 at 6.42.34 PM.png](enable-asan-in-xcode.png)
+![Enable Address Sanitizer in Xcode](enable-asan-in-xcode.png 'Enable Address Sanitizer in Xcode')
 
-![UAF Issue](uaf-issue.png)
+![UAF Issue](uaf-issue.png 'UAF Issue Occurred')
 
 Interestingly, replacing `AutoreleasingUnsafeMutablePointer` with
 `UnsafeMutablePointer` eliminates the issue.
 
-![No UAF Issue](no-uaf-issue.png)
+![No UAF Issue](no-uaf-issue.png 'No UAF Issue Occurred')
 
 ## Investigating the Primary Scene of the Crash
 
@@ -77,7 +77,7 @@ mov qword [r12 + 0x10] rax
 
 Here is the complete disassembled code of `ValueStorage.append`:
 
-![ValueStorage.append's Generated Target Code](generated-target-code-with-uaf-issue.png)
+![ValueStorage.append's Generated Target Code](generated-target-code-with-uaf-issue.png 'ValueStorage.append's Generated Target Code')
 
 Examining the Swift standard library reveals that the implementation
 actually updates elements count and inserts new elements by accessing the
@@ -126,7 +126,7 @@ Comparing the optimized SIL of programs using `AutoreleasingUnsafeMutablePointer
 `AutoreleasingUnsafeMutablePointer`, a critical `load` of the array
 storage was missing.
 
-![Comparing Crashing and Non-Crashing SIL](comparing-crashing-non-crashing-sil.png)
+![Comparing Crashing and Non-Crashing SIL](comparing-crashing-non-crashing-sil.png 'Comparing Crashing and Non-Crashing SIL')
 
 To identify which compiler pass removed this `load`, we can use the
 `-Xllvm` argument to enable debug prints in the compiler. Specifically,
@@ -224,8 +224,8 @@ Here, elimination depends on whether `Foo` modifies the contents of `%x`.
 If it does, we cannot directly return `%1` because `%3 = load %x` loads
 the updated contents. Let's call this case 2.
 
-Examining the Swift compiler's RLE implementation in
-`RedundantLoadElimination.swift`, we can find the entry point:
+Now let’s examine how the Swift compiler implements redundant load
+elimination. The main entry point resides in `RedundantLoadElimination.swift`:
 
 ```swift
 let redundantLoadElimination = FunctionPass(name: "redundant-load-elimination") {
@@ -272,6 +272,7 @@ overwritten
 ```
 
 This reveals that:
+
 - With `AutoreleasingUnsafeMutablePointer`, RLE considered the array
   reallocation function "transparent" to the address of the `load`
   instruction's operand, enabling elimination
@@ -282,7 +283,7 @@ For case 2 scenarios, the Swift 6 algorithm checks all prior instructions
 of the `load` to determine side effects of function calls between the
 source of the `load`'s operand and the `load` instruction itself.
 
-![Side Effects Analysis](side-effects-analysis.png)
+![Side Effects Analysis](side-effects-analysis.png 'Side Effects Analysis')
 
 The key insight is that the Swift compiler only evaluates function side
 effects when the ultimate source of the `load`'s operand has an unknown
@@ -290,7 +291,7 @@ escaping result. By setting breakpoints in the following function located
 in `AliasAnalysis.swift`, I found the critical difference between the two
 pointer types:
 
-![The getApplyEffect Function](get-apply-effect-function.png)
+![The getApplyEffect Function](get-apply-effect-function.png 'The getApplyEffect Function')
 
 - With `AutoreleasingUnsafeMutablePointer`, the compiler checks if the
   definition source of the `load` instruction's operand is escaping. When
@@ -306,9 +307,10 @@ Further investigation led to the `visit` function at line 371, which
 performs escape analysis on the `load` instruction's operand. The
 following diagram illustrates this process:
 
-![Escape Analysis 1](escape-analaysis-1.png)
+![Escape Analysis 1](escape-analaysis-1.png 'Escape Analysis 1')
 
 This is the escape analysis process:
+
 1. Walks up the use-def chain to analyze escaping behavior
 2. Constructs a path representing how to derive the `load` instruction's
    operand from its definition point in each step
@@ -381,7 +383,7 @@ use-def chain with a path that must strictly reflect how to derive the
 `load` operand from its definition point, these implicit `Optional`
 conversions create path mismatches, as illustrated:
 
-![Escape Analysis 2](escape-analaysis-2.png)
+![Escape Analysis 2](escape-analaysis-2.png 'Escape Analysis 2')
 
 This hypothesis is confirmed by examining the `walkUpDefault` function in
 `WalkUtils.swift`, which handles various instruction types during the
@@ -450,7 +452,7 @@ analysis process encounters an `unchecked_ref_cast` between `Optional` and
 non-`Optional` types, the fix ensures proper path transformations by
 adjusting the path to account for enum case differences.
 
-![Escape Analysis 3.png](escape-analaysis-3.png)
+![Escape Analysis 3.png](escape-analaysis-3.png 'Escape Analysis 3')
 
 A similar change is needed in the `walkDownDefault` function for def-use
 chain analysis:
