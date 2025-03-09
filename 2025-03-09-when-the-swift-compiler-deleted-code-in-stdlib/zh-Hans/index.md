@@ -331,6 +331,7 @@ public mutating func walkUpDefault(value def: Value, path: Path) -> WalkResult {
         // We need to ignore this because otherwise the path wouldn't contain the right `existential` field kind.
         return rootDef(value: urc, path: path)
       }
+      return walkUp(value: urc.fromInstance, path: path)
       ...
     }
 }
