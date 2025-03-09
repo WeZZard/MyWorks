@@ -278,30 +278,44 @@ This reveals that:
 - With `UnsafeMutablePointer`, RLE correctly recognized that the function 
   overwrites the address, preventing elimination
 
-// Need to refine began
-In terms of the case 2, the algorithm implemented in the Swift 6 need to check all the prior instructions of the `load` instruction tried to eliminate. One purpose of this is to investigate the side-effects of the functions called between the ultimate source of the `load`'s operand and the `load` instruction tried to eliminate.
+For case 2 scenarios, the Swift 6 algorithm checks all prior instructions 
+of the `load` to determine side effects of function calls between the 
+source of the `load`'s operand and the `load` instruction itself.
 
 ![Screenshot 2025-03-09 at 1.22.28 PM.png](Screenshot_2025-03-09_at_1.22.28_PM.png)
 
-However, the Swift compiler only reads the side-effects of the function when the ultimate source of the `load`'s operand has unknown escaping result. By setting breakpoints in the relative function in the file `AliasAnalysis.swift`, we can also spot that the difference between the `AutoreleasingUnsafeMutablePointer` and `UnsafeMutablePointer` happens in this function:
+The key insight is that the Swift compiler only evaluates function side 
+effects when the ultimate source of the `load`'s operand has an unknown 
+escaping result. By setting breakpoints in the following function located
+in `AliasAnalysis.swift`, I found the critical difference between the two
+pointer types:
 
-- In the case of `AutoreleasingUnsafeMutablePointer`, the Swift compiler went to the line 376 to check whether the definition source of the `load` instruction’s operand is escaping. If it is ensured not escaping, the compiler would think the function has no side effects.
-- In the case of `UnsafeMutablePointer`, the Swift compiler went to the line 379 to get the global side-effects of the array reallocation function. This may return the contents defined in the `@_effects` attribute marked on the function. Since only `readOnly` and `readNone` make the compiler think the function has no side effects, this is a very conservative choice.
+![Screenshot 2025-03-09 at 12.05.08 AM.png](Screenshot_2025-03-09_at_12.05.08_AM.png)
 
-![Screenshot 2025-03-09 at 12.05.08 AM.png](Screenshot_2025-03-09_at_12.05.08_AM.png)
+- With `AutoreleasingUnsafeMutablePointer`, the compiler checks if the 
+  definition source of the `load` instruction's operand is escaping. When 
+  determined not to be escaping, the compiler incorrectly assumes the 
+  function has no side effects.
+  
+- With `UnsafeMutablePointer`, the compiler retrieves the global 
+  side-effects of the array reallocation function (likely from the 
+  `@_effects` attribute). Only functions marked `readOnly` or `readNone` 
+  are considered side effect-free—a more conservative approach.
 
-Then the search scope limited to the line 371 — the `visit` function. This function actually does nothing but just to forward to an escape analysis for the operand of the `load` instruction. We could have the following diagram to help us understand what would happen step-by-step:
+Further investigation led to the `visit` function at line 371, which 
+performs escape analysis on the `load` instruction's operand. The 
+following diagram illustrates this process:
 
-![escape-analaysis-1@3x.png](escape-analaysis-13x.png)
+![escape-analaysis-1@3x.png](escape-analaysis-1@3x.png)
 
-With this diagram, we can know that:
+This escape analysis process:
+1. Walks up the use-def chain to analyze escaping behavior
+2. Constructs a path representing how to derive the `load` instruction's 
+   operand from its definition point
 
-- The escaping analysis for the operand of an instruction walk up the use-def chain to analysis escaping.
-- The escaping analysis would assemble a path to represents how to get the operand of the `load` instruction from the value of definition point.
-
-However, in the case of `AutoreleasingUnsafeMutablePointer`, the getter of the  `pointee` variable is an non-trivial case in this walk-up journey:
-
-// Need to refine ended
+The complexity arises with `AutoreleasingUnsafeMutablePointer`'s `pointee` 
+getter implementation, which presents a non-trivial case for the walk-up 
+analysis:
 
 ```swift
 @frozen
@@ -333,8 +347,10 @@ public struct AutoreleasingUnsafeMutablePointer<Pointee /* TODO : class */>
 }
 ```
 
-// Need to refine began
-With the comments, we can know that: for the sake of representing an +0 refcount reference, the `AutoreleasingUnsafeMutablePointer` need to cast the reference from an `Optional<Unmanaged<AnyObject>>` to the `Pointee` type. This is done by the `_unsafeReferenceCast` function.
+The implementation details reveal that `AutoreleasingUnsafeMutablePointer` 
+must cast references from `Optional<Unmanaged<AnyObject>>` to the 
+`Pointee` type to maintain +0 reference counting. This casting is 
+performed through the `_unsafeReferenceCast` function:
 
 ```swift
 @_transparent
@@ -344,23 +360,33 @@ public func _unsafeReferenceCast<T, U>(_ x: T, to: U.Type) -> U {
 }
 ```
 
-The compiler forwards to the `castReference` function of the `Builtin` module and then ultimately represents this function with `unchecked_ref_cast` instruction.
+The compiler translates this to the `Builtin.castReference` function, 
+ultimately represented as an `unchecked_ref_cast` instruction in SIL:
 
 ```swift
 %y = unchecked_ref_cast %x : $SourceSILType to $DesintationSILType
 ```
 
-However, the requirements from the `AutoreleasingUnsafeMutablePointer` introduces case that the `$SourceSILType` and `$DesintationSILType` may be an `Optional` type:
+The problem arises because `AutoreleasingUnsafeMutablePointer` introduces 
+cases where `$SourceSILType` and `$DesintationSILType` may be `Optional` 
+types:
 
 ```swift
 %y = unchecked_ref_cast %x : $Optional<AnyObject> to $Data
 ```
 
-In other words, this instruction may cast between `Optional` types and non-`Optional` types — or say may wrap a type into `Optional` or unwrap an `Optional`  type into non-`Optional`. Since the escaping analysis walk up the use-def chain with a paired path and the paired path shall strictly reflect the way of getting the operand of the `load` instruction from its definition point. This unexpected `Optional` wrapping and unwrapping makes the path does not match with the exact one. Let me show you in the diagram:
+This instruction can cast between `Optional` and non-`Optional` types, 
+effectively wrapping or unwrapping values. Since escape analysis walks the 
+use-def chain with a path that must strictly reflect how to derive the 
+`load` operand from its definition point, these implicit `Optional` 
+conversions create path mismatches, as illustrated:
 
-![escape-analaysis-2@3x.png](escape-analaysis-23x.png)
+![escape-analaysis-2@3x.png](escape-analaysis-2@3x.png)
 
-We also can verify this by checking out the following function in the `WalkUtils.swift`.
+This hypothesis is confirmed by examining the `walkUpDefault` function in 
+`WalkUtils.swift`, which handles various instruction types during the 
+walk-up but lacks proper handling for `Optional` conversions in 
+`unchecked_ref_cast`:
 
 ```swift
 public mutating func walkUpDefault(value def: Value, path: Path) -> WalkResult {
@@ -377,11 +403,10 @@ public mutating func walkUpDefault(value def: Value, path: Path) -> WalkResult {
         }
 }
 ```
-// Need to refine ended
 
 ## Fix Solution
 
-The solution is to account for `Optional` and non-`Optional` casting in 
+The solution is to account for `Optional` and non-`Optional` casting in
 the use-def chain walk-up:
 
 ```swift
@@ -418,6 +443,8 @@ public mutating func walkUpDefault(value def: Value, path: Path) -> WalkResult {
         }
 }
 ```
+
+![escape-analaysis-2@3x.png](escape-analaysis-3@3x.png)
 
 A similar change is needed in the `walkDownDefault` function for def-use 
 chain analysis:
