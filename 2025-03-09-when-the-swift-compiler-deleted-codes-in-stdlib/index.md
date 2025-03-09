@@ -1,10 +1,16 @@
 ---
-title: "When the Swift Compiler Deleted Codes in Stdlib - A Note of Fixing the Eliminate Redundant Load Pass in Swift 6"
+title: "When the Swift Compiler Deleted Code in Stdlib - A Note on Fixing the Eliminate Redundant Load Pass in Swift 6"
 category: Programming
 tags: [Swift, Compiler]
 ---
 
-Right before the Chinese New Year vacation of the year snake, my colleague showed me a mystic crash caused by a use-after-free. Recently, I end up having some time to dig into this issue and eventually found that the crash is a result of a mis-compilation caused by the Swift compiler. The minimal reproducible code is shown below and shall be compiled with the `-Osize` optimization level. We can observe the use-after-free by enabling the address sanitizer while compiling the program.
+Right before the Chinese New Year vacation of the Year of the Snake, a 
+colleague showed me a mysterious crash caused by a use-after-free error. 
+Recently, I found time to investigate this issue and discovered that the 
+crash resulted from a miscompilation by the Swift compiler. The minimal 
+reproducible code appears below and must be compiled with the `-Osize` 
+optimization level. We can detect the use-after-free by enabling the 
+address sanitizer during compilation.
 
 ```swift
 let storage = ValueStorage()
@@ -41,13 +47,19 @@ public class ValueStorage {
 
 ![Screenshot 2025-03-08 at 6.42.14 PM.png](Screenshot_2025-03-08_at_6.42.14_PM.png)
 
-However, by replacing the `AutoreleasingUnsafeMutablePointer` with `UnsafeMutablePointer`, this issue disappeared.
+Interestingly, replacing `AutoreleasingUnsafeMutablePointer` with 
+`UnsafeMutablePointer` eliminates the issue.
 
 ![Screenshot 2025-03-08 at 7.02.53 PM.png](Screenshot_2025-03-08_at_7.02.53_PM.png)
 
 ## Investigating the Primary Scene of the Crash
 
-After disassembled the problematic program, we can find that the `Array` appending function was inlined in  the `ValueStorage.append` function. What might take time to figure out is that the program didn’t re-acquire the `Array`'s buffer object after the buffer has been reallocated. This would cause the address computed with the register `r12` points to the old buffer if the reallocation really happened. The disassembled code could be simplified as the following code:
+After disassembling the problematic program, we can find that the `Array` 
+appending function was inlined in the `ValueStorage.append` function. The 
+key issue is that the program failed to re-acquire the `Array`'s buffer 
+object after reallocation. This causes the address computed with register 
+`r12` to point to the old buffer if reallocation occurred. The 
+disassembled code can be simplified as:
 
 ```nasm
 ; load `self.values: [Int]` to r12
@@ -56,18 +68,22 @@ mov r15, qword [r13 + 0x10]
 mov r14, r15
 ; loads the Array's buffer object to r12
 mov r12, qword [r14 + 0x10]
-; reallocate, may free the the old buffer object
+; reallocate, may free the old buffer object
 call Swift.Array._reserveCapacityAssumingUniqueBuffer
 ; set the new count to the old buffer object
-; use-after-free happened
+; use-after-free occurred
 mov qword [r12 + 0x10] rax
 ```
 
-And here is the complete disassembled code of `ValueStorage.append`.
+Here is the complete disassembled code of `ValueStorage.append`:
 
 ![Screenshot 2025-03-08 at 4.21.44 PM.png](Screenshot_2025-03-08_at_4.21.44_PM.png)
 
-But when we look into the Swift standard library, we can find that the code actually updates elements count and inserts the new element by accessing the property `_buffer` on `self` but **not an existing old buffer variable**. So the Swift compiler actually deleted  in the re-acquire of the `_buffer` object in target code.
+Examining the Swift standard library reveals that the implementation 
+actually updates elements count and inserts new elements by accessing the 
+property `_buffer` on `self`, not an existing old buffer variable. The 
+Swift compiler incorrectly eliminated the re-acquisition of the `_buffer` 
+object in the target code.
 
 ```swift
 // Implementation in the Standard Library
@@ -84,7 +100,7 @@ internal mutating func _appendElementAssumeUniqueAndCapacity(
   (_buffer.mutableFirstElementAddress + oldCount).initialize(to: newElement)
 }
 
-// An imaginary implementation may result in the generated target code
+// An imaginary implementation that might produce the generated target code
 @inlinable
 @_semantics("array.mutate_unknown")
 @_effects(notEscaping self.**)
@@ -100,21 +116,29 @@ internal mutating func _appendElementAssumeUniqueAndCapacity(
 }
 ```
 
-## Why the Swift Compiler Deleted the Code?
+## Why the Swift Compiler Deleted the Code
 
-By checking the intermediate products of the compilation, the initial mis-compile could be found in the “optimized SIL” product, which could be gotten by appending `-emit-sil` argument when invoking `swiftc`. With a comparison between the optimized SIL of the program text using `AutoreleasingUnsafeMutablePointer`(left-side) and `UnsafeMutablePointer` (right-side), we can find that when the program is compiled with `AutoreleasingUnsafeMutablePointer`, there is a `load` of the array storage missing.
+By examining the intermediate compilation products, we can find the 
+initial miscompilation in the "optimized SIL" output, which can be 
+obtained by adding the `-emit-sil` argument when invoking `swiftc`. 
+Comparing the optimized SIL of programs using `AutoreleasingUnsafeMutablePointer` 
+(left side) and `UnsafeMutablePointer` (right side) revealed that with 
+`AutoreleasingUnsafeMutablePointer`, a critical `load` of the array 
+storage was missing.
 
 ![Screenshot 2025-03-08 at 6.53.52 PM.png](Screenshot_2025-03-08_at_6.53.52_PM.png)
 
-To investigate which pass of the compiler removed this `load` , we have to invoke the compiler with the `-Xllvm` argument to enable debug prints in the compiler. Here we use `--sil-print-function` to make the Swift compiler to print the SIL of the specified function once there is a pass modified the contents. To notice is that, the single quotes wrapped the `--sil-print-function` argument are required.
+To identify which compiler pass removed this `load`, we can use the 
+`-Xllvm` argument to enable debug prints in the compiler. Specifically, 
+we can use `--sil-print-function` to make the compiler print the SIL of the 
+specified function whenever a pass modified its contents:
 
 ```bash
-
 swiftc YOUR_SWIFT_SOURCE.swift -Osize \
     -Xllvm '--sil-print-function=$MangledSwiftFunctionName'
 ```
 
-Once we have the SIL changes history for the `ValueStorage.append` during the compilation, we can find which pass caused this issue. As a result, the key logs could be simplified as the following:
+The key logs from this analysis can be summarized as:
 
 ```sil
   *** SIL function after  #10338, stage MidLevel,Function, pass 37: CSE (cse)
@@ -157,7 +181,8 @@ bb3(%17 : $Optional<AnyObject>):
   store %41 to %45 : $*Int
 ```
 
-From the previous log, we can clearly observe that it is the “redundant load elimination(RLE for short in the following texts)” pass deleted the following `load` instruction:
+From these logs, we can clearly see that the "redundant load elimination" 
+(RLE) pass deleted the following `load` instruction:
 
 ```swift
 %42 = load %25 : $*Builtin.BridgeObject
@@ -165,9 +190,9 @@ From the previous log, we can clearly observe that it is the “redundant load e
 
 ## Reasoning the Fix Solution
 
-Before fixing the issue, we have to know what is RLE. This helps us to build a recognition about the correct behavior, supporting the later fixing decisions.
-
-RLE is essentially an optimization to eliminate redundant “get and set” for both the virtual and real registers. We can have the following example with virtual registers:
+To develop a fix, we first needed to understand RLE. This pass optimizes 
+code by eliminating redundant "get and set" operations for both virtual 
+and real registers. Consider this example with virtual registers:
 
 ```swift
 %1 = load %x
@@ -176,26 +201,31 @@ RLE is essentially an optimization to eliminate redundant “get and set” for 
 return %3
 ```
 
-For the code above, we can quickly find an optimal equivalent version which is to return `%1` immediately, since `%2` is used as an intermediate result. This is a case that RLE should consider. Let’s call it case 1.
+An optimized equivalent would simply return `%1` immediately, as `%2` is 
+just an intermediate result. This is a case RLE should handle correctly.
+Let's call this case 1.
 
 ```swift
 %1 = load %x
 return %1
 ```
 
-But there is also another case. Could we eliminate the `%3 = load %x` and just return `%1` to optimize the following code?
+However, consider this more complex case:
 
 ```swift
 %1 = load %x
 call print(%1)
 call Foo(%x)
-%3 = load %x // Could we eliminate this line?
+%3 = load %x // Can we eliminate this line?
 return %3
 ```
 
-In this case, it depends. If the function `Foo` modifies the contents of the `%x`, then we cannot directly return `%1`. Because the later `%3 = load %x` loads the updated contents of `%x`. This also is a case that RLE should consider. Let’s call it case 2.
+Here, elimination depends on whether `Foo` modifies the contents of `%x`. 
+If it does, we cannot directly return `%1` because `%3 = load %x` loads 
+the updated contents. Let's call this case 2.
 
-Back to the issue, we have to understand the idea behind RLE with the latest implementations in the Swift compiler. Checking out the latest version source code of the Swift compiler, we can find the entry point of this pass is in the file `RedundantLoadElimination.swift`.
+Examining the Swift compiler's RLE implementation in 
+`RedundantLoadElimination.swift`, we can find the entry point:
 
 ```swift
 let redundantLoadElimination = FunctionPass(name: "redundant-load-elimination") {
@@ -204,17 +234,20 @@ let redundantLoadElimination = FunctionPass(name: "redundant-load-elimination") 
 }
 ```
 
-Follow the code from this entry point, it reveals that the algorithm used in the Swift compiler differs from the classic RLE approach:
+Follow the code from this entry point, we can find that the algorithm 
+differs from classic RLE approaches:
 
-- It reversely iterates all the instructions in each reverse-order basic block to find all the `load` instructions
-- Then it iterates the prior instructions of each `load` instruction to find:
-    1. Available `store` instructions to optimize like what I’ve shown in the case 1
-    2. Available `load` instructions to optimize like what I’ve shown in the case 2 when no functions have side-effects to the address represented by the operand of the `load`s were called between two `load`s.
-- There is a complexity budget for prior instructions scanning for each load instruction. The optimization stopped when the complexity budget is used up.
+1. It iterates backward through instructions in each reverse-order basic 
+   block to find all `load` instructions
+2. For each `load`, it examines prior instructions to find:
+   - Available `store` instructions for optimization (like the first case)
+   - Available `load` instructions for optimization (like the second case) 
+     when no functions with side effects to the address were called between 
+     loads
+3. A complexity budget limits prior instruction scanning for each load
 
-The Swift 6 RLE algorithm leverages Swift’s unique language features and SIL’s design to simplify redundant load detection, improving code clarity and reducing complexity. But I would like to talk about this later.
-
-Firstly, we need to compare the differences between the detailed behaviors of the RLE pass dealing with the `AutoreleasingUnsafeMutablePointer` and `UnsafeMutablePointer`. I just added some log in the source code, then quickly found the difference:
+Comparing the detailed behaviors of RLE with `AutoreleasingUnsafeMutablePointer` 
+and `UnsafeMutablePointer`, we can find:
 
 ```swift
 // AutoreleasingUnsafeMutablePointer
@@ -238,13 +271,14 @@ overwritten
 // %28 = function_ref @$sSa36_reserveCapacityAssumingUniqueBuffer8oldCountySi_tFSi_Tg5 : $@convention(method) (Int, @inout Array<Int>) -> () // user: %36
 ```
 
-We can see that:
+This reveals that:
+- With `AutoreleasingUnsafeMutablePointer`, RLE considered the array 
+  reallocation function "transparent" to the address of the `load` 
+  instruction's operand, enabling elimination
+- With `UnsafeMutablePointer`, RLE correctly recognized that the function 
+  overwrites the address, preventing elimination
 
-- With `AutoreleasingUnsafeMutablePointer`, the RLE pass thought the array reallocation function is transparent to the address of the operand of the `load` instruction to eliminate. The elimination happened then.
-- With `UnsafeMutablePointer`, the RLE pass thought the array reallocation function overwrites the address of the operand of the `load` instruction to eliminate. The elimination stopped.
-
-Actually, this case matches the case 2 we’ve discussed before. With the discussion at hand, we can ensure that this `load` elimination in the case of `AutoreleasingUnsafeMutablePointer` is unexpected. But why it comes to this result?
-
+// Need to refine began
 In terms of the case 2, the algorithm implemented in the Swift 6 need to check all the prior instructions of the `load` instruction tried to eliminate. One purpose of this is to investigate the side-effects of the functions called between the ultimate source of the `load`'s operand and the `load` instruction tried to eliminate.
 
 ![Screenshot 2025-03-09 at 1.22.28 PM.png](Screenshot_2025-03-09_at_1.22.28_PM.png)
@@ -266,6 +300,8 @@ With this diagram, we can know that:
 - The escaping analysis would assemble a path to represents how to get the operand of the `load` instruction from the value of definition point.
 
 However, in the case of `AutoreleasingUnsafeMutablePointer`, the getter of the  `pointee` variable is an non-trivial case in this walk-up journey:
+
+// Need to refine ended
 
 ```swift
 @frozen
@@ -294,10 +330,10 @@ public struct AutoreleasingUnsafeMutablePointer<Pointee /* TODO : class */>
   }
   
   ...
-
 }
 ```
 
+// Need to refine began
 With the comments, we can know that: for the sake of representing an +0 refcount reference, the `AutoreleasingUnsafeMutablePointer` need to cast the reference from an `Optional<Unmanaged<AnyObject>>` to the `Pointee` type. This is done by the `_unsafeReferenceCast` function.
 
 ```swift
@@ -341,10 +377,12 @@ public mutating func walkUpDefault(value def: Value, path: Path) -> WalkResult {
         }
 }
 ```
+// Need to refine ended
 
 ## Fix Solution
 
-To fix this issue, we can just to take this `Optional` and non-`Optional` casting into consideration in the use-def chain walk-up.
+The solution is to account for `Optional` and non-`Optional` casting in 
+the use-def chain walk-up:
 
 ```swift
 public mutating func walkUpDefault(value def: Value, path: Path) -> WalkResult {
@@ -381,15 +419,11 @@ public mutating func walkUpDefault(value def: Value, path: Path) -> WalkResult {
 }
 ```
 
-We could also visual this fix into following diagram:
-
-![escape-analaysis-3@3x.png](escape-analaysis-33x.png)
-
-And since some analysis also walk-down the def-use chain, we also need to add an equivalent treatment in the `walkDownDefault` function:
+A similar change is needed in the `walkDownDefault` function for def-use 
+chain analysis:
 
 ```swift
-
-  public mutating func walkDownDefault(value operand: Operand, path: Path) -> WalkResult {
+public mutating func walkDownDefault(value operand: Operand, path: Path) -> WalkResult {
     let instruction = operand.instruction
     switch instruction {
         ...
@@ -423,7 +457,9 @@ And since some analysis also walk-down the def-use chain, we also need to add an
 }
 ```
 
-Now when compile the source code for the `AutoreleasingUnsafeMutablePointer` case, the logs come to be like this:
+After implementing this fix, compiling the `AutoreleasingUnsafeMutablePointer` 
+code produces logs showing that RLE correctly recognizes potential side 
+effects:
 
 ```swift
 eliminating redundant loads in function: $s8Crashing12ValueStorageC6appendyySiF
@@ -433,7 +469,8 @@ visiting instruction:   %39 = apply %38(%37, %23) : $@convention(method) (Int, @
 overwritten
 ```
 
-We can see the RLE pass now correctly think the array reallocation function may have side effects to the operand of the `load` instruction. We can also find a `load` instruction right after the array reallocation function get called in the optimized SIL product:
+The optimized SIL now retains the critical `load` instruction after the 
+array reallocation:
 
 ```swift
 // ValueStorage.append(_:)
@@ -458,16 +495,8 @@ bb3(%20 : $Optional<AnyObject>):
 
 ### Getting the Intermediate Products of the Swift Compiler
 
-When we come to the Swift compiler, as a famous example of multi-level intermediate representation compiler design, the first breakdown is to check the intermediate product in each stage of the compilation:
-
-- Source code → AST
-- AST → Raw Swift Intermediate Language
-- Raw Swift Intermediate Language → Optimized Swift Intermediate Language
-- Swift Intermediate Language → Raw LLVM IR
-- Raw LLVM IR → Optimized LLVM IR
-- Optimized LLVM IR → target code
-
-To generate these intermediate products, we shall launch the Swift compiler with one of the following arguments: `-emit-silgen`,  `-emit-sil` ,  `-emit-irgen` ,  `-emit-ir` .
+To examine the Swift compiler's intermediate representations at each 
+compilation stage:
 
 ```bash
 swiftc YourSwiftSource.swift -Osize -emit-silgen > YourSwiftSource.silgen.sil # Generating raw SIL
@@ -476,28 +505,28 @@ swiftc YourSwiftSource.swift -Osize -emit-irgen > YourSwiftSource.irgen.ll # Gen
 swiftc YourSwiftSource.swift -Osize -emit-ir > YourSwiftSource.ir.ll # Generating optimized LLVM IR
 ```
 
-### Leveraging LLVM P**ass-Through Arguments**
+### Leveraging LLVM Pass-Through Arguments
 
-For tools built with LLVM backend, they usually receives LLVM pass-through arguments like:
-
-```bash
-tool-name -Xllvm '-pass-through-argument'
-```
-
-Since Swift is also built with LLVM backend, there are a lot of LLVM pass-through arguments available even with the built binary shipped with Xcode:
+LLVM provides numerous pass-through arguments that can be used with Swift:
 
 ```bash
-# Print SIL changes for the specified function.
+# Print SIL changes for the specified function
 swiftc -Xllvm '--sil-print-function=$MangledSwiftFunctionName'
-# Print the name of each SIL pass before it runs.
+# Print the name of each SIL pass before it runs
 swiftc -Xllvm '--sil-print-pass-name=pass-name'
-# Print functions that are inlined into other functions.
+# Print functions that are inlined into other functions
 swiftc -Xllvm '--sil-print-inlining-callee=true'
 ```
 
-### Build the Swift Compiler
+### Building the Swift Compiler
 
-What to notice is that, in this post, we are debugging the detailed behaviors of the compiler, but the Swift programming language is bundled with the standard library. Since the issue is coupled with the inlining of the function `Array.append`, we shall build a debug version of the compiler and a release version of the standard library to ensure the inlining cost of `Array.append` as low as possible. This could be done with the following command:
+What to notice is that, in this post, we are debugging the detailed 
+behaviors of the compiler, but the Swift programming language is bundled 
+with the standard library. Since the issue is coupled with the inlining 
+of the function `Array.append`, we shall build a debug version of the 
+compiler and a release version of the standard library to ensure the 
+inlining cost of `Array.append` as low as possible. This could be done 
+h the following command:
 
 ```bash
 utils/build-script --no-swift-stdlib-assertions \
