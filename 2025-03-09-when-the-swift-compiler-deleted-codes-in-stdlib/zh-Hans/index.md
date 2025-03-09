@@ -1,16 +1,13 @@
 ---
-title: "When the Swift Compiler Deleted Code in Stdlib - A Note on Fixing the Eliminate Redundant Load Pass in Swift 6"
+title: "Swift 编译器删除了标准库中的代码 - 修复 Swift 6 中冗余加载消除优化的注解"
 category: Programming
 tags: [Swift, Compiler]
 ---
 
-Right before the Chinese New Year vacation of the Year of the Snake, a
-colleague showed me a mysterious crash caused by a use-after-free error.
-Recently, I found time to investigate this issue and discovered that the
-crash resulted from a miscompilation by the Swift compiler. The minimal
-reproducible code appears below and must be compiled with the `-Osize`
-optimization level. We can detect the use-after-free by enabling the
-address sanitizer during compilation.
+蛇年春节假期前，一位同事向我展示了一个由 use-after-free（使用后释放）错误导致的
+神秘崩溃。最近，我有时间深入研究这个问题，并发现崩溃是由 Swift 编译器的错误编译
+引起的。下面是最小复现代码，必须使用 `-Osize` 优化级别编译。我们可以通过在编译
+过程中启用地址检查器（address sanitizer）来检测 use-after-free 问题。
 
 ```swift
 let storage = ValueStorage()
@@ -43,23 +40,21 @@ public class ValueStorage {
 }
 ```
 
-![Screenshot 2025-03-08 at 6.42.34 PM.png](Screenshot_2025-03-08_at_6.42.34_PM.png)
+![Screenshot 2025-03-08 at 6.42.34 PM.png](../Screenshot_2025-03-08_at_6.42.34_PM.png)
 
-![Screenshot 2025-03-08 at 6.42.14 PM.png](Screenshot_2025-03-08_at_6.42.14_PM.png)
+![Screenshot 2025-03-08 at 6.42.14 PM.png](../Screenshot_2025-03-08_at_6.42.14_PM.png)
 
-Interestingly, replacing `AutoreleasingUnsafeMutablePointer` with
-`UnsafeMutablePointer` eliminates the issue.
+有趣的是，将 `AutoreleasingUnsafeMutablePointer` 替换为 `UnsafeMutablePointer`
+可以解决这个问题。
 
-![Screenshot 2025-03-08 at 7.02.53 PM.png](Screenshot_2025-03-08_at_7.02.53_PM.png)
+![Screenshot 2025-03-08 at 7.02.53 PM.png](../Screenshot_2025-03-08_at_7.02.53_PM.png)
 
-## Investigating the Primary Scene of the Crash
+## 调查崩溃的关键现场
 
-After disassembling the problematic program, we can find that the `Array`
-appending function was inlined in the `ValueStorage.append` function. The
-key issue is that the program failed to re-acquire the `Array`'s buffer
-object after reallocation. This causes the address computed with register
-`r12` to point to the old buffer if reallocation occurred. The
-disassembled code can be simplified as:
+反汇编有问题的程序后，我们可以发现 `Array` 的追加函数内联到了 `ValueStorage.append`
+函数中。关键问题是程序在重新分配后没有重新获取 `Array` 的缓冲区对象。这导致使用
+寄存器 `r12` 计算的地址指向旧缓冲区（如果确实发生了重新分配）。我们可以将反汇编代码
+简化为：
 
 ```nasm
 ; load `self.values: [Int]` to r12
@@ -75,15 +70,13 @@ call Swift.Array._reserveCapacityAssumingUniqueBuffer
 mov qword [r12 + 0x10] rax
 ```
 
-Here is the complete disassembled code of `ValueStorage.append`:
+以下是 `ValueStorage.append` 的完整反汇编代码：
 
-![Screenshot 2025-03-08 at 4.21.44 PM.png](Screenshot_2025-03-08_at_4.21.44_PM.png)
+![Screenshot 2025-03-08 at 4.21.44 PM.png](../Screenshot_2025-03-08_at_4.21.44_PM.png)
 
-Examining the Swift standard library reveals that the implementation
-actually updates elements count and inserts new elements by accessing the
-property `_buffer` on `self`, not an existing old buffer variable. The
-Swift compiler incorrectly eliminated the re-acquisition of the `_buffer`
-object in the target code.
+检查 Swift 标准库代码发现，其实际上是通过访问 `self` 上的 `_buffer` 属性来更新
+元素计数并插入新元素，而不是使用现有的旧缓冲区变量。Swift 编译器错误地删除了目标
+代码中重新获取 `_buffer` 对象的操作。
 
 ```swift
 // Implementation in the Standard Library
@@ -116,29 +109,26 @@ internal mutating func _appendElementAssumeUniqueAndCapacity(
 }
 ```
 
-## Why the Swift Compiler Deleted the Code
+## 为什么 Swift 编译器删除了代码？
 
-By examining the intermediate compilation products, we can find the
-initial miscompilation in the "optimized SIL" output, which can be
-obtained by adding the `-emit-sil` argument when invoking `swiftc`.
-Comparing the optimized SIL of programs using `AutoreleasingUnsafeMutablePointer`
-(left side) and `UnsafeMutablePointer` (right side) revealed that with
-`AutoreleasingUnsafeMutablePointer`, a critical `load` of the array
-storage was missing.
+通过检查中间编译产物，我们可以在"优化 SIL"输出中找到初始错误编译，这可以通过在
+调用 `swiftc` 时添加 `-emit-sil` 参数获得。比较使用 
+`AutoreleasingUnsafeMutablePointer`（左侧）和 `UnsafeMutablePointer`（右侧）
+程序的优化 SIL，我们发现使用 `AutoreleasingUnsafeMutablePointer` 时，数组存储的
+关键 `load` 指令缺失。
 
-![Screenshot 2025-03-08 at 6.53.52 PM.png](Screenshot_2025-03-08_at_6.53.52_PM.png)
+![Screenshot 2025-03-08 at 6.53.52 PM.png](../Screenshot_2025-03-08_at_6.53.52_PM.png)
 
-To identify which compiler pass removed this `load`, we can use the
-`-Xllvm` argument to enable debug prints in the compiler. Specifically,
-we can use `--sil-print-function` to make the compiler print the SIL of the
-specified function whenever a pass modified its contents:
+为了确定哪个编译器过程移除了这个 `load` 指令，我们可以使用 `-Xllvm` 参数启用
+编译器中的调试打印。具体来说，我们可以使用 `--sil-print-function` 让编译器在
+每次有修改时打印指定函数的 SIL：
 
 ```bash
 swiftc YOUR_SWIFT_SOURCE.swift -Osize \
     -Xllvm '--sil-print-function=$MangledSwiftFunctionName'
 ```
 
-The key logs from this analysis can be summarized as:
+此分析的关键日志可总结为：
 
 ```sil
   *** SIL function after  #10338, stage MidLevel,Function, pass 37: CSE (cse)
@@ -181,18 +171,16 @@ bb3(%17 : $Optional<AnyObject>):
   store %41 to %45 : $*Int
 ```
 
-From these logs, we can clearly see that the "redundant load elimination"
-(RLE) pass deleted the following `load` instruction:
+从这些日志中，我们可以清楚地看到"冗余加载消除"（RLE）过程删除了以下 `load` 指令：
 
 ```swift
 %42 = load %25 : $*Builtin.BridgeObject
 ```
 
-## Reasoning the Fix Solution
+## 修复方案的推理
 
-To develop a fix, we first needed to understand RLE. This pass optimizes
-code by eliminating redundant "get and set" operations for both virtual
-and real registers. Consider this example with virtual registers:
+要完善修复方案，我们首先需要了解 RLE。这个优化过程通过消除虚拟寄存器和实际寄存器
+的冗余"获取和设置"操作来优化代码。考虑这个虚拟寄存器的例子：
 
 ```swift
 %1 = load %x
@@ -201,31 +189,29 @@ and real registers. Consider this example with virtual registers:
 return %3
 ```
 
-An optimized equivalent would simply return `%1` immediately, as `%2` is
-just an intermediate result. This is a case RLE should handle correctly.
-Let's call this case 1.
+一个更优的等效版本可以立即返回 `%1`，因为 `%2` 只是一个中间结果。这是 RLE 应该
+正确处理的情况。这个，我们称之为情况 1。
 
 ```swift
 %1 = load %x
 return %1
 ```
 
-However, consider this more complex case:
+然而，考虑这个更复杂的情况：
 
 ```swift
 %1 = load %x
 call print(%1)
 call Foo(%x)
-%3 = load %x // Can we eliminate this line?
+%3 = load %x // 我们能消除这一行吗？
 return %3
 ```
 
-Here, elimination depends on whether `Foo` modifies the contents of `%x`.
-If it does, we cannot directly return `%1` because `%3 = load %x` loads
-the updated contents. Let's call this case 2.
+在这里，消除 `%3 = load %x` 取决于 `Foo` 是否修改了 `%x` 的内容。如果修改了，我们不能直接返回
+`%1`，因为 `%3 = load %x` 加载了更新后的内容。这个，我们称之为情况 2。
 
-Examining the Swift compiler's RLE implementation in
-`RedundantLoadElimination.swift`, we can find the entry point:
+找到 Swift 编译器在 `RedundantLoadElimination.swift` 中的 RLE 实现，我们可以
+发现入口点：
 
 ```swift
 let redundantLoadElimination = FunctionPass(name: "redundant-load-elimination") {
@@ -234,20 +220,17 @@ let redundantLoadElimination = FunctionPass(name: "redundant-load-elimination") 
 }
 ```
 
-Follow the code from this entry point, we can find that the algorithm
-differs from classic RLE approaches:
+从这个入口点阅读代码，我们发现其算法与经典的 RLE 方法不同：
 
-1. It iterates backward through instructions in each reverse-order basic
-   block to find all `load` instructions
-2. For each `load`, it examines prior instructions to find:
-   - Available `store` instructions for optimization (like the first case)
-   - Available `load` instructions for optimization (like the second case)
-     when no functions with side effects to the address were called between
-     loads
-3. A complexity budget limits prior instruction scanning for each load
+1. 它在每个逆序的基本块中反向迭代所有指令，以查找所有 `load` 指令
+2. 对于每个 `load`，它检查其先前的指令以查找：
+   - 可用的 `store` 指令进行优化（对应第一种情况）
+   - 可用的 `load` 指令进行优化（对应第二种情况），如果当两个加载之间没有对地址有副作用
+     的函数调用的话
+3. 对每个加载指令的先前指令扫描有复杂度预算限制
 
-Comparing the detailed behaviors of RLE with `AutoreleasingUnsafeMutablePointer`
-and `UnsafeMutablePointer`, we can find:
+比较 RLE 与 `AutoreleasingUnsafeMutablePointer` 和 `UnsafeMutablePointer`
+的详细行为，我们发现：
 
 ```swift
 // AutoreleasingUnsafeMutablePointer
@@ -271,51 +254,39 @@ overwritten
 // %28 = function_ref @$sSa36_reserveCapacityAssumingUniqueBuffer8oldCountySi_tFSi_Tg5 : $@convention(method) (Int, @inout Array<Int>) -> () // user: %36
 ```
 
-This reveals that:
-- With `AutoreleasingUnsafeMutablePointer`, RLE considered the array
-  reallocation function "transparent" to the address of the `load`
-  instruction's operand, enabling elimination
-- With `UnsafeMutablePointer`, RLE correctly recognized that the function
-  overwrites the address, preventing elimination
+这揭示了：
+- 使用 `AutoreleasingUnsafeMutablePointer` 时，RLE 认为数组重新分配函数对
+  `load` 指令操作数的地址是"透明的"，从而启用了 load 指令消除
+- 使用 `UnsafeMutablePointer` 时，RLE 正确地认识到该函数会覆写地址，从而阻止了 load 指令消除
 
-For case 2 scenarios, the Swift 6 algorithm checks all prior instructions
-of the `load` to determine side effects of function calls between the
-source of the `load`'s operand and the `load` instruction itself.
+对于情况 2 场景，Swift 6 算法检查 `load` 的所有先前指令，以确定
+`load` 操作数的源和 `load` 指令本身之间的函数调用的副作用。
 
-![Screenshot 2025-03-09 at 1.22.28 PM.png](Screenshot_2025-03-09_at_1.22.28_PM.png)
+![Screenshot 2025-03-09 at 1.22.28 PM.png](../Screenshot_2025-03-09_at_1.22.28_PM.png)
 
-The key insight is that the Swift compiler only evaluates function side
-effects when the ultimate source of the `load`'s operand has an unknown
-escaping result. By setting breakpoints in the following function located
-in `AliasAnalysis.swift`, I found the critical difference between the two
-pointer types:
+关键发现是，Swift 编译器仅在 `load` 操作数的最终源头有未知逃逸结果时才会考虑函数的副作用。
+通过在 `AliasAnalysis.swift` 中的函数设置断点，我发现了两种指针类型之间的关键差异：
 
-![Screenshot 2025-03-09 at 12.05.08 AM.png](Screenshot_2025-03-09_at_12.05.08_AM.png)
+![Screenshot 2025-03-09 at 12.05.08 AM.png](../Screenshot_2025-03-09_at_12.05.08_AM.png)
 
-- With `AutoreleasingUnsafeMutablePointer`, the compiler checks if the
-  definition source of the `load` instruction's operand is escaping. When
-  determined not to be escaping, the compiler incorrectly assumes the
-  function has no side effects.
+- 使用 `AutoreleasingUnsafeMutablePointer` 时，编译器检查 `load` 指令的操作数的
+  定义源是否逃逸。当确定不逃逸时，编译器将错误地假设函数没有副作用。
   
-- With `UnsafeMutablePointer`, the compiler retrieves the global
-  side-effects of the array reallocation function (likely from the
-  `@_effects` attribute). Only functions marked `readOnly` or `readNone`
-  are considered side effect-free.
+- 使用 `UnsafeMutablePointer` 时，编译器将获取数组重新分配函数的全局副作用
+  （可能来自 `@_effects` 属性）。只有标记为 `readOnly` 或 `readNone` 的函数
+  会被视为无副作用。
 
-Further investigation led to the `visit` function at line 371, which
-performs escape analysis on the `load` instruction's operand. The
-following diagram illustrates this process:
+于是我们需要对第 371 行的 `visit` 函数进行进一步调查。该行会对 `load` 指令的操作数执行逃逸分析。
+下图说明了这个过程：
 
-![escape-analaysis-1@3x.png](escape-analaysis-1@3x.png)
+![escape-analaysis-1@3x.png](../escape-analaysis-1@3x.png)
 
-This is the escape analysis process:
-1. Walks up the use-def chain to analyze escaping behavior
-2. Constructs a path representing how to derive the `load` instruction's
-   operand from its definition point in each step
+这是逃逸分析的过程：
+1. 沿着使用-定义链向上走，分析逃逸行为
+2. 每一步都将构建一个路径，表示如何从该点推导出 `load` 指令的操作数
 
-The complexity arises with `AutoreleasingUnsafeMutablePointer`'s `pointee`
-getter implementation, which presents a non-trivial case for this escaping
-analysis:
+但当我们遇到 `AutoreleasingUnsafeMutablePointer` 的 `pointee` getter 实现时，复杂性就产生了。
+它在上述逃逸分析过程中是一个非平凡的案例：
 
 ```swift
 @frozen
@@ -347,10 +318,9 @@ public struct AutoreleasingUnsafeMutablePointer<Pointee /* TODO : class */>
 }
 ```
 
-The implementation details reveal that `AutoreleasingUnsafeMutablePointer`
-must cast references from `Optional<Unmanaged<AnyObject>>` to the
-`Pointee` type to maintain +0 reference counting. This casting is
-performed through the `_unsafeReferenceCast` function:
+实现细节揭示，`AutoreleasingUnsafeMutablePointer` 必须将引用从
+`Optional<Unmanaged<AnyObject>>` 转换为 `Pointee` 类型以维持 +0 引用计数。
+这种转换通过 `_unsafeReferenceCast` 函数执行：
 
 ```swift
 @_transparent
@@ -360,33 +330,29 @@ public func _unsafeReferenceCast<T, U>(_ x: T, to: U.Type) -> U {
 }
 ```
 
-The compiler translates this to the `Builtin.castReference` function,
-ultimately represented as an `unchecked_ref_cast` instruction in SIL:
+编译器将其转换为 `Builtin.castReference` 函数，最终在 SIL 中表示为
+`unchecked_ref_cast` 指令：
 
 ```swift
 %y = unchecked_ref_cast %x : $SourceSILType to $DesintationSILType
 ```
 
-The problem arises because `AutoreleasingUnsafeMutablePointer` introduces
-cases where `$SourceSILType` and `$DesintationSILType` may be `Optional`
-types:
+问题产生是因为 `AutoreleasingUnsafeMutablePointer` 引入的情况使
+`$SourceSILType` 和 `$DesintationSILType` 可能是 `Optional` 类型：
 
 ```swift
 %y = unchecked_ref_cast %x : $Optional<AnyObject> to $Data
 ```
 
-This instruction can cast between `Optional` and non-`Optional` types,
-effectively wrapping or unwrapping values. Since escape analysis walks the
-use-def chain with a path that must strictly reflect how to derive the
-`load` operand from its definition point, these implicit `Optional`
-conversions create path mismatches, as illustrated:
+此指令可以在 `Optional` 和非 `Optional` 类型之间进行转换，有效地包装或解包值。
+由于逃逸分析沿着使用-定义链走，路径必须严格反映如何从定义点导出 `load` 操作数，
+这些隐式的 `Optional` 转换会创建不匹配的路径，如图所示：
 
-![escape-analaysis-2@3x.png](escape-analaysis-2@3x.png)
+![escape-analaysis-2@3x.png](../escape-analaysis-2@3x.png)
 
-This hypothesis is confirmed by examining the `walkUpDefault` function in
-`WalkUtils.swift`, which handles various instruction types during the
-walk-up but lacks proper handling for `Optional` conversions in
-`unchecked_ref_cast`:
+通过检查 `WalkUtils.swift` 中的 `walkUpDefault` 函数我们可以确认这一假设，该函数
+在向上走期间处理各种指令类型，但缺乏对 `unchecked_ref_cast` 中 `Optional`
+转换的适当处理：
 
 ```swift
 public mutating func walkUpDefault(value def: Value, path: Path) -> WalkResult {
@@ -399,15 +365,14 @@ public mutating func walkUpDefault(value def: Value, path: Path) -> WalkResult {
         // We need to ignore this because otherwise the path wouldn't contain the right `existential` field kind.
         return rootDef(value: urc, path: path)
       }
-        ...
-        }
+      ...
+    }
 }
 ```
 
-## Fix Solution
+## 修复方案
 
-The solution is to account for `Optional` and non-`Optional` casting in
-the use-def chain walk-up:
+解决方案是在使用-定义链向上走中考虑 `Optional` 和非 `Optional` 类型之间的转换：
 
 ```swift
 public mutating func walkUpDefault(value def: Value, path: Path) -> WalkResult {
@@ -444,16 +409,13 @@ public mutating func walkUpDefault(value def: Value, path: Path) -> WalkResult {
 }
 ```
 
-The diagram below illustrates how this fix accommodates `Optional` and
-non-`Optional` type conversions during escape analysis. When the escape
-analysis process encounters an `unchecked_ref_cast` between `Optional` and
-non-`Optional` types, the fix ensures proper path transformations by
-adjusting the path to account for enum case differences.
+下图说明了这个修复如何适应逃逸分析过程中的 `Optional` 和非 `Optional` 类型转换。
+当逃逸分析过程遇到 `Optional` 和非 `Optional` 类型之间的 `unchecked_ref_cast` 时，
+该修复通过调整路径以考虑枚举用例差异，确保了正确的路径转换。
 
-![escape-analaysis-3@3x.png](escape-analaysis-3@3x.png)
+![escape-analaysis-3@3x.png](../escape-analaysis-3@3x.png)
 
-A similar change is needed in the `walkDownDefault` function for def-use
-chain analysis:
+在定义-使用链分析中，`walkDownDefault` 函数也需要类似的更改：
 
 ```swift
 public mutating func walkDownDefault(value operand: Operand, path: Path) -> WalkResult {
@@ -490,9 +452,8 @@ public mutating func walkDownDefault(value operand: Operand, path: Path) -> Walk
 }
 ```
 
-After implementing this fix, compiling the `AutoreleasingUnsafeMutablePointer`
-code produces logs showing that RLE correctly recognizes potential side
-effects:
+实施此修复后，编译使用 `AutoreleasingUnsafeMutablePointer` 的代码产生的日志
+显示 RLE 正确识别潜在的副作用：
 
 ```swift
 eliminating redundant loads in function: $s8Crashing12ValueStorageC6appendyySiF
@@ -502,8 +463,7 @@ visiting instruction:   %39 = apply %38(%37, %23) : $@convention(method) (Int, @
 overwritten
 ```
 
-The optimized SIL now retains the critical `load` instruction after the
-array reallocation:
+优化后的 SIL 现在保留了数组重新分配后的关键 `load` 指令：
 
 ```swift
 // ValueStorage.append(_:)
@@ -524,50 +484,46 @@ bb3(%20 : $Optional<AnyObject>):
 } // end sil function '$s8Crashing12ValueStorageC6appendyySiF'
 ```
 
-## Tips for Debugging the Swift Compiler
+## 调试 Swift 编译器的技巧
 
-### Getting the Intermediate Products of the Swift Compiler
+### 获取 Swift 编译器的中间产物
 
-To examine the Swift compiler's intermediate representations at each
-compilation stage:
+要检查 Swift 编译器在每个编译阶段的中间表示：
 
 ```bash
-swiftc YourSwiftSource.swift -Osize -emit-silgen > YourSwiftSource.silgen.sil # Generating raw SIL
-swiftc YourSwiftSource.swift -Osize -emit-sil > YourSwiftSource.sil.sil # Generating optimized SIL
-swiftc YourSwiftSource.swift -Osize -emit-irgen > YourSwiftSource.irgen.ll # Generating raw LLVM IR
-swiftc YourSwiftSource.swift -Osize -emit-ir > YourSwiftSource.ir.ll # Generating optimized LLVM IR
+swiftc YourSwiftSource.swift -Osize -emit-silgen > YourSwiftSource.silgen.sil # 生成原始 SIL
+swiftc YourSwiftSource.swift -Osize -emit-sil > YourSwiftSource.sil.sil # 生成优化 SIL
+swiftc YourSwiftSource.swift -Osize -emit-irgen > YourSwiftSource.irgen.ll # 生成原始 LLVM IR
+swiftc YourSwiftSource.swift -Osize -emit-ir > YourSwiftSource.ir.ll # 生成优化 LLVM IR
 ```
 
-### Leveraging LLVM Pass-Through Arguments
+### 利用 LLVM 传递参数
 
-LLVM provides numerous pass-through arguments that can be used with Swift:
+LLVM 提供了许多可与 Swift 一起使用的传递参数：
 
 ```bash
-# Print SIL changes for the specified function
+# 打印指定函数的 SIL 更改
 swiftc -Xllvm '--sil-print-function=$MangledSwiftFunctionName'
-# Print the name of each SIL pass before it runs
+# 在运行每个 SIL 过程前打印其名称
 swiftc -Xllvm '--sil-print-pass-name=pass-name'
-# Print functions that are inlined into other functions
+# 打印内联到其他函数中的函数
 swiftc -Xllvm '--sil-print-inlining-callee=true'
 ```
 
-### Building the Swift Compiler
+### 构建 Swift 编译器
 
-What to notice is that, in this post, we are debugging the detailed
-behaviors of the compiler, but the Swift programming language is bundled
-with the standard library. Since the issue is coupled with the inlining
-of the function `Array.append`, we shall build a debug version of the
-compiler and a release version of the standard library to ensure the
-inlining cost of `Array.append` as low as possible. This could be done
-with the following command:
+需要注意的是，在这篇文章中，我们正在调试编译器的详细行为，但 Swift 编程语言和
+标准库捆绑在一起。由于问题与 `Array.append` 函数的内联相关，我们应该构建一个
+debug 版本的编译器和一个 release 版本的标准库，以确保 `Array.append` 的内联成本尽可能低。
+可以使用以下命令实现：
 
 ```bash
 utils/build-script --no-swift-stdlib-assertions \
     --skip-ios --skip-tvos --skip-watchos --skip-build-benchmarks
 ```
 
-### Syntax Highlights for SIL and LLVM IR
+### SIL 和 LLVM IR 的语法高亮
 
-You could search "WeZZard" in the extension market of VS Code (or Cursor) to get the syntax highlights for SIL in relative IDE.
+你可以在 VS Code（或 Cursor）扩展市场中搜索"WeZZard"以获取相对 IDE 中的 SIL 语法高亮。
 
-You could find the "LLVM" extension by Ingvar Stepanyan in the extension market of VS Code (or Cursor) to get the syntax highlights for LLVM IR in relative IDE.
+你可以在 VS Code（或 Cursor）扩展市场中找到 Ingvar Stepanyan 的"LLVM"扩展，以获取相对 IDE 中的 LLVM IR 语法高亮。
