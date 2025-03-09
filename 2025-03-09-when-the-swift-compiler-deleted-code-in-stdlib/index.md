@@ -61,7 +61,7 @@ object after reallocation. This causes the address computed with register
 `r12` to point to the old buffer if reallocation occurred. The
 disassembled code can be simplified as:
 
-```nasm
+```asm
 ; load `self.values: [Int]` to r12
 mov r15, qword [r13 + 0x10]
 ; r14 is now `self.values: [Int]`
