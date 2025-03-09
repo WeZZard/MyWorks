@@ -444,7 +444,13 @@ public mutating func walkUpDefault(value def: Value, path: Path) -> WalkResult {
 }
 ```
 
-![escape-analaysis-2@3x.png](escape-analaysis-3@3x.png)
+The diagram below illustrates how this fix accommodates `Optional` and 
+non-`Optional` type conversions during escape analysis. When the escape
+analysis process encounters an `unchecked_ref_cast` between `Optional` and
+non-`Optional` types, the fix ensures proper path transformations by
+adjusting the path to account for enum case differences.
+
+![escape-analaysis-3@3x.png](escape-analaysis-3@3x.png)
 
 A similar change is needed in the `walkDownDefault` function for def-use 
 chain analysis:
