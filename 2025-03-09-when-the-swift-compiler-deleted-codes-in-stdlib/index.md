@@ -94,9 +94,9 @@ internal mutating func _appendElementAssumeUniqueAndCapacity(
   _ oldCount: Int,
   newElement: __owned Element
 ) {
-  // Using `_buffer` on `self`
+  // Using `_buffer` of `self`
   _buffer.mutableCount = oldCount &+ 1
-  // Using `_buffer` on `self`
+  // Using `_buffer` of `self`
   (_buffer.mutableFirstElementAddress + oldCount).initialize(to: newElement)
 }
 
