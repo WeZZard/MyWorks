@@ -315,7 +315,7 @@ public func _unsafeReferenceCast<T, U>(_ x: T, to: U.Type) -> U {
 %y = unchecked_ref_cast %x : $Optional<AnyObject> to $Data
 ```
 
-此指令可以在 `Optional` 和非 `Optional` 类型之间进行转换，有效地包装或解包值。由于逃逸分析沿着 use-def chain (使用-定义链) 走，路径必须严格反映如何从定义点导出 `load` 操作数，这些隐式的 `Optional` 转换会创建的路径不匹配，如图所示：
+此指令可以在 `Optional` 和非 `Optional` 类型之间进行转换，有效地包装或解包值。由于逃逸分析沿着 use-def chain (使用-定义链) 走，路径必须严格反映如何从定义点推导出 `load` 操作数，这些隐式的 `Optional` 转换会创建的路径不匹配，如图所示：
 
 ![逃逸分析 2](../escape-analaysis-2.png '逃逸分析 2')
 
@@ -377,7 +377,7 @@ public mutating func walkUpDefault(value def: Value, path: Path) -> WalkResult {
 }
 ```
 
-下图说明了这个修复如何适应逃逸分析过程中的 `Optional` 和非 `Optional` 类型转换。当逃逸分析过程遇到 `Optional` 和非 `Optional` 类型之间的 `unchecked_ref_cast` 时，该修复通过调整路径以考虑枚举用例差异，确保了正确的路径转换。
+下图说明了这个修复如何适应逃逸分析过程中的 `Optional` 和非 `Optional` 类型转换。当逃逸分析过程遇到 `Optional` 和非 `Optional` 类型之间的 `unchecked_ref_cast` 时，该修复通过调整路径以考虑枚举 case 差异，确保了正确的路径转换。
 
 ![逃逸分析 3](../escape-analaysis-3.png '逃逸分析 3')
 
