@@ -572,6 +572,6 @@ utils/build-script --no-swift-stdlib-assertions \
 
 ### Syntax Highlights for SIL and LLVM IR
 
-You could search "WeZZard" in the extension market of VS Code (or Cursor) to get the syntax highlights for SIL in relative IDE.
+You could search "WeZZard" in the extension market of VS Code (or Cursor) to get the syntax highlights for SIL in relevant IDE.
 
-You could find the "LLVM" extension by Ingvar Stepanyan in the extension market of VS Code (or Cursor) to get the syntax highlights for LLVM IR in relative IDE.
+You could find the "LLVM" extension by Ingvar Stepanyan in the extension market of VS Code (or Cursor) to get the syntax highlights for LLVM IR in relevant IDE.

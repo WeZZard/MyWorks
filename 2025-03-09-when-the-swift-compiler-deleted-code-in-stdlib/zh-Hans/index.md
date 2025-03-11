@@ -4,7 +4,7 @@ category: Programming
 tags: [Swift, Compiler]
 ---
 
-蛇年春节假期前，一位同事向我展示了一个由 use-after-free（使用后释放）错误导致的神秘崩溃。最近，我有时间深入研究这个问题，并发现崩溃是由 Swift 编译器的错误编译引起的。下面是最小复现代码，必须使用 `-Osize` 优化级别编译。我们可以通过在编译过程中启用地址检查器（address sanitizer）来检测 use-after-free 问题。
+蛇年春节假期前，一位同事向我展示了一个由 use-after-free（释放后使用）错误导致的神秘崩溃。最近，我有时间深入研究这个问题，并发现崩溃是由 Swift 编译器的错误编译引起的。下面是最小复现代码，必须使用 `-Osize` 优化级别编译。我们可以通过在编译过程中启用地址检查器（address sanitizer）来检测 use-after-free 问题。
 
 ```swift
 let storage = ValueStorage()
@@ -60,7 +60,7 @@ mov r12, qword [r14 + 0x10]
 ; 重新分配，可能释放旧缓冲区对象
 call Swift.Array._reserveCapacityAssumingUniqueBuffer
 ; 将新计数设置到旧缓冲区对象
-; use-after-free（使用后释放）发生
+; use-after-free（释放后使用）发生
 mov qword [r12 + 0x10] rax
 ```
 
@@ -486,6 +486,6 @@ utils/build-script --no-swift-stdlib-assertions \
 
 ### SIL 和 LLVM IR 的语法高亮
 
-你可以在 VS Code（或 Cursor）扩展市场中搜索"WeZZard"以获取相对 IDE 中的 SIL 语法高亮。
+你可以在 VS Code（或 Cursor）扩展市场中搜索"WeZZard"以获取相关 IDE 中的 SIL 语法高亮。
 
-你可以在 VS Code（或 Cursor）扩展市场中找到 Ingvar Stepanyan 的"LLVM"扩展，以获取相对 IDE 中的 LLVM IR 语法高亮。
+你可以在 VS Code（或 Cursor）扩展市场中找到 Ingvar Stepanyan 的"LLVM"扩展，以获取相关 IDE 中的 LLVM IR 语法高亮。
