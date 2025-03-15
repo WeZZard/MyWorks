@@ -4,6 +4,8 @@ category: Programming
 tags: [Swift, Compiler]
 ---
 
+> 最新更新：苹果已接受该问题的修复。最终解决方案在相关代码所有者 review 后进行了调整。
+
 蛇年春节假期前，一位同事向我展示了一个由 use-after-free（释放后使用）错误导致的神秘崩溃。最近，我有时间深入研究这个问题，并发现崩溃是由 Swift 编译器的错误编译引起的。下面是最小复现代码，必须使用 `-Osize` 优化级别编译。我们可以通过在编译过程中启用地址检查器（address sanitizer）来检测 use-after-free 问题。
 
 ```swift
@@ -355,20 +357,13 @@ public mutating func walkUpDefault(value def: Value, path: Path) -> WalkResult {
       }
       switch (urc.type.isOptional, urc.fromInstance.type.isOptional) {
         case (true, false):
-          if let path = path.popIfMatches(.enumCase, index: 0) {
-            if walkUp(value: urc.fromInstance, path: path) == .abortWalk {
-              return .abortWalk
-            } else if let path = path.popIfMatches(.enumCase, index: 1) {
-              return walkUp(value: urc.fromInstance, path: path)
-            }
-          }
-          return .abortWalk
-        case (false, true):
-          if walkUp(value: urc.fromInstance, path: path.push(.enumCase, index: 0)) == .abortWalk {
-            return .abortWalk
+          if let path = path.popIfMatches(.enumCase, index: 1) {
+            return walkUp(value: urc.fromInstance, path: path)
           } else {
-            return walkUp(value: urc.fromInstance, path: path.push(.enumCase, index: 1))
+            return unmatchedPath(value: urc.fromInstance, path: path)
           }
+        case (false, true):
+          return walkUp(value: urc.fromInstance, path: path.push(.enumCase, index: 1))
         default:
           return walkUp(value: urc.fromInstance, path: path)
       }
@@ -397,19 +392,13 @@ public mutating func walkDownDefault(value operand: Operand, path: Path) -> Walk
       }
       switch (urc.type.isOptional, urc.fromInstance.type.isOptional) {
         case (true, false):
-          if walkDownUses(ofValue: operand, path: path.push(.enumCase, index: 0)) == .abortWalk {
-            return .abortWalk
-          }
           return walkDownUses(ofValue: operand, path: path.push(.enumCase, index: 1))
         case (false, true):
-          if let path = path.popIfMatches(.enumCase, index: 0) {
-            if walkDownUses(ofValue: operand, path: path) == .abortWalk {
-              return .abortWalk
-            } else if let path = path.popIfMatches(.enumCase, index: 1) {
-              return walkDownUses(ofValue: operand, path: path)
-            }
+          if let path = path.popIfMatches(.enumCase, index: 1) {
+            return walkDownUses(ofValue: operand, path: path)
+          } else {
+            return unmatchedPath(value: operand, path: path)
           }
-          return .abortWalk
         default:
           return walkDownUses(ofValue: operand, path: path)
       }
