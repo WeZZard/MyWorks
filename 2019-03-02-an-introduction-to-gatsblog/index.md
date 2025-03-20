@@ -5,60 +5,58 @@ category: Showcase
 tags: [Blog, Design, Programming, Gatsblog]
 ---
 
-As I mentioned in the Hello World post, there are no blog systems fulfill
-all my needs, time that I have such a deep touch with frontend tech stack.
+> This post has been revisited with LLM technology to improve its English
+> fluency.
 
-Thus I got started to make my own one. And frankly, this is the first
-I just decided to write down the whole process, from design to
-implementation, to make a memento of my journey, which conducted by an
-iOS developer with industrial design background, into modern frontend tech
-stack.
+As mentioned in my Hello World post, no existing blog system fully meets my
+needs, especially given my deep involvement with frontend technology.
+
+This led me to create my own solution. This post documents my journey from
+design to implementation, chronicling how an iOS developer with an
+industrial design background ventured into modern frontend development.
 
 ## Pseudo-Live Editing
 
-Any site built with Gatsby.js comes with a very naïve live editing
-feature. You can just launch Gatsby's develop mode server with
-`gatsby develop -H 0.0.0.0` or `npm run start` and open a browser with
-address `http://localhost:8000`. Then you can watch your post changes each
-time you saved the edited file to the disk.
+Gatsby.js provides a simple live editing feature. Launch Gatsby's
+development server with `gatsby develop -H 0.0.0.0` or `npm run start`,
+then open `http://localhost:8000` in your browser. Your post changes will
+appear automatically when you save the edited file.
 
 ![Pseudo-Live Editing](./pseudo-live-editing.gif "Pseudo-Live Editing")
 
 ## Sophisticated Grid System
 
-I adopted a sophisticated grid system and tweaked the sizes of elements
-and the spaces between elements. The design is not very modern, but
-functional -- at least the content is clear and spaces between elements
-are not annoying.
+I implemented a sophisticated grid system with carefully tuned element
+sizes and spacing. While the design may not be fancy, it
+prioritizes functionality—ensuring content clarity and comfortable spacing
+between elements.
 
 ## Responsive Image with Retina Display Support
 
-Most of the figures on my posts are authored by myself. Thus it is very
-easy to output `@2x` and `@3x` version at the same time I'm outputting the
-original version. Thus Gatsby supports such a resolution density in file
-names. It recognizes image files with names like `xxx.png`, `xxx@2x.png`
-and `xxx@3x.png` as a series of image files whose resolution density is
-`1x`, `2x` and `3x`. You only have to link your image with the image
-markup in Markdown grammar:
+Most figures in my posts are original creations, making it easy to
+generate `@2x` and `@3x` versions alongside the original. Gatsby supports
+resolution density through file naming conventions, recognizing image
+series like `xxx.png`, `xxx@2x.png`, and `xxx@3x.png` as 1x, 2x, and 3x
+resolution versions respectively. Simply use standard Markdown image
+syntax:
 
 ```markdown
 ![Image Alternative Text](xxx.png "Image Title")
 ```
 
-Then Gatsblog handles responsiveness and Retina display support for you.
+Gatsblog handles the responsiveness and Retina display support
+automatically.
 
-Since there are also images that we grabbed from web or taken by cameras
-asking users to offer versions for all the resolution densities is
-impossible. What happens to an image file without paired resolution
-density versions? Don't worry. If you just put an image file named after
-`xxx.png` in your Markdown document's folder, Gatsblog handles
-responsiveness support for you.
+For images sourced from the web or cameras, providing multiple
+resolution versions isn't always practical. Gatsblog handles this
+gracefully—any single image file named `xxx.png` will receive responsive
+support without requiring additional versions.
 
 ## KaTex
 
-Because I'm a fan of math, Gatsby supports inline KaTex syntax like
-`$$a^2 + b^2 = c^2$$` which rendered as $$a^2 + b^2 = c^2$$, and block
-KaTex syntax:
+As a mathematics enthusiast, I've integrated KaTex support. Gatsby now
+handles both inline expressions like `$$a^2 + b^2 = c^2$$` (rendered as
+$$a^2 + b^2 = c^2$$) and block equations:
 
 ```katex
 $$
@@ -83,11 +81,11 @@ $$
 ```katex
 $$
 \int u \frac{dv}{dx}\,dx=uv-\int \frac{du}{dx}v\,dx
-$$ 
+$$
 ```
 
 $$
-\int u \frac{dv}{dx}\,dx=uv-\int \frac{du}{dx}v\,dx 
+\int u \frac{dv}{dx}\,dx=uv-\int \frac{du}{dx}v\,dx
 $$
 
 ## Enhanced with MDX
@@ -123,8 +121,8 @@ class Counter extends React.Component {
 
 ### Code Block with Path Label
 
-By putting `path=path_of_file` after the _language_ metadata in the
-beginning line of the fenced code block
+Add `path=path_of_file` after the _language_ metadata in the fenced code
+block's opening line:
 
 ```markdown
 ```c path=src/main.c
@@ -137,7 +135,7 @@ int main(int argc, char[] * args) {
 ​​```
 ```
 
-you can get a code block likes
+This produces a code block with a path label:
 
 ```c path=src/main.c
 #include <stdio>
@@ -149,5 +147,5 @@ int main(int argc, char[] * args) {
 
 ## Statically Deployed
 
-Empowered by Gatsby.js, Gatsblog can be statically deployed. You can
-deploy a site by several clicking on [Netlify](https://netlify.com).
+Powered by Gatsby.js, Gatsblog supports static deployment. You can deploy
+your site with just a few clicks on [Netlify](https://netlify.com).
