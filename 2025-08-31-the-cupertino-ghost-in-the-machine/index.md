@@ -1,7 +1,7 @@
 ---
 title: "The Cupertino Ghost in the Machine: An Analysis of Xcode's New AI Assistant"
 category: Programming
-tags: [AI,Xcode]
+tags: [AI,Developer Tools,Xcode]
 ---
 
 My journey into the internals of Xcode 26’s new AI assistant began not with a bug, but with a feature so persistent it felt like a personality. The animations and design of Xcode have never been better, a testament to Apple's polish. Yet, interacting with the new intelligence features felt... different. This wasn't just a tool; it felt like a ghostly Apple spirit nudging every decision.
@@ -30,10 +30,10 @@ For developers and power users, the most critical insight is the system's **pote
 
 The `IDEIntelligenceChat.framework` is organized into several key components that work together to create the agent's behavior:
 
-- **Prompt Templates (`.idechatprompttemplate` files):** These are external text files that define the agent's core personality, rules, and conversational logic for different modes (e.g., `BasicSystemPrompt`, `PlannerExecutorStylePlannerSystemPrompt`).
-- **Context Injectors:** A series of prompt templates designed to insert specific pieces of IDE context into the conversation (e.g., `CurrentFile.idechatprompttemplate`, `CurrentSelection...`).
-- **Tool Providers & Handlers (`IDEIntelligenceChat` binary):** The core logic for exposing the available tools (`ChatToolProvider`) and executing their logic (`FindTextInFileToolHandler`, etc.).
-- **Curated Knowledge Base (`AdditionalDocumentation` folder):** A local library of markdown files containing up-to-date information on new Apple technologies, accessible via the `search_additional_documentation` tool.
+- Prompt Templates (`.idechatprompttemplate` files): These are external text files that define the agent's core personality, rules, and conversational logic for different modes (e.g., `BasicSystemPrompt`, `PlannerExecutorStylePlannerSystemPrompt`).
+- Context Injectors: A series of prompt templates designed to insert specific pieces of IDE context into the conversation (e.g., `CurrentFile.idechatprompttemplate`, `CurrentSelection...`).
+- Tool Providers & Handlers (`IDEIntelligenceChat` binary): The core logic for exposing the available tools (`ChatToolProvider`) and executing their logic (`FindTextInFileToolHandler`, etc.).
+- Curated Knowledge Base (`AdditionalDocumentation` folder): A local library of markdown files containing up-to-date information on new Apple technologies, accessible via the `search_additional_documentation` tool.
 
 ## The Core Architecture: A Planner-Executor Model
 
@@ -95,8 +95,8 @@ The prompt further guides the agent on how to handle large files that won't fit 
 
 For developers, the separation of concerns in this architecture is significant. It creates a clear path for modification:
 
-1. **Prompts are External:** The agent's core personality, rules, and policies are not compiled code but external `.idechatprompttemplate` files. These can be edited or replaced to change the agent's behavior.
-2. **Tools are Dynamic:** The tool-calling system is not hardcoded. The `ChatToolProvider`s assemble the list of available tools at runtime. By extending or replacing these providers, one could inject custom tools into the orchestration flow.
+1. Prompts are External: The agent's core personality, rules, and policies are not compiled code but external `.idechatprompttemplate` files. These can be edited or replaced to change the agent's behavior.
+2. Tools are Dynamic: The tool-calling system is not hardcoded. The `ChatToolProvider`s assemble the list of available tools at runtime. By extending or replacing these providers, one could inject custom tools into the orchestration flow.
 
 This means that by rewriting prompts and injecting custom tool providers, one could leverage the existing planner-executor architecture to create a customized assistant without modifying the core `IDEIntelligenceChat` framework binaries.
 
@@ -193,13 +193,13 @@ For developers, these questions aren’t just about usability—they are about t
 
 The following tools have been identified from the framework's prompt templates. This list represents the capabilities the agent is explicitly encouraged to use.
 
-- **`query_search`**: Performs semantic search across the codebase to find relevant code by meaning rather than exact text.
-- **`edit_file`**: Applies changes to an existing file.
-- **`create_file`**: Creates a new file with specified content.
-- **`view`**: Reads a specific range of lines from a large file that cannot be loaded into context entirely.
-- **`find_text_in_file`**: Searches for a specific string within a large file.
-- **`str_replace`**: A simple string replacement tool.
-- **`search_additional_documentation`**: Retrieves content from the curated set of markdown guides bundled with the framework to answer questions about "new Apple things."
+- `query_search`: Performs semantic search across the codebase to find relevant code by meaning rather than exact text.
+- `edit_file`: Applies changes to an existing file.
+- `create_file`: Creates a new file with specified content.
+- `view`: Reads a specific range of lines from a large file that cannot be loaded into context entirely.
+- `find_text_in_file`: Searches for a specific string within a large file.
+- `str_replace`: A simple string replacement tool.
+- `search_additional_documentation`: Retrieves content from the curated set of markdown guides bundled with the framework to answer questions about "new Apple things."
 
 ## Appendix D: Framework Dependencies
 
