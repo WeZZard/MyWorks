@@ -1,5 +1,5 @@
 ---
-title: "果味兒幽 -- Xcode 新AI助手深度解析"
+title: "果味儿幽 -- Xcode 新AI助手深度解析"
 category: Programming
 tags: [AI,Xcode]
 isPublished: false
@@ -9,11 +9,11 @@ isPublished: false
 
 这事儿得从我倒腾一个用老掉牙的 `XCTest` 框架做测试的项目说起。那个 AI 助手不只是帮忙，它简直是拧着一股劲儿，非要把我的测试代码升级成最新的 Swift Testing 框架。
 
-![Use Swift Testing](./use_swift_testing.png "Xcode 将现有的测试代码升级成 Swift Testing")
+![Use Swift Testing](../use_swift_testing.png "Xcode 将现有的测试代码升级成 Swift Testing")
 
 后来呢，我有一段代码，故意没做线程安全处理，注释里也写得明明白白。结果那个 AI 助手就是不肯放过，非要留言建议我用 Swift Concurrency 把这个 API 包起来。
 
-![Use Swift Concurrency](./use_concurrency.png "Xcode 在非线程安全代码注释建议使用 Swift Concurrency")
+![Use Swift Concurrency](../use_concurrency.png "Xcode 在非线程安全代码注释建议使用 Swift Concurrency")
 
 这种体验，就像是精美的用户界面和一个犟驴 AI 的正面碰撞，让我不禁想问：这家伙到底为啥这么轴？
 
@@ -96,8 +96,8 @@ Prompt 还进一步指导 AI 如何处理那些大到无法一次性装进上下
 
 对于开发者来说，这种架构里的「责任分离」设计意义重大，因为它为我们「调教」这个 AI 提供了一条清晰的路径：
 
-1.  **Prompts 是外置的：** AI 的核心性格、规则和策略都不是写死在代码里的，而是存在于外部的 `.idechatprompttemplate` 文件中。我们可以通过编辑或替换这些文件来改变 AI 的行为。
-2.  **工具是动态的：** 工具调用系统也不是硬编码的。`ChatToolProvider` 会在运行时动态地组装可用的工具列表。这意味着我们可以通过扩展或替换这些 Provider，来把我们自己的定制工具塞进它的工作流里。
+1. **Prompts 是外置的：** AI 的核心性格、规则和策略都不是写死在代码里的，而是存在于外部的 `.idechatprompttemplate` 文件中。我们可以通过编辑或替换这些文件来改变 AI 的行为。
+2. **工具是动态的：** 工具调用系统也不是硬编码的。`ChatToolProvider` 会在运行时动态地组装可用的工具列表。这意味着我们可以通过扩展或替换这些 Provider，来把我们自己的定制工具塞进它的工作流里。
 
 也就是说，通过重写 prompts 和注入自定义的工具，我们完全可以利用它现有的「规划师-执行官」架构，打造一个属于自己的定制助手，而且还不用去动 `IDEIntelligenceChat` 框架的核心代码。
 
@@ -123,7 +123,7 @@ AI 对这些策略的遵守可不仅仅是「建议」而已，它会非常执�
 
 ## 上下文为王：把 AI 「焊死」在 IDE 里
 
-为了确保回答的精准和贴切，这个框架非常依赖于把 IDE 的上下文直接注入到 prompts 里。一大堆模板文件（`CurrentFile.idechatprompttemplate`, `CurrentSelection...`, `Interfaces...` 等）为模型提供了当前用户工作环境的清晰快照。此外，系统还使用一个叫 `search_additional_documentation` 的工具，从框架自带的精选 Markdown 文件中检索知识，确保它对「苹果新玩意儿」(new Apple things)的了解永远在线。
+为了确保回答的精准和贴切，这个框架非常依赖于把 IDE 的上下文直接注入到 prompts 里。一大堆模板文件（`CurrentFile.idechatprompttemplate`, `CurrentSelection...`, `Interfaces...` 等）为模型提供了当前用户工作环境的清晰快照。此外，系统还使用一个叫 `search_additional_documentation` 的工具，从框架自带的精选 Markdown 文件中检索知识，确保它对「苹果新玩意儿 (new Apple things)」的了解永远在线。
 
 ````text
 // From PlannerExecutorStylePlannerSystemPrompt-gpt_5.idechatprompttemplate
@@ -158,7 +158,7 @@ The user has selected the following code from that file:
 | 特性 | Xcode | Cursor | Claude Code |
 | :--- | :--- | :--- | :--- |
 | **Orchestration** | Structured Planner-executor | Integrated Planner-executor | Multi-Agent |
-| **工具扩展性。** | 有限 | 可扩展 | 可扩展 |
+| **工具扩展性** | 有限 | 可扩展 | 可扩展 |
 | **语法高亮与跳转定义** | 原生支持 | 依赖构建服务，项目不编译就抓瞎 | 依赖外部编辑器，Xcode 是最佳拍档 |
 | **错误导航** | 响应迅速 | 依赖构建服务，项目不编译就抓瞎 | 依赖外部编辑器， Xcode 是最佳拍档 |
 | **合规与企业级应用** | 强。支持本地模型（Ollama），可私有化部署。 | 中等。有企业版，但主要依赖云服务。 | 不一定。公共版是云服务，私有化部署是另一码事。 |
