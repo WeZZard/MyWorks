@@ -30,10 +30,21 @@ For developers and power users, the most critical insight is the system's **pote
 
 The `IDEIntelligenceChat.framework` is organized into several key components that work together to create the agent's behavior:
 
-- Prompt Templates (`.idechatprompttemplate` files): These are external text files that define the agent's core personality, rules, and conversational logic for different modes (e.g., `BasicSystemPrompt`, `PlannerExecutorStylePlannerSystemPrompt`).
-- Context Injectors: A series of prompt templates designed to insert specific pieces of IDE context into the conversation (e.g., `CurrentFile.idechatprompttemplate`, `CurrentSelection...`).
-- Tool Providers & Handlers (`IDEIntelligenceChat` binary): The core logic for exposing the available tools (`ChatToolProvider`) and executing their logic (`FindTextInFileToolHandler`, etc.).
-- Curated Knowledge Base (`AdditionalDocumentation` folder): A local library of markdown files containing up-to-date information on new Apple technologies, accessible via the `search_additional_documentation` tool.
+- Prompt Templates (`.idechatprompttemplate` files)
+
+  These are external text files that define the agent's core personality, rules, and conversational logic for different modes (e.g., `BasicSystemPrompt`, `PlannerExecutorStylePlannerSystemPrompt`).
+
+- Context Injectors
+  
+  A series of prompt templates designed to insert specific pieces of IDE context into the conversation (e.g., `CurrentFile.idechatprompttemplate`, `CurrentSelection...`).
+
+- Tool Providers & Handlers (`IDEIntelligenceChat` binary)
+
+  The core logic for exposing the available tools (`ChatToolProvider`) and executing their logic (`FindTextInFileToolHandler`, etc.).
+
+- Curated Knowledge Base (`AdditionalDocumentation` folder)
+  
+  A local library of markdown files containing up-to-date information on new Apple technologies, accessible via the `search_additional_documentation` tool.
 
 ## The Core Architecture: A Planner-Executor Model
 
@@ -95,8 +106,13 @@ The prompt further guides the agent on how to handle large files that won't fit 
 
 For developers, the separation of concerns in this architecture is significant. It creates a clear path for modification:
 
-1. Prompts are External: The agent's core personality, rules, and policies are not compiled code but external `.idechatprompttemplate` files. These can be edited or replaced to change the agent's behavior.
-2. Tools are Dynamic: The tool-calling system is not hardcoded. The `ChatToolProvider`s assemble the list of available tools at runtime. By extending or replacing these providers, one could inject custom tools into the orchestration flow.
+1. Prompts are External
+
+  The agent's core personality, rules, and policies are not compiled code but external `.idechatprompttemplate` files. These can be edited or replaced to change the agent's behavior.
+
+2. Tools are Dynamic
+
+  The tool-calling system is not hardcoded. The `ChatToolProvider`s assemble the list of available tools at runtime. By extending or replacing these providers, one could inject custom tools into the orchestration flow.
 
 This means that by rewriting prompts and injecting custom tool providers, one could leverage the existing planner-executor architecture to create a customized assistant without modifying the core `IDEIntelligenceChat` framework binaries.
 
@@ -169,12 +185,15 @@ Everything we’ve examined so far—from the planner-executor design and policy
 Looking forward, several open questions remain:
 
 - Shaping behavior vs. boosting productivity
+
   Will Xcode’s AI assistant remain a companion for developer efficiency, or is its deeper role to enforce platform orthodoxy—subtly steering teams to adopt Swift Concurrency, Swift Testing, and other first-party technologies whether they planned to or not?
 
 - IDE as the endpoint, or just one tool in a larger workflow?
+
   If other ecosystems evolve toward Infrastructure as Code and agent-driven workflows, will Apple double down on keeping the AI bound to the IDE GUI, or eventually allow orchestration that spans build, test, profiling, and deployment pipelines? In other words, will the “ghost” stay inside the machine—or learn to travel across machines?
 
 - Customization and control
+
   The current architecture shows clear seams for modification (external prompts, runtime tool providers). Will Apple embrace these seams as sanctioned extension points for enterprises, or will they tighten them to preserve determinism and compliance?
 
 For developers, these questions aren’t just about usability—they are about the future balance of power between human agency, Apple’s design philosophy, and the increasingly opinionated agents embedded in our tools.
