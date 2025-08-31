@@ -184,11 +184,11 @@ The user has selected the following code from that file:
 
 ## 附录 A: 工作流程图
 
-![Workflow Diagram](../workflow_diagram.png ""一张信息图，详细描绘了处理用户消息的系统工作流。该过程始于“用户消息”，该消息被送入“Xcode Orchestrator”。在 Orchestrator 内部，消息首先被“消息分类器”归类为“解释”、“进行更改”或“混合”类型。基于此分类，“模式选择器”会从包括“基本”、“查询中”、“工具辅助”、“计划器-执行器”、“集成器”、“生成器”在内的模式列表中选择一种模式。所选模式随后在“上下文/检索”阶段触发“上下文注入”和“查询扩展”。注入的上下文被传递给“计划器”，该计划器被描述为“Swift 优先、支持 Swift 并发、使用 Markdown 且无表格”。计划器可以使用如“查询搜索”、“视图”、“在文件中查找文本”、“字符串替换”等“项目工具”。计划器还会检查主题是否关于苹果公司的新技术，如果是，它会通过“附加文档检索”获取更多文档并反馈给自身。计划器有两个主要输出路径。它可以直接生成“答案（解释）”，或者使用“项目工具”，然后将控制权传递给“执行器（gpt-4.1-mini）”。执行器使用各种“执行器/集成器”，如“编辑文件/创建文件”、“文本编辑器集成器（返回整个更新后的文件）”和“快速应用集成器（更新 -> 更新后代码）”，以产生“更新后代码”。此“更新后代码”随后被总结为“已做更改摘要”，并最终汇入“答案（解释）”。最后，整个输出，包括答案和代码更改，都由“聊天标题解析器”处理，以生成一个单行的标题。")
+![一张信息图，详细描绘了处理用户消息的系统工作流。该过程始于“用户消息”，该消息被送入“Xcode Orchestrator”。在 Orchestrator 内部，消息首先被“消息分类器”归类为“解释”、“进行更改”或“混合”类型。基于此分类，“模式选择器”会从包括“基本”、“查询中”、“工具辅助”、“计划器-执行器”、“集成器”、“生成器”在内的模式列表中选择一种模式。所选模式随后在“上下文/检索”阶段触发“上下文注入”和“查询扩展”。注入的上下文被传递给“计划器”，该计划器被描述为“Swift 优先、支持 Swift 并发、使用 Markdown 且无表格”。计划器可以使用如“查询搜索”、“视图”、“在文件中查找文本”、“字符串替换”等“项目工具”。计划器还会检查主题是否关于苹果公司的新技术，如果是，它会通过“附加文档检索”获取更多文档并反馈给自身。计划器有两个主要输出路径。它可以直接生成“答案（解释）”，或者使用“项目工具”，然后将控制权传递给“执行器（gpt-4.1-mini）”。执行器使用各种“执行器/集成器”，如“编辑文件/创建文件”、“文本编辑器集成器（返回整个更新后的文件）”和“快速应用集成器（更新 -> 更新后代码）”，以产生“更新后代码”。此“更新后代码”随后被总结为“已做更改摘要”，并最终汇入“答案（解释）”。最后，整个输出，包括答案和代码更改，都由“聊天标题解析器”处理，以生成一个单行的标题。](../workflow_diagram.png "工作流程图")
 
 ## 附录 B: 工具调用类型层级
 
-![Tool-Calling Type Hierarchy](../tool_calling_type_hierarchy.png "一张类图，详细说明了工具调用的体系结构。核心的 'Orchestrator' 与 'ToolProvider' 交互以发现可用工具，这些工具表示为 'IDEChatToolType' 对象。'Orchestrator' 随后调用 'ModelEndpoints' 类，并向其提供工具列表。该系统支持多种模型后端，例如 'AFMChatModelEndpoints'、'AnthropicChatModelEndpoints' 和 'OllamaChatModelEndpoints' 等类都继承自一个基础的 'ModelEndpoints'。当模型决定使用工具时，它会向 'Orchestrator' 发送一个 'tool_call' 请求。'Orchestrator' 将此请求转发给 'ToolDispatcher'，后者将其路由到正确的 'ToolHandler' 实现，例如 'FindTextInFileToolHandler'。处理器处理该调用并将结果返回给 'Orchestrator'。")
+![一张类图，详细说明了工具调用的体系结构。核心的 'Orchestrator' 与 'ToolProvider' 交互以发现可用工具，这些工具表示为 'IDEChatToolType' 对象。'Orchestrator' 随后调用 'ModelEndpoints' 类，并向其提供工具列表。该系统支持多种模型后端，例如 'AFMChatModelEndpoints'、'AnthropicChatModelEndpoints' 和 'OllamaChatModelEndpoints' 等类都继承自一个基础的 'ModelEndpoints'。当模型决定使用工具时，它会向 'Orchestrator' 发送一个 'tool_call' 请求。'Orchestrator' 将此请求转发给 'ToolDispatcher'，后者将其路由到正确的 'ToolHandler' 实现，例如 'FindTextInFileToolHandler'。处理器处理该调用并将结果返回给 'Orchestrator'。](../tool_calling_type_hierarchy.png "工具调用类型层级")
 
 ## 附录 C: 已知内置工具
 
@@ -206,4 +206,4 @@ The user has selected the following code from that file:
 
 下图展示了 `IDEIntelligenceChat` 所依赖的关键框架，突出了其核心的 AI 和智能技术栈，并整合了其他基础框架。
 
-![Framework Dependencies](./framework_dependencies_portrait.png "一张 'IDEIntelligenceChat' 框架的依赖关系图。该图显示 'IDEIntelligenceChat' 依赖于两大组框架。第一组名为“IDE 智能技术栈”，包括 'IDEIntelligenceModelService'、'IDEIntelligenceFoundation'、'IDEIntelligenceMessaging' 和 'IDELanguageModelKit'。第二组名为“核心 AI & 生成服务”，包括 'GenerativeFunctions'、'GenerativeModels'、'PromptKit' 和 'GenerativeFunctionsFoundation'。")
+![一张 'IDEIntelligenceChat' 框架的依赖关系图。该图显示 'IDEIntelligenceChat' 依赖于两大组框架。第一组名为“IDE 智能技术栈”，包括 'IDEIntelligenceModelService'、'IDEIntelligenceFoundation'、'IDEIntelligenceMessaging' 和 'IDELanguageModelKit'。第二组名为“核心 AI & 生成服务”，包括 'GenerativeFunctions'、'GenerativeModels'、'PromptKit' 和 'GenerativeFunctionsFoundation'。](./framework_dependencies_portrait.png "关键框架依赖")
