@@ -1,5 +1,5 @@
 ---
-title: "果味儿幽 -- Xcode 新AI助手深度解析"
+title: "果味儿幽灵 -- Xcode 新AI助手深度解析"
 category: Programming
 tags: [AI,Xcode]
 isPublished: false
@@ -11,7 +11,7 @@ isPublished: false
 
 ![Use Swift Testing](../use_swift_testing.png "Xcode 将现有的测试代码升级成 Swift Testing")
 
-后来呢，我有一段代码，故意没做线程安全处理，注释里也写得明明白白。结果那个 AI 助手就是不肯放过，非要留言建议我用 Swift Concurrency 把这个 API 包起来。
+然后我有一段代码，故意没做线程安全处理，注释里也写得明明白白。结果那个 AI 助手就是不肯放过，非要留言建议我用 Swift Concurrency 把这个 API 包起来。
 
 ![Use Swift Concurrency](../use_concurrency.png "Xcode 在非线程安全代码注释建议使用 Swift Concurrency")
 
@@ -57,14 +57,14 @@ AI 助手的行为完全由它的 prompts 来决定，这些 prompts 包含了�
 **关于使用代码库搜索 (`query_search`):**
 
 ```text
-// From: PlannerExecutorStylePlannerSystemPrompt-gpt_5.idechatprompttemplate
+// 来源: PlannerExecutorStylePlannerSystemPrompt-gpt_5.idechatprompttemplate
 Most of the time, the `query_search` tool will be available to you. This tool is a vital resource for all questions about the user's project. If you have the `query_search` tool, you should almost never attempt to explain anything about the user's own project without using it!
 ```
 
 **关于使用文档搜索 (`search_additional_documentation`):**
 
 ```text
-// From: PlannerExecutorStylePlannerSystemPrompt-gpt_5.idechatprompttemplate
+// 来源: PlannerExecutorStylePlannerSystemPrompt-gpt_5.idechatprompttemplate
 If the topic is covered by a guide described in the definition for the `search_additional_documentation` tool, use the tool to retrieve that guide and learn more before proceeding with the request. It is NEVER acceptable to answer questions that explicitly mention new Apple things... without calling `search_additional_documentation`.
 ```
 
@@ -75,13 +75,13 @@ If the topic is covered by a guide described in the definition for the `search_a
 **关于使用 `edit_file` 和 `create_file`:**
 
 ```text
-// From: PlannerExecutorStylePlannerSystemPrompt-gpt_5.idechatprompttemplate
+// 来源: PlannerExecutorStylePlannerSystemPrompt-gpt_5.idechatprompttemplate
 When you are making changes to the user's project, focus on making changes to the codebase with `edit_file` and `create_file`.
 ```
 
-这种直接、基于指令的方式，背后其实是一个功能强大得多、也灵活得多的服务层（详见附录）。这种「灵活的工具箱」加上严格的「家规」的组合，正是这个 AI 助手行为可预测、高度服从指挥的关键所在。
+这种直接、基于指令的方式，背后其实是一个功能强大得多、也灵活得多的服务层（详见附录）。这种「灵活的工具箱」加上严格的「军规」的组合，正是这个 AI 助手行为可预测、高度服从指挥的关键所在。
 
-### 一个被沙箱化的 AI：「围墙花园」策略
+### 一个被沙箱化的 AI：「封闭生态」策略
 
 Prompts 中揭示了一个关键的设计选择：这个 AI 是在一个沙箱环境中运行的，它不能直接访问用户的文件系统。`TextEditorToolSystemPrompt.idechatprompttemplate` 文件明确告诉了 AI 如何在这种限制下工作：
 
@@ -92,14 +92,14 @@ In Xcode, you do not have direct access to the user's file system, so when you r
 
 Prompt 还进一步指导 AI 如何处理那些大到无法一次性装进上下文窗口的文件，告诉它要使用像 `view` 和 `find_text_in_file` 这样的工具来一点点地查看。这种「围墙花园」的做法，是它和 Cursor 这类通常拥有更广泛权限的 AI 的一个显著区别。它把安全和可控放在了首位，确保 AI 只能通过 IDE 控制的、结构化的工具接口来查看和操作文件。
 
-## 定制之路：如何「调教」这个系统
+## 定制之路：如何修改这个系统
 
-对于开发者来说，这种架构里的「责任分离」设计意义重大，因为它为我们「调教」这个 AI 提供了一条清晰的路径：
+对于开发者来说，这种架构里的「责任分离」设计意义重大，因为它为我们修改这个 AI 提供了一条清晰的路径：
 
 1. **Prompts 是外置的：** AI 的核心性格、规则和策略都不是写死在代码里的，而是存在于外部的 `.idechatprompttemplate` 文件中。我们可以通过编辑或替换这些文件来改变 AI 的行为。
 2. **工具是动态的：** 工具调用系统也不是硬编码的。`ChatToolProvider` 会在运行时动态地组装可用的工具列表。这意味着我们可以通过扩展或替换这些 Provider，来把我们自己的定制工具塞进它的工作流里。
 
-也就是说，通过重写 prompts 和注入自定义的工具，我们完全可以利用它现有的「规划师-执行官」架构，打造一个属于自己的定制助手，而且还不用去动 `IDEIntelligenceChat` 框架的核心代码。
+也就是说，通过重写 prompts 和注入自定义的工具，我们完全可以利用它现有的「planner-executor」架构，打造一个属于自己的定制助手，而且还不用去动 `IDEIntelligenceChat` 框架的核心代码。
 
 **免责声明:** 必须强调，修改 `IDEIntelligenceChat.framework` 或 Xcode 应用包的任何部分，都需要绕过或重新应用苹果的代码签名。任何这类修改都是不被官方支持的，并且可能会导致 Xcode 不稳定。
 
@@ -126,7 +126,7 @@ AI 对这些策略的遵守可不仅仅是「建议」而已，它会非常执�
 为了确保回答的精准和贴切，这个框架非常依赖于把 IDE 的上下文直接注入到 prompts 里。一大堆模板文件（`CurrentFile.idechatprompttemplate`, `CurrentSelection...`, `Interfaces...` 等）为模型提供了当前用户工作环境的清晰快照。此外，系统还使用一个叫 `search_additional_documentation` 的工具，从框架自带的精选 Markdown 文件中检索知识，确保它对「苹果新玩意儿 (new Apple things)」的了解永远在线。
 
 ````text
-// From PlannerExecutorStylePlannerSystemPrompt-gpt_5.idechatprompttemplate
+// 来源: PlannerExecutorStylePlannerSystemPrompt-gpt_5.idechatprompttemplate
 <searching_additional_documentation>
 ...
 If the topic is covered by a guide described in the definition for the `search_additional_documentation` tool, use the tool to retrieve that guide and learn more before proceeding with the request. It is NEVER acceptable to answer questions that explicitly mention new Apple things (like iOS 26, macOS 26, or any other new Apple OS) or best practices on Apple platforms without calling `search_additional_documentation`.
@@ -135,7 +135,7 @@ If the topic is covered by a guide described in the definition for the `search_a
 ````
 
 ````text
-// From CurrentFile.idechatprompttemplate
+// 来源: CurrentFile.idechatprompttemplate
 The user is currently inside this file: {{ currentFile.fileName }}
 The contents are below:
 ```{{ currentFile.language }}:{{ currentFile.fileName }}
@@ -144,7 +144,7 @@ The contents are below:
 ````
 
 ````text
-// From CurrentSelection.idechatprompttemplate
+// 来源: CurrentSelection.idechatprompttemplate
 The user has selected the following code from that file:
 ```{{ selection.language }}
 {{ selection.code }}

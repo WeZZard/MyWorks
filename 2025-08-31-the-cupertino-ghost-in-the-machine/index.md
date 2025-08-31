@@ -17,7 +17,7 @@ Later, I had a piece of code that was intentionally thread-unsafe, clearly comme
 
 This experience, a clash between a beautiful interface and a stubborn AI, sparked a question: why does it behave this way?
 
-This report is the answer. It’s a deep dive into the `IDEIntelligenceChat` framework, revealing the architecture and design choices that create this powerful, policy-driven, and highly modifiable assistant.
+This report is the answer. It’s a deep dive into the `IDEIntelligenceChat` framework, revealing the architecture and design choices that create this policy-driven assistant.
 
 ## Executive Summary: A Tightly Controlled and Modifiable Assistant
 
