@@ -186,6 +186,9 @@ For developers, these questions aren’t just about usability—they are about t
 
 ```mermaid
 ---
+title: "Workflow: Xcode Orchestrator"
+accTitle: "Workflow: Xcode Orchestrator"
+accDescr: "A flowchart detailing a system's workflow for processing a user message. The process begins with a 'User Message' that is fed into an 'Xcode Orchestrator.' Inside the orchestrator, a 'Message Classifier' categorizes the message as 'explain,' 'make changes,' or 'mixed.' Based on this classification, a 'Mode Selection' is made from a list of modes including 'Basic,' 'In-Query,' 'Tool-Assisted,' and others. The selected mode then informs the 'Context/Retrieval' stage, which performs 'Context Injection' and 'Query Expansion.' The injected context is passed to a 'Planner,' which is described as 'Swift-first, Swift Concurrency, markdown, no tables.' The planner can use 'Project Tools' such as 'query_search,' 'view,' 'find_text_in_file,' and 'str_replace.' The planner also checks if the topic is about 'new Apple things'; if so, it retrieves additional documentation and feeds it back to itself. The planner has two main output paths. It can either directly generate an 'Answer (explanation)' or use the 'Project Tools,' which then pass control to an 'Executor (gpt-4.1-mini).' The executor works with various 'Executors/Integrators' such as 'edit_file / create_file,' a 'TextEditor Integrator,' and a 'Fast-Apply Integrator' to produce 'Updated Code.' This 'Updated Code' is then summarized as a 'Changes Made Summary,' which in turn feeds into the final 'Answer (explanation).' Finally, the entire output, including the answer and code changes, is processed by a 'ChatTitleResolver' to generate a one-line title."
 config:
   layout: elk
 ---
@@ -250,6 +253,9 @@ graph TD
 
 ```mermaid
 ---
+title: "Tool-Calling Type Hierarchy"
+accTitle: "Tool-Calling Type Hierarchy"
+accDescr: "A class diagram detailing the architecture of tool-calling. A central 'Orchestrator' interacts with a 'ToolProvider' to discover available tools, which are represented as 'IDEChatToolType' objects. The 'Orchestrator' then invokes a 'ModelEndpoints' class, providing it with the list of tools. The system supports multiple model backends, with classes like 'AFMChatModelEndpoints,' 'AnthropicChatModelEndpoints,' and 'OllamaChatModelEndpoints' inheriting from a base 'ModelEndpoints.' When the model decides to use a tool, it sends a 'tool_call' request back to the 'Orchestrator.' The 'Orchestrator' forwards this to a 'ToolDispatcher,' which routes it to the correct 'ToolHandler' implementation, such as 'FindTextInFileToolHandler.' The handler processes the call and returns a result to the 'Orchestrator'."
 config:
   layout: elk
 ---
@@ -315,9 +321,12 @@ The following tools have been identified from the framework's prompt templates. 
 
 ## Appendix D: Framework Dependencies
 
-The following diagram illustrates the key frameworks that `IDEIntelligenceChat` links against, highlighting the core AI and Intelligence stacks while consolidating other foundational frameworks.
-
 ```mermaid
+---
+title: "Framework Dependencies"
+accTitle: "Framework Dependencies"
+accDescr: "A dependency diagram for the 'IDEIntelligenceChat' framework. The diagram shows that 'IDEIntelligenceChat' depends on two main groups of frameworks. The first group, labeled 'IDE Intelligence,' includes 'IDEIntelligenceModelService,' 'IDEIntelligenceFoundation,' 'IDEIntelligenceMessaging,' and 'IDELanguageModelKit.' The second group, labeled 'Generative Services,' includes 'GenerativeFunctions,' 'GenerativeModels,' 'PromptKit,' and 'GenerativeFunctionsFoundation'."
+---
 graph TD
     subgraph "Generative Services"
         GF["GenerativeFunctions"]
