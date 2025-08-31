@@ -206,4 +206,4 @@ The user has selected the following code from that file:
 
 下图展示了 `IDEIntelligenceChat` 所依赖的关键框架，突出了其核心的 AI 和智能技术栈，并整合了其他基础框架。
 
-![Framework Dependencies](../framework_dependencies.png "一张 'IDEIntelligenceChat' 框架的依赖关系图。该图显示 'IDEIntelligenceChat' 依赖于两大组框架。第一组名为“IDE 智能技术栈”，包括 'IDEIntelligenceModelService'、'IDEIntelligenceFoundation'、'IDEIntelligenceMessaging' 和 'IDELanguageModelKit'。第二组名为“核心 AI & 生成服务”，包括 'GenerativeFunctions'、'GenerativeModels'、'PromptKit' 和 'GenerativeFunctionsFoundation'。")
+![Framework Dependencies](./framework_dependencies_portrait.png "一张 'IDEIntelligenceChat' 框架的依赖关系图。该图显示 'IDEIntelligenceChat' 依赖于两大组框架。第一组名为“IDE 智能技术栈”，包括 'IDEIntelligenceModelService'、'IDEIntelligenceFoundation'、'IDEIntelligenceMessaging' 和 'IDELanguageModelKit'。第二组名为“核心 AI & 生成服务”，包括 'GenerativeFunctions'、'GenerativeModels'、'PromptKit' 和 'GenerativeFunctionsFoundation'。")
