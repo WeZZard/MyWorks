@@ -184,11 +184,122 @@ For developers, these questions aren’t just about usability—they are about t
 
 ## Appendix A: Workflow Diagram
 
-![Workflow Diagram](workflow_diagram.png)
+```mermaid
+---
+config:
+  layout: elk
+---
+graph TD
+  A["User Message"] --> B["Orchestrator"]
+
+  subgraph "Xcode Orchestrator"
+    B --> C["Message Classifier<br/>(explain | make changes | mixed)"]
+    C --> D["Mode Selection<br/>(Basic | In-Query | Tool-Assisted | Planner-Executor | Integrator | Generators)"]
+  end
+
+  subgraph "Context/Retrieval"
+    E["Context Injection<br/>(CurrentFile, CurrentSelection, Interfaces, SearchResults, ContextItems, Issues, AdditionalFiles, Snippets, NewKnowledge)"]
+    F["Query Expansion<br/>(Instruction, Local Infill)"]
+    G["Additional Docs Retrieval<br/>(search_additional_documentation -> AdditionalDocumentation)"]
+  end
+
+  D --> E
+  D --> F
+
+  subgraph "Planner"
+    H["Planner<br/>(Swift-first, Swift Concurrency, markdown, no tables)"]
+    I["Project Tools<br/>(query_search, view, find_text_in_file, str_replace)"]
+    J["Check if topic is new Apple things"]
+  end
+
+  E --> H
+  F --> I
+  H --> J
+  J --> G
+  G --> H
+
+  H --> Q["Answer (explanation)"]
+  H --> I
+
+  subgraph "Executors/Integrators"
+    K["Executor (gpt-4.1-mini)"]
+    L["edit_file / create_file"]
+    M["TextEditor Integrator<br/>(return entire updated file)"]
+    N["Fast-Apply Integrator<br/>(update -> updated-code)"]
+    O["Updated Code"]
+  end
+
+  I --> K
+  K --> L
+  K --> M
+  K --> N
+  L --> O
+  M --> O
+  N --> O
+
+  subgraph "Output"
+    P["Changes Made Summary"]
+    Q
+    R["ChatTitleResolver (one-line title)"]
+  end
+
+  O --> P --> Q --> R
+```
 
 ## Appendix B: Tool-Calling Type Hierarchy
 
-![Tool-Calling Type Hierarchy](tool_calling_type_hierarchy.png)
+```mermaid
+---
+config:
+  layout: elk
+---
+classDiagram
+class Orchestrator
+class ToolProvider {
+  +availableTools(modelDef, response, message) : IDEChatToolType[]
+}
+class ChatToolProvider
+ToolProvider <|.. ChatToolProvider
+ChatToolProvider --> IDEChatToolType : provides
+
+class IDEChatToolType {
+  +name: String
+  +description: String
+  +parameters: IDEIntelligenceBasicSchema?
+}
+
+class SchemaGenerable
+class IDEIntelligenceBasicSchema
+SchemaGenerable <|.. ToolParams
+ToolParams --> IDEIntelligenceBasicSchema : generates
+
+class ModelEndpoints {
+  +stream(messages, config, constrainTo, tools) : Stream
+  +respond(messages, config, constrainTo) : ModelResponse
+}
+class AFMChatModelEndpoints
+class AnthropicChatModelEndpoints
+class GMSChatModelEndpoints
+class OllamaChatModelEndpoints
+ModelEndpoints <|-- AFMChatModelEndpoints
+ModelEndpoints <|-- AnthropicChatModelEndpoints
+ModelEndpoints <|-- GMSChatModelEndpoints
+ModelEndpoints <|-- OllamaChatModelEndpoints
+
+Orchestrator --> ToolProvider : asks for tools
+Orchestrator --> ModelEndpoints : invoke with tools[]
+ModelEndpoints --> IDEChatToolType : uses
+ModelEndpoints --> SchemaGenerable : constrainTo
+
+class ToolDispatcher
+class ToolHandler
+class FindTextInFileToolHandler
+ToolHandler <|.. FindTextInFileToolHandler
+ModelEndpoints ..> Orchestrator : tool_call
+Orchestrator --> ToolDispatcher : on tool_call
+ToolDispatcher ..> ToolHandler : routes
+ToolHandler --> Orchestrator : result
+```
 
 ## Appendix C: Known Built-in Tools
 
@@ -206,4 +317,29 @@ The following tools have been identified from the framework's prompt templates. 
 
 The following diagram illustrates the key frameworks that `IDEIntelligenceChat` links against, highlighting the core AI and Intelligence stacks while consolidating other foundational frameworks.
 
-![Framework Dependencies](framework_dependencies.png)
+```mermaid
+graph TD
+    subgraph "Generative Services"
+        GF["GenerativeFunctions"]
+        GM["GenerativeModels"]
+        PK["PromptKit"]
+        GFF["GenerativeFunctionsFoundation"]
+    end
+
+    subgraph "IDE Intelligence"
+        IIMS["IDEIntelligenceModelService"]
+        IIF["IDEIntelligenceFoundation"]
+        IIM["IDEIntelligenceMessaging"]
+        IDLK["IDELanguageModelKit"]
+    end
+
+    IIC["IDEIntelligenceChat"] --> IIMS
+    IIC --> IIF
+    IIC --> IIM
+    IIC --> IDLK
+    
+    IIC --> GF
+    IIC --> GM
+    IIC --> PK
+    IIC --> GFF
+```

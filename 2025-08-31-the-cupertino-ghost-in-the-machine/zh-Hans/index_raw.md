@@ -184,11 +184,122 @@ The user has selected the following code from that file:
 
 ## 附录 A: 工作流程图
 
-![Workflow Diagram](../workflow_diagram.png)
+```mermaid
+---
+config:
+  layout: elk
+---
+graph TD
+  A["User Message"] --> B["Orchestrator"]
+
+  subgraph "Xcode Orchestrator"
+    B --> C["Message Classifier<br/>(explain | make changes | mixed)"]
+    C --> D["Mode Selection<br/>(Basic | In-Query | Tool-Assisted | Planner-Executor | Integrator | Generators)"]
+  end
+
+  subgraph "Context/Retrieval"
+    E["Context Injection<br/>(CurrentFile, CurrentSelection, Interfaces, SearchResults, ContextItems, Issues, AdditionalFiles, Snippets, NewKnowledge)"]
+    F["Query Expansion<br/>(Instruction, Local Infill)"]
+    G["Additional Docs Retrieval<br/>(search_additional_documentation -> AdditionalDocumentation)"]
+  end
+
+  D --> E
+  D --> F
+
+  subgraph "Planner"
+    H["Planner<br/>(Swift-first, Swift Concurrency, markdown, no tables)"]
+    I["Project Tools<br/>(query_search, view, find_text_in_file, str_replace)"]
+    J["Check if topic is new Apple things"]
+  end
+
+  E --> H
+  F --> I
+  H --> J
+  J --> G
+  G --> H
+
+  H --> Q["Answer (explanation)"]
+  H --> I
+
+  subgraph "Executors/Integrators"
+    K["Executor (gpt-4.1-mini)"]
+    L["edit_file / create_file"]
+    M["TextEditor Integrator<br/>(return entire updated file)"]
+    N["Fast-Apply Integrator<br/>(update -> updated-code)"]
+    O["Updated Code"]
+  end
+
+  I --> K
+  K --> L
+  K --> M
+  K --> N
+  L --> O
+  M --> O
+  N --> O
+
+  subgraph "Output"
+    P["Changes Made Summary"]
+    Q
+    R["ChatTitleResolver (one-line title)"]
+  end
+
+  O --> P --> Q --> R
+```
 
 ## 附录 B: 工具调用类型层级
 
-![Tool-Calling Type Hierarchy](../tool_calling_type_hierarchy.png)
+```mermaid
+---
+config:
+  layout: elk
+---
+classDiagram
+class Orchestrator
+class ToolProvider {
+  +availableTools(modelDef, response, message) : IDEChatToolType[]
+}
+class ChatToolProvider
+ToolProvider <|.. ChatToolProvider
+ChatToolProvider --> IDEChatToolType : provides
+
+class IDEChatToolType {
+  +name: String
+  +description: String
+  +parameters: IDEIntelligenceBasicSchema?
+}
+
+class SchemaGenerable
+class IDEIntelligenceBasicSchema
+SchemaGenerable <|.. ToolParams
+ToolParams --> IDEIntelligenceBasicSchema : generates
+
+class ModelEndpoints {
+  +stream(messages, config, constrainTo, tools) : Stream
+  +respond(messages, config, constrainTo) : ModelResponse
+}
+class AFMChatModelEndpoints
+class AnthropicChatModelEndpoints
+class GMSChatModelEndpoints
+class OllamaChatModelEndpoints
+ModelEndpoints <|-- AFMChatModelEndpoints
+ModelEndpoints <|-- AnthropicChatModelEndpoints
+ModelEndpoints <|-- GMSChatModelEndpoints
+ModelEndpoints <|-- OllamaChatModelEndpoints
+
+Orchestrator --> ToolProvider : asks for tools
+Orchestrator --> ModelEndpoints : invoke with tools[]
+ModelEndpoints --> IDEChatToolType : uses
+ModelEndpoints --> SchemaGenerable : constrainTo
+
+class ToolDispatcher
+class ToolHandler
+class FindTextInFileToolHandler
+ToolHandler <|.. FindTextInFileToolHandler
+ModelEndpoints ..> Orchestrator : tool_call
+Orchestrator --> ToolDispatcher : on tool_call
+ToolDispatcher ..> ToolHandler : routes
+ToolHandler --> Orchestrator : result
+```
 
 ## 附录 C: 已知内置工具
 
@@ -206,4 +317,29 @@ The user has selected the following code from that file:
 
 下图展示了 `IDEIntelligenceChat` 所依赖的关键框架，突出了其核心的 AI 和智能技术栈，并整合了其他基础框架。
 
-![Framework Dependencies](../framework_dependencies.png)
+```mermaid
+graph TD
+    subgraph "核心 AI & 生成服务"
+        GF["GenerativeFunctions"]
+        GM["GenerativeModels"]
+        PK["PromptKit"]
+        GFF["GenerativeFunctionsFoundation"]
+    end
+
+    subgraph "IDE 智能技术栈"
+        IIMS["IDEIntelligenceModelService"]
+        IIF["IDEIntelligenceFoundation"]
+        IIM["IDEIntelligenceMessaging"]
+        IDLK["IDELanguageModelKit"]
+    end
+
+    IIC["IDEIntelligenceChat"] --> IIMS
+    IIC["IDEIntelligenceChat"] --> IIF
+    IIC["IDEIntelligenceChat"] --> IIM
+    IIC["IDEIntelligenceChat"] --> IDLK
+    
+    IIC["IDEIntelligenceChat"] --> GF
+    IIC["IDEIntelligenceChat"] --> GM
+    IIC["IDEIntelligenceChat"] --> PK
+    IIC["IDEIntelligenceChat"] --> GFF
+```
