@@ -2,7 +2,6 @@
 title: "The Cupertino Ghost in the Machine: An Analysis of Xcode's New AI Assistant"
 category: Programming
 tags: [AI,Xcode]
-isPublished: false
 ---
 
 My journey into the internals of Xcode 26’s new AI assistant began not with a bug, but with a feature so persistent it felt like a personality. The animations and design of Xcode have never been better, a testament to Apple's polish. Yet, interacting with the new intelligence features felt... different. This wasn't just a tool; it felt like a ghostly Apple spirit nudging every decision.

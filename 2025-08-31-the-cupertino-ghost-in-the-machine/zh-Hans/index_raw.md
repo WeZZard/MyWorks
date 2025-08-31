@@ -303,7 +303,7 @@ ToolHandler --> Orchestrator : result
 
 ## 附录 C: 已知内置工具
 
-从框架的 prompt templates 中，我们识别出了以下这些工具。这个列表代表了 AI 被明确鼓励使用的能力。
+从框架的 prompt templates 中，我识别出了以下这些工具。这个列表代表了 AI 被明确鼓励使用的能力。
 
 - **`query_search`**: 在代码库中进行语义搜索，通过代码的含义而不是精确的文本来查找相关代码。
 - **`edit_file`**: 对现有文件应用修改。
