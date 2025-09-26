@@ -76,39 +76,31 @@ Start with a fixed schema. Every message in the loop must adhere to it—no exce
 }
 ```
 
-Field-by-field guidelines:
-- version: Pin a version so you can evolve the schema safely later.
-- role: Exactly one of evaluator or worker. This forces role discipline in outputs.
-- action: The only four allowed actions.
-  - spawn: Create a new worker task to pursue part of the intent.
-  - work: Do internal reasoning or planning that does not call external tools.
-  - report: Return concrete results from a worker to the evaluator.
-  - done: Conclude the task when the goal is met (evaluator only).
-- task_id: A unique string per task. Preserve it across messages. Only on spawn does the evaluator mint a new task_id for the child.
-- payload: The contract for work.
-  - intent: Short statement of what to achieve next.
-  - inputs: Tool-ready parameters, minimal and explicit.
-- result: The standardized outcome container.
-  - status: ok, fail, or partial—never invent new statuses.
-  - out: A terse, human-readable summary of what happened.
-  - artifacts: File paths, URLs, or structured results for downstream use.
-- limits: Operational guardrails the evaluator must respect (e.g., depth/time caps). Always pass these through to spawned workers.
+Field-by-field (concise):
+- version: Pin schema version for safe evolution.
+- role: "evaluator" or "worker" only.
+- action: spawn | work | report | done.
+- task_id: Stable per task; mint a new one only on spawn.
+- payload.intent: Next objective, short and concrete.
+- payload.inputs: Minimal, tool-ready parameters.
+- result.status: ok | fail | partial.
+- result.out: Terse human summary.
+- result.artifacts: Paths/URLs/structured outputs.
+- limits: Guardrails (max_depth, ttl_seconds); always propagate to spawned workers.
 
 Validation tips:
-- Reject any output with fields outside the schema or missing required fields.
-- If parsing fails, re-prompt with a short “JSON only; no prose” reminder and include the last valid schema example.
+- Reject outputs that break/omit required fields.
+- On parse failure, re-prompt with “JSON only; no prose” and include the last valid example.
 
 ### 2) Write the Evaluator prompt
 
-Purpose: choose the next action, enforce the contract, and manage progress toward the goal under limits.
+Evaluator: responsibilities
+- Pick one action (spawn | work | report | done) and enforce the schema.
+- Preserve task_id; mint a new one only on spawn.
+- Respect limits (max_depth, ttl_seconds) and conclude with done when criteria are met.
+- Output exactly one JSON object; no prose.
 
-Principles:
-- Deterministic tone: no chit‑chat, no markdown unless the format requires it.
-- JSON‑only output: one object, one line if possible.
-- Contract discipline: never invent fields; preserve task_id; only mint a new one on spawn.
-- Operational safety: respect limits.max_depth and limits.ttl_seconds; finish with done when criteria are met.
-
-Final prompt (paste as your evaluator system/user content):
+Evaluator prompt:
 
 ```markdown
 You are the Evaluator. Reply with ONE JSON object only that matches this schema:
@@ -121,22 +113,21 @@ Decide exactly one action: spawn | work | report | done.
 - When done, set action:"done" and summarize outcome in result.out.
 
 Selection hints:
-- Choose spawn when a sub‑task can advance the goal with tool use or isolation.
-- Choose work for internal reasoning or plan refinement under the current task.
-- Choose report to surface intermediate results that should be recorded before further steps.
-- Choose done only when the stated goal is met with sufficient evidence.
+- spawn: delegate a sub‑task needing tools or isolation.
+- work: internal reasoning/plan refinement.
+- report: surface intermediate results to record.
+- done: goal met with sufficient evidence.
 ```
 
 ### 3) Write the Worker prompt
 
-Purpose: execute payload.inputs faithfully and return a structured report—never change the contract, never add prose.
-
-Principles:
-- JSON‑only output, no markdown.
+Worker: responsibilities
+- Execute payload.inputs and return a structured report.
 - Always return action:"report" with result.status, result.out, and artifacts.
-- Treat errors as data: use result.status:"fail" and summarize the failure in result.out.
+- Output JSON only; never change role, task_id, limits, or add fields.
+- Treat errors as data (result.status:"fail" + concise summary in result.out).
 
-Final prompt (paste as your worker system/user content):
+Worker prompt:
 
 ```markdown
 You are a Worker. Perform payload.inputs as specified by the Evaluator.
