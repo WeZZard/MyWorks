@@ -56,7 +56,7 @@ and a **runtime** that provides tools and safely manages workers:
 
 ------------------------------------------------------------------------
 
-## Tutorial: Building Contract‑First Prompts
+## Quickstart: Contract‑First Prompts
 
 You’ve seen the loop and its roles. Now let’s turn that into working prompts by doing three things in order: define a minimal contract, write the Evaluator prompt to enforce it, and write the Worker prompt to execute it.
 
