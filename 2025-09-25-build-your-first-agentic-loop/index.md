@@ -54,15 +54,18 @@ and a **runtime** that provides tools and safely manages workers:
     workers, it can run tests, fetch data, patch code, or monitor
     systems. The evaluator--worker rhythm is the heartbeat.
 
-------------------------------------------------------------------------
+## Writing Your First Contract‑Driven Prompts
 
-## Quickstart: Contract‑First Prompts
-
-You’ve seen the loop and its roles. Now let’s turn that into working prompts by doing three things in order: define a minimal contract, write the Evaluator prompt to enforce it, and write the Worker prompt to execute it.
+You’ve seen the loop and its roles. Now let’s turn that into working
+prompts by doing three things in order: define a minimal contract, write
+the Evaluator prompt to enforce it, and write the Worker prompt to execute
+it.
 
 ### 1) Define the minimal contract
 
-Start with a fixed schema. Every message in the loop must adhere to it—no exceptions, no extra prose. This is what your validator will check and what your prompts will constantly reinforce.
+Start with a fixed schema. Every message in the loop must adhere to it—no
+exceptions, no extra prose. This is what your validator will check and
+what your prompts will constantly reinforce.
 
 ``` json
 {
@@ -77,6 +80,7 @@ Start with a fixed schema. Every message in the loop must adhere to it—no exce
 ```
 
 Field-by-field (concise):
+
 - version: Pin schema version for safe evolution.
 - role: "evaluator" or "worker" only.
 - action: spawn | work | report | done.
@@ -89,12 +93,14 @@ Field-by-field (concise):
 - limits: Guardrails (max_depth, ttl_seconds); always propagate to spawned workers.
 
 Validation tips:
+
 - Reject outputs that break/omit required fields.
 - On parse failure, re-prompt with “JSON only; no prose” and include the last valid example.
 
 ### 2) Write the Evaluator prompt
 
 Evaluator: responsibilities
+
 - Pick one action (spawn | work | report | done) and enforce the schema.
 - Preserve task_id; mint a new one only on spawn.
 - Respect limits (max_depth, ttl_seconds) and conclude with done when criteria are met.
@@ -141,6 +147,89 @@ Putting it together:
 - The Evaluator decides and, on spawn, produces a new task_id and a focused payload for the Worker.
 - The Worker executes and reports; the Evaluator ingests reports and either spawns further work, continues internal work, or declares done.
 - A validator between turns enforces the schema and short‑circuits invalid outputs.
+
+
+#### Hello World: TODO/FIXME Scanner
+
+Goal
+- Scan the repository for TODO/FIXME comments and produce a markdown report at artifacts/todo_report.md.
+
+Inputs (payload.inputs)
+- root_dir: "."
+- patterns: ["TODO", "FIXME"]
+- ignore: [".git", "node_modules"]
+- out_path: "artifacts/todo_report.md"
+- max_results: 5000
+
+Done criteria
+- Report file exists and result.out includes { match_count >= 0, report_path }.
+
+Minimal transcript
+
+Evaluator → spawn
+```json
+{
+  "version": "1.0",
+  "role": "evaluator",
+  "action": "spawn",
+  "task_id": "t-1",
+  "payload": {
+    "intent": "Generate a TODO/FIXME report",
+    "inputs": {
+      "root_dir": ".",
+      "patterns": ["TODO", "FIXME"],
+      "ignore": [".git", "node_modules"],
+      "out_path": "artifacts/todo_report.md",
+      "max_results": 5000
+    }
+  },
+  "result": { "status": "ok", "out": "Spawning worker to scan and write report.", "artifacts": [] },
+  "limits": { "max_depth": 3, "ttl_seconds": 1800 }
+}
+```
+
+Worker → report
+```json
+{
+  "version": "1.0",
+  "role": "worker",
+  "action": "report",
+  "task_id": "t-2",
+  "payload": { "intent": "Generate a TODO/FIXME report", "inputs": {} },
+  "result": {
+    "status": "ok",
+    "out": "{\"match_count\": 12, \"report_path\": \"artifacts/todo_report.md\", \"tool_used\": \"rg\", \"truncated\": false}",
+    "artifacts": ["artifacts/todo_report.md"]
+  },
+  "limits": { "max_depth": 3, "ttl_seconds": 1800 }
+}
+```
+
+Evaluator → done
+```json
+{
+  "version": "1.0",
+  "role": "evaluator",
+  "action": "done",
+  "task_id": "t-1",
+  "payload": { "intent": "Generate a TODO/FIXME report", "inputs": {} },
+  "result": { "status": "ok", "out": "Report written to artifacts/todo_report.md with 12 findings.", "artifacts": ["artifacts/todo_report.md"] },
+  "limits": { "max_depth": 3, "ttl_seconds": 1800 }
+}
+```
+
+Sample artifact (todo_report.md)
+```md
+# TODO/FIXME Report
+
+- src/app.js:42: // TODO: replace mock with real API
+- docs/usage.md:87: FIXME: update CLI flags after v2
+```
+
+Determinism hints
+- Prefer rg (ripgrep): --no-follow --hidden --line-number --color=never; sort and normalize paths.
+- Fallback to grep -RIn when rg is unavailable.
+- Produce an empty report with “0 findings” when no matches are found (still status: ok).
 
 ------------------------------------------------------------------------
 
