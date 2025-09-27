@@ -148,89 +148,6 @@ Putting it together:
 - The Worker executes and reports; the Evaluator ingests reports and either spawns further work, continues internal work, or declares done.
 - A validator between turns enforces the schema and short‑circuits invalid outputs.
 
-
-#### Hello World: TODO/FIXME Scanner
-
-Goal
-- Scan the repository for TODO/FIXME comments and produce a markdown report at artifacts/todo_report.md.
-
-Inputs (payload.inputs)
-- root_dir: "."
-- patterns: ["TODO", "FIXME"]
-- ignore: [".git", "node_modules"]
-- out_path: "artifacts/todo_report.md"
-- max_results: 5000
-
-Done criteria
-- Report file exists and result.out includes { match_count >= 0, report_path }.
-
-Minimal transcript
-
-Evaluator → spawn
-```json
-{
-  "version": "1.0",
-  "role": "evaluator",
-  "action": "spawn",
-  "task_id": "t-1",
-  "payload": {
-    "intent": "Generate a TODO/FIXME report",
-    "inputs": {
-      "root_dir": ".",
-      "patterns": ["TODO", "FIXME"],
-      "ignore": [".git", "node_modules"],
-      "out_path": "artifacts/todo_report.md",
-      "max_results": 5000
-    }
-  },
-  "result": { "status": "ok", "out": "Spawning worker to scan and write report.", "artifacts": [] },
-  "limits": { "max_depth": 3, "ttl_seconds": 1800 }
-}
-```
-
-Worker → report
-```json
-{
-  "version": "1.0",
-  "role": "worker",
-  "action": "report",
-  "task_id": "t-2",
-  "payload": { "intent": "Generate a TODO/FIXME report", "inputs": {} },
-  "result": {
-    "status": "ok",
-    "out": "{\"match_count\": 12, \"report_path\": \"artifacts/todo_report.md\", \"tool_used\": \"rg\", \"truncated\": false}",
-    "artifacts": ["artifacts/todo_report.md"]
-  },
-  "limits": { "max_depth": 3, "ttl_seconds": 1800 }
-}
-```
-
-Evaluator → done
-```json
-{
-  "version": "1.0",
-  "role": "evaluator",
-  "action": "done",
-  "task_id": "t-1",
-  "payload": { "intent": "Generate a TODO/FIXME report", "inputs": {} },
-  "result": { "status": "ok", "out": "Report written to artifacts/todo_report.md with 12 findings.", "artifacts": ["artifacts/todo_report.md"] },
-  "limits": { "max_depth": 3, "ttl_seconds": 1800 }
-}
-```
-
-Sample artifact (todo_report.md)
-```md
-# TODO/FIXME Report
-
-- src/app.js:42: // TODO: replace mock with real API
-- docs/usage.md:87: FIXME: update CLI flags after v2
-```
-
-Determinism hints
-- Prefer rg (ripgrep): --no-follow --hidden --line-number --color=never; sort and normalize paths.
-- Fallback to grep -RIn when rg is unavailable.
-- Produce an empty report with “0 findings” when no matches are found (still status: ok).
-
 ------------------------------------------------------------------------
 
 ## Example Tech Stacks
@@ -293,3 +210,126 @@ loop that works while you sleep.
 
 Try it tonight. Tomorrow morning, you might wake up to progress already
 made.
+
+#### Example: Cleanup Workflow (Claude Code sub‑agents)
+
+Below are verbatim JSON shapes excerpted from your deployable sub‑agents and command. These define the Evaluator ⇄ Executor loop without inventing any new fields or formats.
+
+Cleanup Evaluator — input JSON
+```json
+{
+  "incomplete_items": [incomplete_item_list],
+  "completed_items": [completed_item_list],
+  "postponed_items": [postponed_item_list]
+}
+```
+
+Cleanup Evaluator — item object format
+```json
+[
+  {
+    "type": "todo",
+    "id": "TODO_1",
+    "status": "incomplete",
+    "file": [todo_1_file],
+    "line": [todo_1_line],
+    "content": [todo_1_content]
+  },
+  {
+    "type": "todo",
+    "id": "TODO_2",
+    "status": "incomplete",
+    "file": [todo_2_file],
+    "line": [todo_2_line],
+    "content": [todo_2_content]
+  },
+  {
+    "type": "fixme",
+    "id": "FIXME_1",
+    "status": "incomplete",
+    "file": [fixme_1_file],
+    "line": [fixme_1_line],
+    "content": [fixme_1_content]
+  },
+  {
+    "type": "fixme",
+    "id": "FIXME_2",
+    "status": "incomplete",
+    "file": [fixme_2_file],
+    "line": [fixme_2_line],
+    "content": [fixme_2_content]
+  }
+]
+```
+
+Cleanup Evaluator — postponed item format
+```json
+[
+  {
+    "type": "todo",
+    "id": "TODO_1",
+    "file": [todo_1_file],
+    "line": [todo_1_line],
+    "content": [todo_1_content],
+    "postpone_reasons": [todo_1_postpone_reasons]
+  },
+  {
+    "type": "todo",
+    "id": "TODO_2",
+    "file": [todo_2_file],
+    "line": [todo_2_line],
+    "content": [todo_2_content],
+    "postpone_reasons": [todo_2_postpone_reasons]
+  }
+]
+```
+
+Cleanup Evaluator — response JSON
+```json
+{
+  "incomplete_items": [reordered_incomplete_item_list],
+  "completed_items": [completed_item_list],
+  "postponed_items": [postponed_item_list],
+  "next_action": "spawn(cleanup-executor)|mission_complete"
+}
+```
+
+Cleanup Executor — response JSON
+```json
+{
+  "incomplete_items": [next_incomplete_item_list],
+  "completed_items": [next_completed_item_list],
+  "postponed_items": [next_postponed_item_list],
+  "next_action": "spawn(evaluator)"
+}
+```
+
+Cleanup Command — orchestration excerpts
+
+Next action details (either a next item or mission complete):
+```json
+{
+  "type": "todo|fixme",
+  "id": [next_item_id],
+  "file": [next_item_file],
+  "line": [next_item_line],
+  "content": [next_item_content]
+}
+```
+OR
+```json
+{
+  "type": "mission_complete"
+}
+```
+
+Always transfer lists to next sub‑agent:
+```json
+{
+  "incomplete_items": [incomplete_item_list],
+  "completed_items": [completed_item_list],
+  "postponed_items": [postponed_item_list]
+}
+```
+
+Always read subagent response and spawn cleanup‑evaluator; stop when mission_complete.
