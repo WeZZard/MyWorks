@@ -1,5 +1,5 @@
 ---
-title: "Build Your First Agentic Loop"
+title: "Build Your First 24/7 Agentic Loop"
 category: Programming
 tags: [AI,Developer Tools]
 isPublished: false
@@ -7,7 +7,7 @@ isPublished: false
 
 *Fun fact:* I'm currently ranked **third in daily cloud usage statistics
 on Claude Count**. That's because I've been running Claude Code inside a
-**24×7 agentic loop** to power my side project. While I sleep, the loop
+**24/7 agentic loop** to power my side project. While I sleep, the loop
 evaluates, spawns subagents, and keeps moving forward. When I wake up,
 progress is already made.
 
@@ -27,15 +27,15 @@ You just need a contract and a loop.
 ## The Essence of an Agentic Loop
 
 To make “a contract and a loop” concrete, the diagram below shows the
-minimal flow: the evaluator chooses the next action, spawns workers to use
-tools, workers report results, and control returns to the evaluator until
-the goal is met.
+minimal flow: the evaluator chooses the next action, spawns executors to
+use tools, executors report results, and control returns to the evaluator
+until the goal is met.
 
-![A diagram titled “Main Loop” showing evaluators and workers interacting in a repeating five-step cycle where requests to evaluate a situation spawn workers, workers request task details, and responses spawn evaluators](basic_agentic_loop.png "Basic Agentic Loop")
+![A diagram titled “Main Loop” showing evaluators and executors interacting in a repeating five-step cycle where requests to evaluate a situation spawn executors, executors request task details, and responses spawn evaluators](basic_agentic_loop.png "Basic Agentic Loop")
 
 However, to turn that flow into a working system, three components must
 work together: a right **model**, **prompts** that enforce the contract,
-and a **runtime** that provides tools and safely manages workers:
+and an **agent runtime** designed for tool use:
 
 1. **Get the right model**
     Pick an advanced model that can:
@@ -46,107 +46,238 @@ and a **runtime** that provides tools and safely manages workers:
 
 2. **Write prompts with contracts in mind**
     The backbone of your loop is a fixed-format schema. Every evaluator
-    and worker must respond in this structure. This turns free-form LLM
+    and executors must respond in this structure. This turns free-form LLM
     chatter into predictable, machine-readable communication.
 
-3. **Support tools or sub-agents**
-    Without tools, your loop is just self-talk. With CLI commands and
-    workers, it can run tests, fetch data, patch code, or monitor
-    systems. The evaluator--worker rhythm is the heartbeat.
+3. **Support tools**
+    Without tools, your loop is just self-talk. With CLI commands, it can
+    run tests, fetch data, patch code, or monitor systems. Subagents
+    aren’t even required, since you can spawn external agent instances to
+    build the evaluator-executor heartbeat via the `bash` tool.
 
-## Writing Your First Contract‑Driven Prompts
+## Writing Your First Contract-Driven Prompts
 
-You’ve seen the loop and its roles. Now let’s turn that into working
-prompts by doing three things in order: define a minimal contract, write
-the Evaluator prompt to enforce it, and write the Worker prompt to execute
-it.
+You’ve seen the loop and its roles. Now we’ll wire real prompts with
+Claude Code subagents and command to build a working loop that cleans up
+TODOs and FIXMEs across a repository. No custom schema here — the contract
+is exactly what your prompts already define. And yet the Claude 4 is one
+of the right models to use for building a 24/7 agentic loop.
 
-### 1) Define the minimal contract
+### 1) The Structure of the Loop
 
-Start with a fixed schema. Every message in the loop must adhere to it—no
-exceptions, no extra prose. This is what your validator will check and
-what your prompts will constantly reinforce.
+The loop is made up of three components:
 
-``` json
+- `cleanup` command
+- `cleanup-evaluator` subagent
+- `cleanup-executor` subagent
+
+![A diagram titled “cleanup loop” showing how TODO/FIXME items are collected, reorganized by a cleanup-evaluator, executed by a cleanup-executor, and cycled back through a cleanup process in five repeating steps.](the_todo_fixme_loop.png "The TODO/FIXME Loop")
+
+The `cleanup` command is the entry point for the loop, holding the
+**main agent**. It firstly scans the repository for TODO/FIXME items and
+prepares a working list. Then it passes the list to the
+`cleanup-evaluator` subagent.
+
+The `cleanup-evaluator` subagent triages and orders the list, then respond
+the reorganized list and the next action `spawn(cleanup-executor)` to the
+**main agent**.
+
+The **main agent** then follows the response from the `cleanup-evaluator`
+subagent, spawning a `cleanup-executor` subagent and passing the
+reorganized list to it.
+
+The `cleanup-executor` subagent then dequeue the first TODO/FIXME item
+from the reorganized list, executing the item, updating the list when the
+execution completed. Then it respond with updated list and the next action
+`spawn(cleanup-evaluator)` to the **main agent**.
+
+The **main agent** then follows the response from the `cleanup-executor`
+subagent, spawning a `cleanup-evaluator` subagent and passing the updated
+list to it, thereby returning to the beginning of the loop.
+
+### 2) The Contract
+
+The key of holding this loop is to make the **main agent** and the
+subagents always follow the contract. The good news is that holding a
+contract between the **main agent** and the subagents is deadly simple:
+In this example, each subagent receives a JSON object with the following
+format from the **main agent**:
+
+```json
 {
-  "version": "1.0",
-  "role": "evaluator|worker",
-  "action": "spawn|work|report|done",
-  "task_id": "string",
-  "payload": { "intent": "string", "inputs": {} },
-  "result": { "status": "ok|fail|partial", "out": "summary", "artifacts": [] },
-  "limits": { "max_depth": 3, "ttl_seconds": 1800 }
+  "incomplete_items": [incomplete_item_list],
+  "completed_items": [completed_item_list],
+  "postponed_items": [postponed_item_list]
 }
 ```
 
-Field-by-field (concise):
+And responds with the following format to the **main agent**:
 
-- version: Pin schema version for safe evolution.
-- role: "evaluator" or "worker" only.
-- action: spawn | work | report | done.
-- task_id: Stable per task; mint a new one only on spawn.
-- payload.intent: Next objective, short and concrete.
-- payload.inputs: Minimal, tool-ready parameters.
-- result.status: ok | fail | partial.
-- result.out: Terse human summary.
-- result.artifacts: Paths/URLs/structured outputs.
-- limits: Guardrails (max_depth, ttl_seconds); always propagate to spawned workers.
-
-Validation tips:
-
-- Reject outputs that break/omit required fields.
-- On parse failure, re-prompt with “JSON only; no prose” and include the last valid example.
-
-### 2) Write the Evaluator prompt
-
-Evaluator: responsibilities
-
-- Pick one action (spawn | work | report | done) and enforce the schema.
-- Preserve task_id; mint a new one only on spawn.
-- Respect limits (max_depth, ttl_seconds) and conclude with done when criteria are met.
-- Output exactly one JSON object; no prose.
-
-Evaluator prompt:
-
-```markdown
-You are the Evaluator. Reply with ONE JSON object only that matches this schema:
-{ version, role, action, task_id, payload: { intent, inputs }, result: { status, out, artifacts }, limits }
-
-Decide exactly one action: spawn | work | report | done.
-- Preserve task_id unless spawning; on spawn, mint a new task_id for the child.
-- Respect limits at all times (max_depth, ttl_seconds).
-- Keep payload.intent short and concrete; payload.inputs minimal and tool‑ready.
-- When done, set action:"done" and summarize outcome in result.out.
-
-Selection hints:
-- spawn: delegate a sub‑task needing tools or isolation.
-- work: internal reasoning/plan refinement.
-- report: surface intermediate results to record.
-- done: goal met with sufficient evidence.
+```json
+{
+  "incomplete_items": [reordered_incomplete_item_list],
+  "completed_items": [completed_item_list],
+  "postponed_items": [postponed_item_list],
+  "next_action": "spawn(cleanup-executor)|spawn(cleanup-evaluator)|mission_complete"
+}
 ```
 
-### 3) Write the Worker prompt
+### 3) Enforcing the Contract with Prompts
 
-Worker: responsibilities
-- Execute payload.inputs and return a structured report.
-- Always return action:"report" with result.status, result.out, and artifacts.
-- Output JSON only; never change role, task_id, limits, or add fields.
-- Treat errors as data (result.status:"fail" + concise summary in result.out).
+The contract is baked into the prompt itself. No hidden tricks—just
+CAPITALIZED IMPERATIVES and relentless repetition until the model obeys.
 
-Worker prompt:
+The snippet below shows how the **main agent** is set to spawn a
+`cleanup-evaluator` at the beginning of the loop.
 
-```markdown
-You are a Worker. Perform payload.inputs as specified by the Evaluator.
-Reply with ONE JSON object only.
-- Always return action:"report".
-- Always include result.status (ok|fail|partial), result.out (succinct summary), and artifacts (paths/URLs/structured outputs).
-- Do not change role, task_id, or limits. Do not add extra fields or prose.
+````markdown path=cleanup.md
+## MANDATORY: 2. SPAWN AN CLEANUP-EVALUATOR TO EVALUATE INCOMPLETE TODOs and FIXMEs
+
+You MUST spawn an cleanup-evaluator subagent to evaluate the gap between the incomplete TODOs and FIXMEs and the existing situation.
+
+You SHALL ALWAYS send the cleanup-evaluator with a JSON object of the following format:
+
+```json
+{
+  "incomplete_items": [incomplete_item_list],
+  "completed_items": [completed_item_list],
+  "postponed_items": [postponed_item_list]
+}
+```
+````
+
+On the cleanup-evaluator side, we should also enforce the contract.
+
+````markdown path=cleanup-evaluator.md
+## MANDATORY: PARSE THE RECEIVED JSON OBJECT
+
+YOU WILL RECEIVE a JSON object of the following format:
+
+```json
+{
+  "incomplete_items": [incomplete_item_list],
+  "completed_items": [completed_item_list],
+  "postponed_items": [postponed_item_list]
+}
+```
+````
+
+Once the cleanup-evaluator is about to end the task, it shall prepare to
+respond to the main agent with the format of the contract. In this
+example, its `next_action` is always to spawn a cleanup-executor.
+
+````markdown path=cleanup-evaluator.md
+## MANDATORY: RESPONSE BACK TO THE MAIN AGENT
+
+You SHALL response with the [reordered_incomplete_item_list], [completed_item_list], [postponed_item_list] to the next subagent with the JSON object of the following format:
+
+```json
+{
+  "incomplete_items": [reordered_incomplete_item_list],
+  "completed_items": [completed_item_list],
+  "postponed_items": [postponed_item_list],
+  "next_action": "spawn(cleanup-executor)|mission_complete"
+}
 ```
 
-Putting it together:
-- The Evaluator decides and, on spawn, produces a new task_id and a focused payload for the Worker.
-- The Worker executes and reports; the Evaluator ingests reports and either spawns further work, continues internal work, or declares done.
-- A validator between turns enforces the schema and short‑circuits invalid outputs.
+The `next_action` field SHALL BE `mission_complete` when NO ITEMS LEFT in [reordered_incomplete_item_list].
+
+Otherwise, the `next_action` field SHALL BE `spawn(cleanup-executor)`.
+````
+
+Back to the main agent, it shall follow the response from the
+`cleanup-evaluator` subagent, spawning a `cleanup-executor` subagent and
+passing the lists to it.
+
+````markdown path=cleanup.md
+## MANDATORY: 3. UNDERSTANDS THE CLEANUP-EVALUATOR'S RESPONSE
+
+The cleanup-evaluator subagent ALWAYS is the core of the workflow.
+
+YOU MUST OBEY THE DESCISION OF THE CLEANUP-EVALUATOR IN [next_action].
+You SHALL NEVER CHANGE THE DESCISION OF THE CLEANUP-EVALUATOR in [next_action].
+
+The [next_action] COULD BE: `spawn(cleanup-executor)` | `mission_complete`:
+
+The [next_action_details] COULD BE:
+
+```json
+{
+  "type": "todo|fixme",
+  "id": [next_item_id],
+  "file": [next_item_file],
+  "line": [next_item_line],
+  "content": [next_item_content]
+}
+```
+
+OR
+
+```json
+{
+  "type": "mission_complete"
+}
+```
+
+The cleanup-evaluator subagent SHALL NEVER know if it is the last time to evaluate until the [next_action] of a spawned cleanup-evaluator turns out to be `mission_complete`.
+
+### MANDATORY: ALWAYS TRANSFER [incomplete_items], [completed_items], [postponed_items] FROM THE CLEANUP-EVALUATOR'S RESPONSE TO THE NEXT SUBAGENT
+
+YOU MUST transfer the [incomplete_items], [completed_items], [postponed_items] from the cleanup-evaluator's response to the next subagent with the JSON object of the following format:
+
+```json
+{
+  "incomplete_items": [incomplete_item_list],
+  "completed_items": [completed_item_list],
+  "postponed_items": [postponed_item_list],
+}
+```
+
+````
+
+This time, the contract would allow the main agent to spawn a
+`cleanup-executor` subagent to execute the next TODO/FIXME item. However,
+we still need to instruct the **main agent** to follow the responses from
+subagents other than the `cleanup-evaluator`:
+
+````markdown path=cleanup.md
+## MANDATORY: 4. UNDERSTAND THE RESPONSE FROM OTHER SUBAGENTS
+
+All the subagents other than the cleanup-evaluator subagent SHALL ALWAYS response with a JSON object of the following format:
+
+```json
+{
+  "incomplete_items": [next_incomplete_item_list],
+  "completed_items": [next_completed_item_list],
+  "postponed_items": [next_postponed_item_list],
+  "next_action": "spawn(cleanup-evaluator)",
+}
+```
+
+### MANDATORY: ALWAYS READ Subagent's Response to Decide Next Action
+
+The [next_action] is ALWAYS to spawn an cleanup-evaluator subagent.
+
+You MUST SEND the cleanup-evaluator with the JSON object of the following format:
+
+```json
+{
+  "incomplete_items": [next_incomplete_item_list],
+  "completed_items": [next_completed_item_list],
+  "postponed_items": [next_postponed_item_list],
+}
+```
+````
+
+At last, the **main agent** needs to know when to end the loop:
+
+````markdown path=cleanup.md
+## MANDATORY: 5. HANDLING MISSION COMPLETE
+
+If `next_action` in the response from the cleanup-evaluator subagent is `mission_complete`, then the mission is completed.
+
+You SHALL STOP ALL THE SUBAGENTS AND EXIT THE WORKFLOW.
+````
 
 ------------------------------------------------------------------------
 
@@ -203,133 +334,10 @@ is:
 
 - A model trained with agent tasks.
 - A prompt-enforced contract.
-- A runtime that can spawn workers safely.
+- A runtime that can spawn executors safely.
 
 With that, you can run Claude Code (or GPT-5 Codex, or GLM-4.5) in a
 loop that works while you sleep.
 
 Try it tonight. Tomorrow morning, you might wake up to progress already
 made.
-
-#### Example: Cleanup Workflow (Claude Code sub‑agents)
-
-Below are verbatim JSON shapes excerpted from your deployable sub‑agents and command. These define the Evaluator ⇄ Executor loop without inventing any new fields or formats.
-
-Cleanup Evaluator — input JSON
-```json
-{
-  "incomplete_items": [incomplete_item_list],
-  "completed_items": [completed_item_list],
-  "postponed_items": [postponed_item_list]
-}
-```
-
-Cleanup Evaluator — item object format
-```json
-[
-  {
-    "type": "todo",
-    "id": "TODO_1",
-    "status": "incomplete",
-    "file": [todo_1_file],
-    "line": [todo_1_line],
-    "content": [todo_1_content]
-  },
-  {
-    "type": "todo",
-    "id": "TODO_2",
-    "status": "incomplete",
-    "file": [todo_2_file],
-    "line": [todo_2_line],
-    "content": [todo_2_content]
-  },
-  {
-    "type": "fixme",
-    "id": "FIXME_1",
-    "status": "incomplete",
-    "file": [fixme_1_file],
-    "line": [fixme_1_line],
-    "content": [fixme_1_content]
-  },
-  {
-    "type": "fixme",
-    "id": "FIXME_2",
-    "status": "incomplete",
-    "file": [fixme_2_file],
-    "line": [fixme_2_line],
-    "content": [fixme_2_content]
-  }
-]
-```
-
-Cleanup Evaluator — postponed item format
-```json
-[
-  {
-    "type": "todo",
-    "id": "TODO_1",
-    "file": [todo_1_file],
-    "line": [todo_1_line],
-    "content": [todo_1_content],
-    "postpone_reasons": [todo_1_postpone_reasons]
-  },
-  {
-    "type": "todo",
-    "id": "TODO_2",
-    "file": [todo_2_file],
-    "line": [todo_2_line],
-    "content": [todo_2_content],
-    "postpone_reasons": [todo_2_postpone_reasons]
-  }
-]
-```
-
-Cleanup Evaluator — response JSON
-```json
-{
-  "incomplete_items": [reordered_incomplete_item_list],
-  "completed_items": [completed_item_list],
-  "postponed_items": [postponed_item_list],
-  "next_action": "spawn(cleanup-executor)|mission_complete"
-}
-```
-
-Cleanup Executor — response JSON
-```json
-{
-  "incomplete_items": [next_incomplete_item_list],
-  "completed_items": [next_completed_item_list],
-  "postponed_items": [next_postponed_item_list],
-  "next_action": "spawn(evaluator)"
-}
-```
-
-Cleanup Command — orchestration excerpts
-
-Next action details (either a next item or mission complete):
-```json
-{
-  "type": "todo|fixme",
-  "id": [next_item_id],
-  "file": [next_item_file],
-  "line": [next_item_line],
-  "content": [next_item_content]
-}
-```
-OR
-```json
-{
-  "type": "mission_complete"
-}
-```
-
-Always transfer lists to next sub‑agent:
-```json
-{
-  "incomplete_items": [incomplete_item_list],
-  "completed_items": [completed_item_list],
-  "postponed_items": [postponed_item_list]
-}
-```
-
-Always read subagent response and spawn cleanup‑evaluator; stop when mission_complete.
