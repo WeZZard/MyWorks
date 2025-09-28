@@ -278,12 +278,30 @@ You SHALL STOP ALL THE SUBAGENTS AND EXIT THE WORKFLOW.
 
 ## Beyond the Claude Code
 
-- **Claude Code**: commands + sub-agents, easy to wire into a loop.
-- **Codex**: tool-use and CLI integrations.
-- **Chinese open-source models**: GLM-4.5, Qwen3-Coder, DeepSeek, Kimi
-    --- lower cost, flexible.
+At this point, you might ask: I'm not using Claude Code; I'm using Codex.
+What should I do? The answer is simple: the approach stays the same. This
+loop doesn't depend on any vendors; it rests on three essentials: a
+contract, a loop, and a runtime. Put simply, the evaluator chooses the
+next step, the worker carries it out, and the main agent routes and
+safeguards. Everything else is implementation detail.
 
-------------------------------------------------------------------------
+Claude Code is convenient because it offers two helpful primitives:
+
+- Sub-agents: lightweight agent instances with their own prompts and roles.
+- Custom Commands: first-class command blocks that carry prompts and tool wiring.
+
+But neither is mandatory. You can replace both:
+
+- Replace Sub-agents with a tool call that starts another AI agent
+instance (for example, invoke a CLI that spins up a new agent and returns
+its structured response).
+- Replace Custom Commands with a shell script that sends a custom prompt
+to launch an AI agent (for example, a script wrapping curl to post a
+prompt to your agent service, then relay JSON back to the main loop).
+
+As long as you preserve the contract and the loop, the mechanics are
+interchangeable. Your main agent routes, enforces the schema, and keeps
+cycling until `next_action` is `mission_complete`.
 
 ## Running 24×7
 
