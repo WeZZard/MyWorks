@@ -8,7 +8,7 @@ isPublished: false
 *Fun fact:* I'm currently ranked **third in daily cloud usage statistics
 on Claude Count**. That's because I've been running Claude Code inside a
 **24/7 agentic loop** to power my side project. While I sleep, the loop
-evaluates, spawns sub-agents, and keeps moving forward. When I wake up,
+evaluates, spawns subagents, and keeps moving forward. When I wake up,
 progress is already made.
 
 But the magic isn’t tied to Claude; once you grasp the essence of the
@@ -51,14 +51,14 @@ and an **agent runtime** designed for tool use:
 
 3. **Support tools**
     Without tools, your loop is just self-talk. With CLI commands, it can
-    run tests, fetch data, patch code, or monitor systems. Sub-agents aren’t
+    run tests, fetch data, patch code, or monitor systems. Subagents aren’t
     even required, since you can spawn external agent instances to build the
     evaluator-executor heartbeat via the `bash` tool.
 
 ## Writing Your First Contract-Driven Prompts
 
 You’ve seen the loop and its roles. Now we’ll wire real prompts using
-Claude Code sub-agents and a custom command to build a loop that
+Claude Code subagents and a custom command to build a loop that
 cleans up TODOs and FIXMEs across your repository. No standalone schema
 files—the contract is exactly what your prompts already define. Claude 4
 is a solid choice for running a 24/7 agentic loop.
@@ -70,37 +70,37 @@ is a solid choice for running a 24/7 agentic loop.
 The loop has three components:
 
 - `cleanup` command
-- `cleanup-evaluator` sub-agent
-- `cleanup-executor` sub-agent
+- `cleanup-evaluator` subagent
+- `cleanup-executor` subagent
 
 ![A diagram titled “cleanup loop” showing how TODO/FIXME items are collected, reorganized by a cleanup-evaluator, executed by a cleanup-executor, and cycled back through a cleanup process in five repeating steps.](the_todo_fixme_loop.png "The TODO/FIXME Loop")
 
 The `cleanup` command is the loop’s entry point and hosts
 the **main agent**. It first scans the repository for TODO/FIXME items and
 prepares a working list, then passes that list to the `cleanup-evaluator`
-sub-agent.
+subagent.
 
-The `cleanup-evaluator` sub-agent triages and orders the list, then
+The `cleanup-evaluator` subagent triages and orders the list, then
 responds to the **main agent** with the reorganized list and a next action
 of `spawn(cleanup-executor)`.
 
 The **main agent** then follows the response from the `cleanup-evaluator`,
-spawning a `cleanup-executor` sub-agent and passing the reorganized list to it.
+spawning a `cleanup-executor` subagent and passing the reorganized list to it.
 
-The `cleanup-executor` sub-agent dequeues the first TODO/FIXME item from
+The `cleanup-executor` subagent dequeues the first TODO/FIXME item from
 the reorganized list, executes it, updates the list when execution
 completes, and responds to the **main agent** with the updated list and a
 next action of `spawn(cleanup-evaluator)`.
 
 The **main agent** then follows the response from the `cleanup-executor`,
-spawning a `cleanup-evaluator` sub-agent and passing the updated list to
+spawning a `cleanup-evaluator` subagent and passing the updated list to
 it, thereby returning to the beginning of the loop.
 
 ### 2) The Contract
 
-The key to this loop is ensuring the **main agent** and sub-agents always
+The key to this loop is ensuring the **main agent** and subagents always
 follow the contract. The good news: the contract is straightforward. In
-this example, each sub-agent receives a JSON object from
+this example, each subagent receives a JSON object from
 the **main agent** in the following format:
 
 ```json
@@ -132,7 +132,7 @@ The snippet below shows the **main agent** spawning a `cleanup-evaluator` at the
 ````markdown path=cleanup.md
 ## MANDATORY: 2. SPAWN A CLEANUP-EVALUATOR TO EVALUATE INCOMPLETE TODOs and FIXMEs
 
-You MUST spawn a cleanup-evaluator sub-agent to evaluate the gap between the incomplete TODOs and FIXMEs and the existing situation.
+You MUST spawn a cleanup-evaluator subagent to evaluate the gap between the incomplete TODOs and FIXMEs and the existing situation.
 
 You SHALL ALWAYS send the cleanup-evaluator with a JSON object of the following format:
 
@@ -186,13 +186,13 @@ Otherwise, the `next_action` field SHALL BE `spawn(cleanup-executor)`.
 ````
 
 Back in the main agent, it follows the response from
-the `cleanup-evaluator` sub-agent, spawns a `cleanup-executor` sub-agent,
+the `cleanup-evaluator` subagent, spawns a `cleanup-executor` subagent,
 and passes the lists to it.
 
 ````markdown path=cleanup.md
 ## MANDATORY: 3. UNDERSTAND THE CLEANUP-EVALUATOR'S RESPONSE
 
-The cleanup-evaluator sub-agent is ALWAYS the core of the workflow.
+The cleanup-evaluator subagent is ALWAYS the core of the workflow.
 
 YOU MUST OBEY THE DECISION OF THE CLEANUP-EVALUATOR IN [next_action].
 You SHALL NEVER CHANGE THE DECISION OF THE CLEANUP-EVALUATOR in [next_action].
@@ -219,9 +219,9 @@ OR
 }
 ```
 
-The cleanup-evaluator sub-agent SHALL NEVER know if it is the last time to evaluate until the [next_action] of a spawned cleanup-evaluator turns out to be `mission_complete`.
+The cleanup-evaluator subagent SHALL NEVER know if it is the last time to evaluate until the [next_action] of a spawned cleanup-evaluator turns out to be `mission_complete`.
 
-### MANDATORY: ALWAYS TRANSFER [incomplete_items], [completed_items], [postponed_items] FROM THE CLEANUP-EVALUATOR'S RESPONSE TO THE NEXT SUB-AGENT
+### MANDATORY: ALWAYS TRANSFER [incomplete_items], [completed_items], [postponed_items] FROM THE CLEANUP-EVALUATOR'S RESPONSE TO THE NEXT SUBAGENT
 
 YOU MUST transfer the [incomplete_items], [completed_items], [postponed_items] from the cleanup-evaluator's response to the next subagent with the JSON object of the following format:
 
@@ -235,14 +235,14 @@ YOU MUST transfer the [incomplete_items], [completed_items], [postponed_items] f
 ````
 
 At this point, the contract allows the main agent to spawn a
-`cleanup-executor` sub-agent to execute the next TODO/FIXME item. However,
+`cleanup-executor` subagent to execute the next TODO/FIXME item. However,
 we still need to instruct the **main agent** to follow responses from
-sub-agents other than the `cleanup-evaluator`:
+subagents other than the `cleanup-evaluator`:
 
 ````markdown path=cleanup.md
-## MANDATORY: 4. UNDERSTAND THE RESPONSE FROM OTHER SUB-AGENTS
+## MANDATORY: 4. UNDERSTAND THE RESPONSE FROM OTHER SUBAGENTS
 
-All the sub-agents other than the cleanup-evaluator sub-agent SHALL ALWAYS respond with a JSON object of the following format:
+All the subagents other than the cleanup-evaluator subagent SHALL ALWAYS respond with a JSON object of the following format:
 
 ```json
 {
@@ -253,9 +253,9 @@ All the sub-agents other than the cleanup-evaluator sub-agent SHALL ALWAYS respo
 }
 ```
 
-### MANDATORY: ALWAYS READ Sub-agent’s Response to Decide Next Action
+### MANDATORY: ALWAYS READ Subagent’s Response to Decide Next Action
 
-The [next_action] is ALWAYS to spawn a cleanup-evaluator sub-agent.
+The [next_action] is ALWAYS to spawn a cleanup-evaluator subagent.
 
 You MUST SEND the cleanup-evaluator a JSON object of the following format:
 
@@ -289,14 +289,14 @@ safeguards. Everything else is implementation detail.
 
 Claude Code is convenient because it offers two helpful primitives:
 
-- Sub-agents: lightweight agent instances with their own prompts and roles.
+- Subagents: lightweight agent instances with their own prompts and roles.
 - Custom Commands: first-class command blocks that carry prompts and tool wiring.
 
 But neither is mandatory. You can replace both:
 
-- Replace Sub-agents with a tool call that starts another AI agent
-instance (for example, invoke a CLI that spins up a new agent and returns
-its structured response).
+- Replace Subagents with a tool call that starts another AI agent instance
+(for example, invoke a CLI that spins up a new agent and returns its
+structured response).
 - Replace Custom Commands with a shell script that sends a custom prompt
 to launch an AI agent (for example, a script wrapping curl to post a
 prompt to your agent service, then relay JSON back to the main loop).
