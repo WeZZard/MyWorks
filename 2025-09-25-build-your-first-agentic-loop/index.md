@@ -63,6 +63,8 @@ cleans up TODOs and FIXMEs across your repository. No standalone schema
 files—the contract is exactly what your prompts already define. Claude 4
 is a solid choice for running a 24/7 agentic loop.
 
+> Project URL: [agentic-loop-palyground](https://github.com/WeZZard/agentic-loop-playground.git)
+
 ### 1) The Structure of the Loop
 
 The loop has three components:
@@ -318,6 +320,25 @@ A. Optional feeders like TODO/FIXME scanners or issue trackers can surface
 candidates, but they don’t replace your judgment. The loop does meaningful
 work; you curate the input stream. That’s a perfectly valid way to run a
 24×7 operation.
+
+## Comparison with LangChain and AutoGen
+
+This comparison clarifies the pros and cons of the agent runtime-based
+solution presented in this article, contrasted with LangChain and AutoGen.
+It focuses on the aspects we discussed: what you need to build a loop,
+setup and bootstrapping, tool calling, and best fit.
+
+| Aspect | Agent runtime-based solution (Contract + Loop + Runtime) | LangChain | AutoGen |
+|---|---|---|---|
+| What you need to build a loop | Contract JSON + loop control + runtime executors | Chains + tools + memory abstractions layered over model calls | Multi-agent chat framework + orchestration + tool calls |
+| Setup & bootstrapping | Minimal: prompt + schema + runner; start tonight | Configure chains/agents before useful loops | Define roles and coordination to begin work |
+| Tool calling | OS processes, scripts, custom commands — your choice | Tool wrappers; adapters for system-level work | Built-in tools; Python-first integrations |
+| Best fit | Production loops, ops/infra tasks, TODO/FIXME cleanup | Rapid prototypes, simple chains | Multi-agent research, complex simulations |
+
+Why this approach: It’s minimal to stand up (prompt + contract + small
+runner), uses native tools (OS processes, scripts, CLI) so it fits any
+stack, stays vendor-agnostic, and keeps humans in control of the input
+stream while the loop does substantial work 24×7.
 
 ## Conclusion
 
