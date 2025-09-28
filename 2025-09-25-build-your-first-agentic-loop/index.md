@@ -8,7 +8,7 @@ isPublished: false
 *Fun fact:* I'm currently ranked **third in daily cloud usage statistics
 on Claude Count**. That's because I've been running Claude Code inside a
 **24/7 agentic loop** to power my side project. While I sleep, the loop
-evaluates, spawns subagents, and keeps moving forward. When I wake up,
+evaluates, spawns sub-agents, and keeps moving forward. When I wake up,
 progress is already made.
 
 But the magic isn’t tied to Claude; once you grasp the essence of the
@@ -34,7 +34,7 @@ until the goal is met.
 ![A diagram titled “Main Loop” showing evaluators and executors interacting in a repeating five-step cycle where requests to evaluate a situation spawn executors, executors request task details, and responses spawn evaluators](basic_agentic_loop.png "Basic Agentic Loop")
 
 However, to turn that flow into a working system, three components must
-work together: a right **model**, **prompts** that enforce the contract,
+work together: the right **model**, **prompts** that enforce the contract,
 and an **agent runtime** designed for tool use:
 
 1. **Get the right model**
@@ -51,14 +51,14 @@ and an **agent runtime** designed for tool use:
 
 3. **Support tools**
     Without tools, your loop is just self-talk. With CLI commands, it can
-    run tests, fetch data, patch code, or monitor systems. Subagents
-    aren’t even required, since you can spawn external agent instances to
-    build the evaluator-executor heartbeat via the `bash` tool.
+    run tests, fetch data, patch code, or monitor systems. Sub-agents aren’t
+    even required, since you can spawn external agent instances to build the
+    evaluator-executor heartbeat via the `bash` tool.
 
 ## Writing Your First Contract-Driven Prompts
 
 You’ve seen the loop and its roles. Now we’ll wire real prompts using
-Claude Code sub-agents and the a custom command to build a loop that
+Claude Code sub-agents and a custom command to build a loop that
 cleans up TODOs and FIXMEs across your repository. No standalone schema
 files—the contract is exactly what your prompts already define. Claude 4
 is a solid choice for running a 24/7 agentic loop.
@@ -130,9 +130,9 @@ clear imperatives and consistent repetition until the model obeys.
 The snippet below shows the **main agent** spawning a `cleanup-evaluator` at the start of the loop.
 
 ````markdown path=cleanup.md
-## MANDATORY: 2. SPAWN AN CLEANUP-EVALUATOR TO EVALUATE INCOMPLETE TODOs and FIXMEs
+## MANDATORY: 2. SPAWN A CLEANUP-EVALUATOR TO EVALUATE INCOMPLETE TODOs and FIXMEs
 
-You MUST spawn an cleanup-evaluator subagent to evaluate the gap between the incomplete TODOs and FIXMEs and the existing situation.
+You MUST spawn a cleanup-evaluator sub-agent to evaluate the gap between the incomplete TODOs and FIXMEs and the existing situation.
 
 You SHALL ALWAYS send the cleanup-evaluator with a JSON object of the following format:
 
@@ -167,9 +167,9 @@ example, its `next_action` is always to spawn a cleanup-executor or tell
 "mission complete".
 
 ````markdown path=cleanup-evaluator.md
-## MANDATORY: RESPONSE BACK TO THE MAIN AGENT
+## MANDATORY: RESPOND TO THE MAIN AGENT
 
-You SHALL response with the [reordered_incomplete_item_list], [completed_item_list], [postponed_item_list] to the next subagent with the JSON object of the following format:
+You SHALL RESPOND with the [reordered_incomplete_item_list], [completed_item_list], [postponed_item_list] to the main agent with the JSON object of the following format:
 
 ```json
 {
@@ -180,7 +180,7 @@ You SHALL response with the [reordered_incomplete_item_list], [completed_item_li
 }
 ```
 
-The `next_action` field SHALL BE `mission_complete` when NO ITEMS LEFT in [reordered_incomplete_item_list].
+The `next_action` field SHALL BE `mission_complete` when NO ITEMS ARE LEFT in [reordered_incomplete_item_list].
 
 Otherwise, the `next_action` field SHALL BE `spawn(cleanup-executor)`.
 ````
@@ -190,12 +190,12 @@ the `cleanup-evaluator` sub-agent, spawns a `cleanup-executor` sub-agent,
 and passes the lists to it.
 
 ````markdown path=cleanup.md
-## MANDATORY: 3. UNDERSTANDS THE CLEANUP-EVALUATOR'S RESPONSE
+## MANDATORY: 3. UNDERSTAND THE CLEANUP-EVALUATOR'S RESPONSE
 
-The cleanup-evaluator subagent ALWAYS is the core of the workflow.
+The cleanup-evaluator sub-agent is ALWAYS the core of the workflow.
 
-YOU MUST OBEY THE DESCISION OF THE CLEANUP-EVALUATOR IN [next_action].
-You SHALL NEVER CHANGE THE DESCISION OF THE CLEANUP-EVALUATOR in [next_action].
+YOU MUST OBEY THE DECISION OF THE CLEANUP-EVALUATOR IN [next_action].
+You SHALL NEVER CHANGE THE DECISION OF THE CLEANUP-EVALUATOR in [next_action].
 
 The [next_action] COULD BE: `spawn(cleanup-executor)` | `mission_complete`:
 
@@ -219,9 +219,9 @@ OR
 }
 ```
 
-The cleanup-evaluator subagent SHALL NEVER know if it is the last time to evaluate until the [next_action] of a spawned cleanup-evaluator turns out to be `mission_complete`.
+The cleanup-evaluator sub-agent SHALL NEVER know if it is the last time to evaluate until the [next_action] of a spawned cleanup-evaluator turns out to be `mission_complete`.
 
-### MANDATORY: ALWAYS TRANSFER [incomplete_items], [completed_items], [postponed_items] FROM THE CLEANUP-EVALUATOR'S RESPONSE TO THE NEXT SUBAGENT
+### MANDATORY: ALWAYS TRANSFER [incomplete_items], [completed_items], [postponed_items] FROM THE CLEANUP-EVALUATOR'S RESPONSE TO THE NEXT SUB-AGENT
 
 YOU MUST transfer the [incomplete_items], [completed_items], [postponed_items] from the cleanup-evaluator's response to the next subagent with the JSON object of the following format:
 
@@ -240,9 +240,9 @@ we still need to instruct the **main agent** to follow responses from
 sub-agents other than the `cleanup-evaluator`:
 
 ````markdown path=cleanup.md
-## MANDATORY: 4. UNDERSTAND THE RESPONSE FROM OTHER SUBAGENTS
+## MANDATORY: 4. UNDERSTAND THE RESPONSE FROM OTHER SUB-AGENTS
 
-All the subagents other than the cleanup-evaluator subagent SHALL ALWAYS response with a JSON object of the following format:
+All the sub-agents other than the cleanup-evaluator sub-agent SHALL ALWAYS respond with a JSON object of the following format:
 
 ```json
 {
@@ -253,11 +253,11 @@ All the subagents other than the cleanup-evaluator subagent SHALL ALWAYS respons
 }
 ```
 
-### MANDATORY: ALWAYS READ Subagent's Response to Decide Next Action
+### MANDATORY: ALWAYS READ Sub-agent’s Response to Decide Next Action
 
 The [next_action] is ALWAYS to spawn a cleanup-evaluator sub-agent.
 
-You MUST SEND the cleanup-evaluator with the JSON object of the following format:
+You MUST SEND the cleanup-evaluator a JSON object of the following format:
 
 ```json
 {
