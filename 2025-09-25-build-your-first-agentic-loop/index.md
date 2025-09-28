@@ -305,52 +305,29 @@ cycling until `next_action` is `mission_complete`.
 
 ## Running 24×7
 
-- Use restart scripts or supervisors.
-- Keep logs + artifacts for recovery.
-- Enforce depth/time/budget caps.
-- Add a human pause flag for safety.
+Running a loop around the clock is about feedstock, not just uptime. A
+loop survives by continuously converting A into B: turning one kind of
+artifact into another on repeat. If A is an idea and B is a program (or a
+fix, a test, a release), then a 24×7 loop needs endless ideas.
 
-------------------------------------------------------------------------
-
-## GPT-5 Codex: A Step Forward, Not a Magic Fix
-
-OpenAI's **GPT-5 Codex** is marketed as a model built *for coding and
-agentic tasks*. Reports suggest:
-
-- Better structured outputs and contract obedience.
-- Longer autonomous runs (hours instead of minutes).
-- Smarter tool use and error recovery.
-
-This is good news for minimal loops: GPT-5 Codex raises the ceiling. You
-can expect fewer broken JSON blobs, more reliable CLI decisions, and
-longer sessions without drift.
-
-But don't mistake it for a silver bullet:
-
-- **Validators are still required** --- no model is perfect at JSON
-under stress.
-- **Persistence is still required** --- even GPT-5 can forget across
-long cycles.
-- **Safety rails are still required** --- autonomous CLI runs can go
-wrong fast.
-
-**Optimistic but cautious takeaway:** GPT-5 Codex makes contract-first
-loops more practical, but it doesn't replace contracts, logs, and
-guardrails. Your loop is still only as strong as its structure.
-
-------------------------------------------------------------------------
+We don’t actually have infinite ideas. The practical pattern is this: you
+design the loop to tackle work that’s substantial enough to buy you
+thinking time. While the agent is converting A→B — compiling, testing,
+packaging, or deploying — you use that breathing room to decide the next
+A. Optional feeders like TODO/FIXME scanners or issue trackers can surface
+candidates, but they don’t replace your judgment. The loop does meaningful
+work; you curate the input stream. That’s a perfectly valid way to run a
+24×7 operation.
 
 ## Conclusion
 
-Building a 24×7 loop doesn't require LangChain or AutoGen. All you need
-is:
+Building a 24×7 loop doesn't require LangChain or AutoGen. All you need is:
 
 - A model trained with agent tasks.
 - A prompt-enforced contract.
 - A runtime that can spawn executors safely.
 
-With that, you can run Claude Code (or GPT-5 Codex, or GLM-4.5) in a
-loop that works while you sleep.
+With that, you can run Claude Code (or GPT-5 Codex) in a loop that works
+while you sleep.
 
-Try it tonight. Tomorrow morning, you might wake up to progress already
-made.
+Try it tonight. Tomorrow morning, you might wake up to progress already made.
