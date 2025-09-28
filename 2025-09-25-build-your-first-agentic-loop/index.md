@@ -57,51 +57,49 @@ and an **agent runtime** designed for tool use:
 
 ## Writing Your First Contract-Driven Prompts
 
-You’ve seen the loop and its roles. Now we’ll wire real prompts with
-Claude Code subagents and command to build a working loop that cleans up
-TODOs and FIXMEs across a repository. No custom schema here — the contract
-is exactly what your prompts already define. And yet the Claude 4 is one
-of the right models to use for building a 24/7 agentic loop.
+You’ve seen the loop and its roles. Now we’ll wire real prompts using
+Claude Code sub-agents and the a custom command to build a loop that
+cleans up TODOs and FIXMEs across your repository. No standalone schema
+files—the contract is exactly what your prompts already define. Claude 4
+is a solid choice for running a 24/7 agentic loop.
 
 ### 1) The Structure of the Loop
 
-The loop is made up of three components:
+The loop has three components:
 
 - `cleanup` command
-- `cleanup-evaluator` subagent
-- `cleanup-executor` subagent
+- `cleanup-evaluator` sub-agent
+- `cleanup-executor` sub-agent
 
 ![A diagram titled “cleanup loop” showing how TODO/FIXME items are collected, reorganized by a cleanup-evaluator, executed by a cleanup-executor, and cycled back through a cleanup process in five repeating steps.](the_todo_fixme_loop.png "The TODO/FIXME Loop")
 
-The `cleanup` command is the entry point for the loop, holding the
-**main agent**. It firstly scans the repository for TODO/FIXME items and
-prepares a working list. Then it passes the list to the
-`cleanup-evaluator` subagent.
+The `cleanup` command is the loop’s entry point and hosts
+the **main agent**. It first scans the repository for TODO/FIXME items and
+prepares a working list, then passes that list to the `cleanup-evaluator`
+sub-agent.
 
-The `cleanup-evaluator` subagent triages and orders the list, then respond
-the reorganized list and the next action `spawn(cleanup-executor)` to the
-**main agent**.
+The `cleanup-evaluator` sub-agent triages and orders the list, then
+responds to the **main agent** with the reorganized list and a next action
+of `spawn(cleanup-executor)`.
 
-The **main agent** then follows the response from the `cleanup-evaluator`
-subagent, spawning a `cleanup-executor` subagent and passing the
-reorganized list to it.
+The **main agent** then follows the response from the `cleanup-evaluator`,
+spawning a `cleanup-executor` sub-agent and passing the reorganized list to it.
 
-The `cleanup-executor` subagent then dequeue the first TODO/FIXME item
-from the reorganized list, executing the item, updating the list when the
-execution completed. Then it respond with updated list and the next action
-`spawn(cleanup-evaluator)` to the **main agent**.
+The `cleanup-executor` sub-agent dequeues the first TODO/FIXME item from
+the reorganized list, executes it, updates the list when execution
+completes, and responds to the **main agent** with the updated list and a
+next action of `spawn(cleanup-evaluator)`.
 
-The **main agent** then follows the response from the `cleanup-executor`
-subagent, spawning a `cleanup-evaluator` subagent and passing the updated
-list to it, thereby returning to the beginning of the loop.
+The **main agent** then follows the response from the `cleanup-executor`,
+spawning a `cleanup-evaluator` sub-agent and passing the updated list to
+it, thereby returning to the beginning of the loop.
 
 ### 2) The Contract
 
-The key of holding this loop is to make the **main agent** and the
-subagents always follow the contract. The good news is that holding a
-contract between the **main agent** and the subagents is deadly simple:
-In this example, each subagent receives a JSON object with the following
-format from the **main agent**:
+The key to this loop is ensuring the **main agent** and sub-agents always
+follow the contract. The good news: the contract is straightforward. In
+this example, each sub-agent receives a JSON object from
+the **main agent** in the following format:
 
 ```json
 {
@@ -111,7 +109,7 @@ format from the **main agent**:
 }
 ```
 
-And responds with the following format to the **main agent**:
+and responds to the **main agent** in the following format:
 
 ```json
 {
@@ -124,11 +122,10 @@ And responds with the following format to the **main agent**:
 
 ### 3) Enforcing the Contract with Prompts
 
-The contract is baked into the prompt itself. No hidden tricks—just
-CAPITALIZED IMPERATIVES and relentless repetition until the model obeys.
+The contract is baked into the prompts themselves—no hidden tricks, just
+clear imperatives and consistent repetition until the model obeys.
 
-The snippet below shows how the **main agent** is set to spawn a
-`cleanup-evaluator` at the beginning of the loop.
+The snippet below shows the **main agent** spawning a `cleanup-evaluator` at the start of the loop.
 
 ````markdown path=cleanup.md
 ## MANDATORY: 2. SPAWN AN CLEANUP-EVALUATOR TO EVALUATE INCOMPLETE TODOs and FIXMEs
@@ -162,9 +159,10 @@ YOU WILL RECEIVE a JSON object of the following format:
 ```
 ````
 
-Once the cleanup-evaluator is about to end the task, it shall prepare to
-respond to the main agent with the format of the contract. In this
-example, its `next_action` is always to spawn a cleanup-executor.
+Once the cleanup-evaluator is ready to conclude its evaluation, it
+prepares a response to the main agent using the contract format. In this
+example, its `next_action` is always to spawn a cleanup-executor or tell
+"mission complete".
 
 ````markdown path=cleanup-evaluator.md
 ## MANDATORY: RESPONSE BACK TO THE MAIN AGENT
@@ -185,9 +183,9 @@ The `next_action` field SHALL BE `mission_complete` when NO ITEMS LEFT in [reord
 Otherwise, the `next_action` field SHALL BE `spawn(cleanup-executor)`.
 ````
 
-Back to the main agent, it shall follow the response from the
-`cleanup-evaluator` subagent, spawning a `cleanup-executor` subagent and
-passing the lists to it.
+Back in the main agent, it follows the response from
+the `cleanup-evaluator` sub-agent, spawns a `cleanup-executor` sub-agent,
+and passes the lists to it.
 
 ````markdown path=cleanup.md
 ## MANDATORY: 3. UNDERSTANDS THE CLEANUP-EVALUATOR'S RESPONSE
@@ -232,13 +230,12 @@ YOU MUST transfer the [incomplete_items], [completed_items], [postponed_items] f
   "postponed_items": [postponed_item_list],
 }
 ```
-
 ````
 
-This time, the contract would allow the main agent to spawn a
-`cleanup-executor` subagent to execute the next TODO/FIXME item. However,
-we still need to instruct the **main agent** to follow the responses from
-subagents other than the `cleanup-evaluator`:
+At this point, the contract allows the main agent to spawn a
+`cleanup-executor` sub-agent to execute the next TODO/FIXME item. However,
+we still need to instruct the **main agent** to follow responses from
+sub-agents other than the `cleanup-evaluator`:
 
 ````markdown path=cleanup.md
 ## MANDATORY: 4. UNDERSTAND THE RESPONSE FROM OTHER SUBAGENTS
@@ -256,7 +253,7 @@ All the subagents other than the cleanup-evaluator subagent SHALL ALWAYS respons
 
 ### MANDATORY: ALWAYS READ Subagent's Response to Decide Next Action
 
-The [next_action] is ALWAYS to spawn an cleanup-evaluator subagent.
+The [next_action] is ALWAYS to spawn a cleanup-evaluator sub-agent.
 
 You MUST SEND the cleanup-evaluator with the JSON object of the following format:
 
@@ -269,7 +266,7 @@ You MUST SEND the cleanup-evaluator with the JSON object of the following format
 ```
 ````
 
-At last, the **main agent** needs to know when to end the loop:
+Finally, the **main agent** needs to know when to end the loop:
 
 ````markdown path=cleanup.md
 ## MANDATORY: 5. HANDLING MISSION COMPLETE
@@ -279,9 +276,7 @@ If `next_action` in the response from the cleanup-evaluator subagent is `mission
 You SHALL STOP ALL THE SUBAGENTS AND EXIT THE WORKFLOW.
 ````
 
-------------------------------------------------------------------------
-
-## Example Tech Stacks
+## Beyond the Claude Code
 
 - **Claude Code**: commands + sub-agents, easy to wire into a loop.
 - **Codex**: tool-use and CLI integrations.
