@@ -4,9 +4,9 @@ category: Programming
 tags: [AI, Agent]
 ---
 
-*小趣闻：* 2025 年 9 月，我在 Claude Code 上的开销飙到了 **3000 美元**。
+*小趣闻：* 2025 年 9 月，我在 Claude Code 上的用量飙到了 **3000 美元**。
 
-![3,000 USD Claude Code Usage](../3k-usd-usage-of-claude-code.jpg "3,000 USD Claude Code Usage")
+![3000 美元 Claude Code 用量](../3k-usd-usage-of-claude-code.jpg "3000 美元 Claude Code 用量")
 
 原因很简单：我把 Claude Code 放进了一个 **7x24 Agent 循环** 里帮我打理业余项目。我睡着时，循环会评估现场、派生 subagents、让事情持续推进。等我醒来，进度已经悄悄向前走了一截。
 
@@ -29,7 +29,6 @@ tags: [AI, Agent]
 1. **挑选合适的模型**
 
     选择一个能够：
-
     - 在提示词压力下仍旧严格遵守 JSON 格式；
     - 对角色、动作保持高度自律；
     - 在进行工具调用时保持理性推理，不胡乱臆测。
@@ -44,11 +43,9 @@ tags: [AI, Agent]
 
 ## 写下你的第一份协议驱动提示词
 
-角色和循环已经清楚，现在我们用 Claude Code 的 subagent 和 custom command，搭出一个清理仓库里 TODO/FIXME 的循环。无需额外的 Schema 文件——协议就在提示词里。Claude 4 非常适合承担 7x24 Agent 循环。
+角色和循环已经清楚，现在我们用 Claude Code 的 subagent 和 custom command，搭出一个清理仓库里 TODO/FIXME 的循环[^1]。无需额外的 Schema 文件——协议就在提示词里。Claude 4 非常适合承担 7x24 Agent 循环。
 
-> 项目地址：[agentic-loop-palyground](https://github.com/WeZZard/agentic-loop-playground.git)
-
-### 1）循环结构
+### 循环结构
 
 循环包含三部分：
 
@@ -58,19 +55,19 @@ tags: [AI, Agent]
 
 ![一个标题为"Cleanup Loop"的图表，展示了 TODO/FIXME 项目如何被收集、由 cleanup-evaluator 重新组织、由 cleanup-executor 执行，并通过五个重复步骤循环回到清理过程中。](../the-todo-fixme-loop.png "TODO/FIXME 循环")
 
-`cleanup` 命令是循环的入口，也是 **Main Agent** 所在。它会扫描仓库里的 TODO/FIXME，整理出一份工作清单，再把清单交给 `cleanup-evaluator` subagent。
+`cleanup` 命令是循环的入口，也是 **main agent** 所在。它会扫描仓库里的 TODO/FIXME，整理出一份工作清单，再把清单交给 `cleanup-evaluator` subagent。
 
-`cleanup-evaluator` subagent 负责分拣并重排清单，然后把整理后的清单以及 `spawn(cleanup-executor)` 这个下一步动作反馈给 **Main Agent**。
+`cleanup-evaluator` subagent 负责分拣并重排清单，然后把整理后的清单以及 `spawn(cleanup-executor)` 这个下一步动作反馈给 **main agent**。
 
-**Main Agent** 会按 `cleanup-evaluator` 的指示，拉起 `cleanup-executor` subagent，并把重排后的清单转交过去。
+**main agent** 会按 `cleanup-evaluator` 的指示，拉起 `cleanup-executor` subagent，并把重排后的清单转交过去。
 
-`cleanup-executor` subagent 会从清单中取出第一条 TODO/FIXME，执行完成后更新清单，再把更新后的清单和 `spawn(cleanup-evaluator)` 这一下一步动作回应给 **Main Agent**。
+`cleanup-executor` subagent 会从清单中取出第一条 TODO/FIXME，执行完成后更新清单，再把更新后的清单和 `spawn(cleanup-evaluator)` 这一下一步动作回应给 **main agent**。
 
-**Main Agent** 再次依据 `cleanup-executor` 的回复拉起 `cleanup-evaluator` subagent，把最新的清单交给它，于是循环回到开头。
+**main agent** 再次依据 `cleanup-executor` 的回复拉起 `cleanup-evaluator` subagent，把最新的清单交给它，于是循环回到开头。
 
-### 2）协议长什么样
+### 协议长什么样
 
-让循环持续运转的关键，是确保 **Main Agent** 与所有 subagent 都遵守协议。好消息是，这份协议很直观。在这个例子里，每个 subagent 会收到来自 **Main Agent** 的 JSON 对象，格式如下：
+让循环持续运转的关键，是确保 **main agent** 与所有 subagent 都遵守协议。好消息是，这份协议很直观。在这个例子里，每个 subagent 会收到来自 **main agent** 的 JSON 对象，格式如下：
 
 ```json
 {
@@ -80,7 +77,7 @@ tags: [AI, Agent]
 }
 ```
 
-Subagent 回给 **Main Agent** 时，使用的 JSON 结构是：
+Subagent 回给 **main agent** 时，使用的 JSON 结构是：
 
 ```json
 {
@@ -91,7 +88,7 @@ Subagent 回给 **Main Agent** 时，使用的 JSON 结构是：
 }
 ```
 
-### 3）通过工具收集 TODO/FIXME
+### 通过工具收集 TODO/FIXME
 
 你也许好奇 `[incomplete_item_list]` 是什么。你可以把它视作提示词里的“变量”：它们来自工具调用。在 `cleanup` 命令开头的提示词，会触发如下指令：
 
@@ -103,7 +100,7 @@ You SHALL use the `grep` tool piped with `head` to find the first `10` documente
 Command: grep -r -n -E "TODO|FIXME" . | head -n 10
 ````
 
-不过原始输出不能直接拿来用。我们必须告诉 Agent 期望的格式，并要求它把结果整理成符合协议的 JSON 对象。
+不过原始输出不能直接拿来用。我们必须告诉 agent 期望的格式，并要求它把结果整理成符合协议的 JSON 对象。
 
 ````markdown path=cleanup.md
 The outputs are in the following format.
@@ -160,11 +157,11 @@ You SHALL NOTE a JSON object with and empty "items" array as [postponed_item_lis
 ```
 ````
 
-### 4）用提示词强制贯彻协议
+### 用提示词强制贯彻协议
 
 这里的协议直接写在提示词里——没有任何隐藏技巧，而是用清晰的命令一遍遍强调，直到模型完全照做。
 
-下面这段展示了 **Main Agent** 如何在循环开始时拉起 `cleanup-evaluator`：
+下面这段展示了 **main agent** 如何在循环开始时拉起 `cleanup-evaluator`：
 
 ````markdown path=cleanup.md
 ## MANDATORY: 2. SPAWN A CLEANUP-EVALUATOR TO EVALUATE INCOMPLETE TODOs and FIXMEs
@@ -266,7 +263,7 @@ YOU MUST transfer the [incomplete_items], [completed_items], [postponed_items] f
 ```
 ````
 
-此时协议允许 main agent 拉起 `cleanup-executor` 来执行下一条 TODO/FIXME。不过我们还需要告诉 **main agent** 如何处理 `cleanup-evaluator` 之外的 subagent 的反馈：
+此时协议允许 **main agent** 拉起 `cleanup-executor` 来执行下一条 TODO/FIXME。不过我们还需要告诉 **main agent** 如何处理 `cleanup-evaluator` 之外的 subagent 的反馈：
 
 ````markdown path=cleanup.md
 ## MANDATORY: 4. UNDERSTAND THE RESPONSE FROM OTHER SUBAGENTS
@@ -309,7 +306,7 @@ You SHALL STOP ALL THE SUBAGENTS AND EXIT THE WORKFLOW.
 
 到这里，我们已经用整套协议驱动的提示词搭好了第一个 Agent 循环。
 
-## Have A Try
+## 试一试
 
 当你把这个循环跑在 llama.cpp 项目上时，会发生以下情况：循环会精确处理 10 条 TODO 和 FIXME 后结束——无需宏大目标，只需一次专注的清理循环，就能让核心机制完整跑通。
 
@@ -323,7 +320,7 @@ You SHALL STOP ALL THE SUBAGENTS AND EXIT THE WORKFLOW.
 
 ## 不止 Claude Code
 
-你也许会问：如果我不用 Claude Code，而是用 Codex 呢？答案很简单：流程不变。这个循环和 agent 厂商无关，它只靠三样东西：协议、循环、Agent runtime。换句话说，evaluator 决定下一步，executor 负责执行，main agent 负责路由和守护，其余都是实现细节。
+你也许会问：如果我不用 Claude Code，而是用 Codex 呢？答案很简单：流程不变。这个循环和 agent 厂商无关，它只靠三样东西：协议、循环、Agent runtime。换句话说，evaluator 决定下一步，executor 负责执行，main agent 负责路由和护栏，其余都是实现细节。
 
 Claude Code 的优势在于提供了两个顺手的原语：
 
@@ -362,3 +359,5 @@ Claude Code 的优势在于提供了两个顺手的原语：
 具备这些条件，就能让 Claude Code（或 Codex）在循环里持续工作，即便你已经入睡。
 
 今晚就动手试试看吧。明早醒来，也许成果已经在等你。
+
+[^1]: [https://github.com/WeZZard/agentic-loop-playground](https://github.com/WeZZard/agentic-loop-playground.git)
