@@ -44,7 +44,7 @@ tags: [AI, Agent]
 
 ## 写下你的第一份协议驱动提示词
 
-角色和循环已经清楚，现在我们用 Claude Code 的 Subagent 和自定义命令，搭出一个清理仓库里 TODO/FIXME 的循环。无需额外的 Schema 文件——协议就在提示词里。Claude 4 非常适合承担 7x24 Agentic Loop。
+角色和循环已经清楚，现在我们用 Claude Code 的 subagent 和 custom command，搭出一个清理仓库里 TODO/FIXME 的循环。无需额外的 Schema 文件——协议就在提示词里。Claude 4 非常适合承担 7x24 Agentic Loop。
 
 > 项目地址：[agentic-loop-palyground](https://github.com/WeZZard/agentic-loop-playground.git)
 
