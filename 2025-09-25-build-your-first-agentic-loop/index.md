@@ -2,7 +2,7 @@
 title: "Build Your First 24/7 Agentic Loop"
 category: Programming
 tags: [AI,Developer Tools]
-isPublished: true
+isPublished: false
 ---
 
 *Fun fact:* I'm currently ranked **third in daily cloud usage statistics
@@ -30,8 +30,6 @@ To make “a contract and a loop” concrete, the diagram below shows the
 minimal flow: the evaluator chooses the next action, spawns executors to
 use tools, executors report results, and control returns to the evaluator
 until the goal is met.
-
-![A diagram titled “Main Loop” showing evaluators and executors interacting in a repeating five-step cycle where requests to evaluate a situation spawn executors, executors request task details, and responses spawn evaluators](./basic-agentic-loop.png "Basic Agentic Loop")
 
 However, to turn that flow into a working system, three components must
 work together: the right **model**, **prompts** that enforce the contract,
@@ -72,6 +70,8 @@ The loop has three components:
 - `cleanup` command
 - `cleanup-evaluator` subagent
 - `cleanup-executor` subagent
+
+![A diagram titled “cleanup loop” showing how TODO/FIXME items are collected, reorganized by a cleanup-evaluator, executed by a cleanup-executor, and cycled back through a cleanup process in five repeating steps.](./the-todo-fixme-loop.png "The TODO/FIXME Loop")
 
 The `cleanup` command is the loop’s entry point and hosts
 the **main agent**. It first scans the repository for TODO/FIXME items and
