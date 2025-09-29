@@ -37,6 +37,7 @@ work together: the right **model**, **prompts** that enforce the contract,
 and an **agent runtime** designed for tool use:
 
 1. **Get the right model**
+
     Pick an advanced model that can:
 
     - Follow strict JSON formats under prompt pressure.
@@ -121,7 +122,74 @@ and responds to the **main agent** in the following format:
 }
 ```
 
-### 3) Enforcing the Contract with Prompts
+### 3) Collecting TODOs/FIXMEs with Tool Call
+
+You might be wondering what `[incomplete_item_list]` means. Think of these
+as “variables” inside the prompt. They’re gathered through tool calls, triggered
+by the opening prompt of the cleanup command:
+
+````markdown path=cleanup.md
+## MANDATORY: 1. FIND DOCUMENTED TODOs and FIXMEs
+
+You SHALL use the `grep` tool piped with `head` to find the first `10` documented TODOs and FIXMEs in the repository.
+
+Command: grep -r -n -E "TODO|FIXME" . | head -n 10
+
+The outputs are in the following format.
+
+```shell
+[file]:[line]:[content]
+```
+
+You SHALL READ round each [line] in [file] and EXTRACT the [content] from all the found TODOs and FIXMEs, filtering out the ones can cannot apply with the restrictions of the platform, operating system, and required tools, then convert into a JSON object of the following format, using [incomplete_item_list] as the mnemonic:
+
+```json
+[
+  {
+    "type": "todo",
+    "id": "TODO_1",
+    "file": [todo_1_file],
+    "line": [todo_1_line],
+    "content": [todo_1_content]
+  },
+  {
+    "type": "todo",
+    "id": "TODO_2",
+    "file": [todo_2_file],
+    "line": [todo_2_line],
+    "content": [todo_2_content]
+  },
+  {
+    "type": "fixme",
+    "id": "FIXME_1",
+    "file": [fixme_1_file],
+    "line": [fixme_1_line],
+    "content": [fixme_1_content]
+  },
+  {
+    "type": "fixme",
+    "id": "FIXME_2",
+    "file": [fixme_2_file],
+    "line": [fixme_2_line],
+    "content": [fixme_2_content]
+  }
+]
+```
+
+You SHALL NOTE a JSON object with and empty "items" array as [completed_item_list]:
+
+```json
+[]
+```
+
+You SHALL NOTE a JSON object with and empty "items" array as [postponed_item_list]:
+
+```json
+[]
+```
+````
+
+### 4) Enforcing the Contract with Prompts
 
 The contract is baked into the prompts themselves—no hidden tricks, just
 clear imperatives and consistent repetition until the model obeys.
@@ -323,22 +391,22 @@ candidates, but they don’t replace your judgment. The loop does meaningful
 work; you curate the input stream. That’s a perfectly valid way to run a
 24×7 operation.
 
-## Comparison with LangChain/Graph
+## Comparison with LangChain and LangGraph
 
-This comparison clarifies the pros and cons of the **agent runtime**-based
-solution presented in this article, contrasted with LangChain or
-LangGraph. It focuses on the aspects we discussed: what you need to build
-a loop, setup and bootstrapping, tool calling, and best fit.
+This comparison lays out the trade-offs between the **agent runtime** approach
+described here and frameworks like LangChain or LangGraph. It highlights three
+essentials: what you need to build a loop, how you set it up, and how tools are
+called.
 
-| Aspect | Agent runtime | LangChain/Graph |
+| Aspect | Agent runtime | LangChain or LangGraph |
 |---|---|---|
-| Needs | Appropriate model | SDK + tools + memory abstractions |
-| Setup | Prompts | Configure chains/graphs before useful loops |
-| Tool calling | stdio or MCP | Adapters for system-level work |
+| Requirements | Appropriate model | SDK + tools + memory abstractions |
+| Setup | Prompts | Configure chains/graphs |
+| Tool calling | Via prompts | Prompts and system-level adapters |
 
-Why this approach: It’s minimal to stand up, uses native tools so it fits
-any stack, stays vendor-agnostic, and keeps humans in control of the input
-stream while the loop does substantial work 24×7.
+From the table, it’s clear the **agent runtime** path is lighter to boot, leans
+on native tools so it fits any stack, stays vendor-neutral, and keeps humans in
+charge of the input stream—while the loop itself does meaningful work 24×7.
 
 ## Conclusion
 
