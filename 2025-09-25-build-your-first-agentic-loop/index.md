@@ -361,9 +361,10 @@ contract-driven prompts.
 
 ## Have A Try
 
-Here is the result of running this loop in the llama.cpp project. Since
-we don't setup an ambitious mission, the loop ends when 10 TODOs and
-FIXMEs are evaluated and executed.
+Here's what happens when you run this loop against the llama.cpp project.
+The loop processes exactly 10 TODOs and FIXMEs before completing—no
+ambitious mission required, just a focused cleanup cycle that demonstrates
+the core mechanics in action.
 
 ![Try with Claude Code](./try-with-claude-code.png)
 

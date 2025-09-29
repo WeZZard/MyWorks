@@ -1,5 +1,5 @@
 ---
-title: "打造你的第一个 7x24 Agentic 循环"
+title: "打造你的第一个 7x24 Agent 循环"
 category: Programming
 tags: [AI, Agent]
 ---
@@ -8,7 +8,7 @@ tags: [AI, Agent]
 
 ![3,000 USD Claude Code Usage](../3k-usd-usage-of-claude-code.jpg "3,000 USD Claude Code Usage")
 
-原因很简单：我把 Claude Code 放进了一个 **7x24 Agentic 循环** 里帮我打理业余项目。我睡着时，循环会评估现场、派生 subagents、让事情持续推进。等我醒来，进度已经悄悄向前走了一截。
+原因很简单：我把 Claude Code 放进了一个 **7x24 Agent 循环** 里帮我打理业余项目。我睡着时，循环会评估现场、派生 subagents、让事情持续推进。等我醒来，进度已经悄悄向前走了一截。
 
 但这种魔法并不是 Claude 独有；只要你理解了配置的精髓，就能把这个魔法复刻到任何实现了相同要件的模型与 Agent runtime 上。
 
@@ -18,11 +18,11 @@ tags: [AI, Agent]
 
 事实是：最新的 Claude 4、GPT-5 这类大模型已经在 **Agent 任务** 上被反复训练。它们“知道”如何评估、如何规划、如何调用工具，以及如何把控制权交还。你无需庞大的框架，只需要协议和循环。
 
-## Agentic Loop 的本质
+## Agent 循环的本质
 
 为了把「协议 + 循环」具体化，先看这张最小化流程图：evaluator 决定下一步动作，派生 executor 去执行 tool，executor 回报结果，然后控制权回到 evaluator，直到目标完成。
 
-![A diagram titled “Main Loop” showing evaluators and executors interacting in a repeating five-step cycle where requests to evaluate a situation spawn executors, executors request task details, and responses spawn evaluators](../basic-agentic-loop.png "Basic Agentic Loop")
+![一张标题为“Main Loop”的示意图，展示了 evaluator 与 executor 在五步循环中反复互动：evaluator 请求触发 executor，executor 请求任务细节，回应再触发 executor](../basic-agentic-loop.png "基础 Agent 循环")
 
 不过，要让这套流程变成可运行的系统，需要三个组件协同工作：合适的 **模型**、能够落实协议的 **提示词**，以及专为工具调用设计的 **Agent runtime**：
 
@@ -31,7 +31,7 @@ tags: [AI, Agent]
     选择一个能够：
 
     - 在提示词压力下仍旧严格遵守 JSON 格式；
-    - 对角色、动作与 ID 保持高度自律；
+    - 对角色、动作保持高度自律；
     - 在进行工具调用时保持理性推理，不胡乱臆测。
 
 2. **围绕协议写提示词**
@@ -44,7 +44,7 @@ tags: [AI, Agent]
 
 ## 写下你的第一份协议驱动提示词
 
-角色和循环已经清楚，现在我们用 Claude Code 的 subagent 和 custom command，搭出一个清理仓库里 TODO/FIXME 的循环。无需额外的 Schema 文件——协议就在提示词里。Claude 4 非常适合承担 7x24 Agentic Loop。
+角色和循环已经清楚，现在我们用 Claude Code 的 subagent 和 custom command，搭出一个清理仓库里 TODO/FIXME 的循环。无需额外的 Schema 文件——协议就在提示词里。Claude 4 非常适合承担 7x24 Agent 循环。
 
 > 项目地址：[agentic-loop-palyground](https://github.com/WeZZard/agentic-loop-playground.git)
 
@@ -56,7 +56,7 @@ tags: [AI, Agent]
 - `cleanup-evaluator` subagent
 - `cleanup-executor` subagent
 
-![A diagram titled “cleanup loop” showing how TODO/FIXME items are collected, reorganized by a cleanup-evaluator, executed by a cleanup-executor, and cycled back through a cleanup process in five repeating steps.](../the-todo-fixme-loop.png "The TODO/FIXME Loop")
+![一个标题为"Cleanup Loop"的图表，展示了 TODO/FIXME 项目如何被收集、由 cleanup-evaluator 重新组织、由 cleanup-executor 执行，并通过五个重复步骤循环回到清理过程中。](../the-todo-fixme-loop.png "TODO/FIXME 循环")
 
 `cleanup` 命令是循环的入口，也是 **Main Agent** 所在。它会扫描仓库里的 TODO/FIXME，整理出一份工作清单，再把清单交给 `cleanup-evaluator` subagent。
 
@@ -307,7 +307,19 @@ If `next_action` in the response from the cleanup-evaluator subagent is `mission
 You SHALL STOP ALL THE SUBAGENTS AND EXIT THE WORKFLOW.
 ````
 
-到这里，我们已经用整套协议驱动的提示词搭好了第一个 agentic 循环。
+到这里，我们已经用整套协议驱动的提示词搭好了第一个 Agent 循环。
+
+## Have A Try
+
+当你把这个循环跑在 llama.cpp 项目上时，会发生以下情况：循环会精确处理 10 条 TODO 和 FIXME 后结束——无需宏大目标，只需一次专注的清理循环，就能让核心机制完整跑通。
+
+![Try with Claude Code](../try-with-claude-code.png)
+
+## 让循环 7x24 运作
+
+要让循环全天候运行，重点是持续供给“饲料”，而不仅仅是持续时间。循环靠把 A 持续变成 B 活下去：把一种产出不断转换成另一种。假如 A 是点子、B 是程序（或修复、测试、发布），那么想要 7x24 地运转，就需要源源不断的点子。
+
+现实里，我们不可能拥有无限点子。更实际的做法是：让循环承担足够大、值得托付的工作，为你腾出思考时间。当 Agent 在完成 A→B（例如编译、测试、打包、部署）时，你就能利用空档决定下一个 A。像 TODO/FIXME 扫描器或 issue 跟踪器这样的“饲料器”可以提供候选项，但无法代替你的判断。循环负责落实有意义的任务，你负责策展输入，这就是维持 7x24 节奏的正确姿势。
 
 ## 不止 Claude Code
 
@@ -324,12 +336,6 @@ Claude Code 的优势在于提供了两个顺手的原语：
 - 用 shell 脚本向 AI Agent 发送自定义提示词，取代 custom command。
 
 只要协议和循环仍在，执行机制就能自由互换。Main agent 负责路由、执行 schema，并让循环持续运转，直到 `next_action` 变成 `mission_complete`。
-
-## 让循环 7x24 运作
-
-要让循环全天候运行，重点不在在线率，而是持续供给“饲料”。循环靠把 A 持续变成 B 活下去：把一种产出不断转换成另一种。假如 A 是点子、B 是程序（或修复、测试、发布），那么想要 7x24 地运转，就需要源源不断的点子。
-
-现实里，我们不可能拥有无限点子。更实际的做法是：让循环承担足够大、值得托付的工作，为你腾出思考时间。当 Agent 在完成 A→B（例如编译、测试、打包、部署）时，你就能利用空档决定下一个 A。像 TODO/FIXME 扫描器或 issue 跟踪器这样的“饲料器”可以提供候选项，但无法代替你的判断。循环负责落实有意义的任务，你负责策展输入，这就是维持 7x24 节奏的正确姿势。
 
 ## 对比 LangChain 与 LangGraph
 
