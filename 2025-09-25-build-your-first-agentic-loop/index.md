@@ -15,7 +15,7 @@ progress is already made.
 
 But the magic isn’t tied to Claude; once you grasp the essence of the
 configuration you can replicate it with models and agent runtimes that
-implement the same contract.
+implement the same elements.
 
 Here's how you can build your own.
 
