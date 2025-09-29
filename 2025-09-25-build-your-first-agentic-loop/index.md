@@ -2,7 +2,7 @@
 title: "Build Your First 24/7 Agentic Loop"
 category: Programming
 tags: [AI,Developer Tools]
-isPublished: false
+isPublished: true
 ---
 
 *Fun fact:* I'm currently ranked **third in daily cloud usage statistics
@@ -72,8 +72,6 @@ The loop has three components:
 - `cleanup` command
 - `cleanup-evaluator` subagent
 - `cleanup-executor` subagent
-
-![A diagram titled “cleanup loop” showing how TODO/FIXME items are collected, reorganized by a cleanup-evaluator, executed by a cleanup-executor, and cycled back through a cleanup process in five repeating steps.](./the-todo-fixme-loop.png "The TODO/FIXME Loop")
 
 The `cleanup` command is the loop’s entry point and hosts
 the **main agent**. It first scans the repository for TODO/FIXME items and
