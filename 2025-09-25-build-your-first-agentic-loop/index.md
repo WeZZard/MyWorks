@@ -4,7 +4,7 @@ category: Programming
 tags: [AI,Agent]
 ---
 
-*Fun fact:* My Claude Code usage reached USD 3,000 in September, 2025.
+*Fun fact:* My Claude Code usage reached **USD 3,000** in September, 2025.
 
 ![3,000 USD Claude Code Usage](./3k-usd-usage-of-claude-code.jpg "3,000 USD Claude Code ")
 
