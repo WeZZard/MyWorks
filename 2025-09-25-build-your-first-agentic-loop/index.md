@@ -45,11 +45,13 @@ and an **agent runtime** designed for tool use:
     - Reason sensibly about tool use without hallucination.
 
 2. **Write prompts with contracts in mind**
+
     The backbone of your loop is a fixed-format schema. Every evaluator
     and executors must respond in this structure. This turns free-form LLM
     chatter into predictable, machine-readable communication.
 
 3. **Support tools**
+
     Without tools, your loop is just self-talk. With CLI commands, it can
     run tests, fetch data, patch code, or monitor systems. Subagents aren’t
     even required, since you can spawn external agent instances to build the
