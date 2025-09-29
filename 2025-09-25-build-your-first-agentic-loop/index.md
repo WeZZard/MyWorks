@@ -6,7 +6,7 @@ tags: [AI,Agent]
 
 *Fun fact:* My Claude Code usage reached **USD 3,000** in September, 2025.
 
-![3,000 USD Claude Code Usage](./3k-usd-usage-of-claude-code.jpg "3,000 USD Claude Code ")
+![3,000 USD Claude Code Usage](./3k-usd-usage-of-claude-code.jpg "3,000 USD Claude Code Usage")
 
 That's because I've been running Claude Code inside a
 **24/7 agentic loop** to power my side project. While I sleep, the loop
