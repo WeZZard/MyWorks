@@ -44,7 +44,7 @@ and an **agent runtime** designed for tool use:
     Pick an advanced model that can:
 
     - Follow strict JSON formats under prompt pressure.
-    - Stay disciplined about roles, actions, and IDs.
+    - Stay disciplined about roles and actions.
     - Reason sensibly about tool use without hallucination.
 
 2. **Write prompts with contracts in mind**
