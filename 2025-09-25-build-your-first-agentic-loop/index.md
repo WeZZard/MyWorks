@@ -359,6 +359,30 @@ You SHALL STOP ALL THE SUBAGENTS AND EXIT THE WORKFLOW.
 Now we've built our first agentic loop with a collection of
 contract-driven prompts.
 
+## Have A Try
+
+Here is the result of running this loop in the llama.cpp project. Since
+we don't setup an ambitious mission, the loop ends when 10 TODOs and
+FIXMEs are evaluated and executed.
+
+![Try with Claude Code](./try-with-claude-code.png)
+
+## Running 24×7
+
+Running a loop around the clock is about feedstock, not just uptime. A
+loop survives by continuously converting A into B: turning one kind of
+artifact into another on repeat. If A is an idea and B is a program (or a
+fix, a test, a release), then a 24×7 loop needs endless ideas.
+
+We don’t actually have infinite ideas. The practical pattern is this: you
+design the loop to tackle work that’s substantial enough to buy you
+thinking time. While the agent is converting A→B — compiling, testing,
+packaging, or deploying — you use that breathing room to decide the next
+A. Optional feeders like TODO/FIXME scanners or issue trackers can surface
+candidates, but they don’t replace your judgment. The loop does meaningful
+work; you curate the input stream. That’s a perfectly valid way to run a
+24×7 operation.
+
 ## Beyond the Claude Code
 
 At this point, you might ask: I'm not using Claude Code; I'm using Codex.
@@ -384,22 +408,6 @@ to launch an AI agent.
 As long as you preserve the contract and the loop, the mechanics are
 interchangeable. Your main agent routes, enforces the schema, and keeps
 cycling until `next_action` is `mission_complete`.
-
-## Running 24×7
-
-Running a loop around the clock is about feedstock, not just uptime. A
-loop survives by continuously converting A into B: turning one kind of
-artifact into another on repeat. If A is an idea and B is a program (or a
-fix, a test, a release), then a 24×7 loop needs endless ideas.
-
-We don’t actually have infinite ideas. The practical pattern is this: you
-design the loop to tackle work that’s substantial enough to buy you
-thinking time. While the agent is converting A→B — compiling, testing,
-packaging, or deploying — you use that breathing room to decide the next
-A. Optional feeders like TODO/FIXME scanners or issue trackers can surface
-candidates, but they don’t replace your judgment. The loop does meaningful
-work; you curate the input stream. That’s a perfectly valid way to run a
-24×7 operation.
 
 ## Comparison with LangChain and LangGraph
 
