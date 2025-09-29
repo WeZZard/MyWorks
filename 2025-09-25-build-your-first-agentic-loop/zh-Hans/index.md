@@ -1,5 +1,5 @@
 ---
-title: "打造你的第一个 24/7 Agentic Loop"
+title: "打造你的第一个 7x24 Agentic 循环"
 category: Programming
 tags: [AI, Agent]
 ---
@@ -8,23 +8,23 @@ tags: [AI, Agent]
 
 ![3,000 USD Claude Code Usage](../3k-usd-usage-of-claude-code.jpg "3,000 USD Claude Code Usage")
 
-原因很简单：我把 Claude Code 放进了一个 **24/7 Agentic Loop** 里帮我打理副项目。我睡着时，循环会评估、派生 Subagent、让事情持续推进。等我醒来，进度已经悄悄向前走了一截。
+原因很简单：我把 Claude Code 放进了一个 **7x24 Agentic 循环** 里帮我打理业余项目。我睡着时，循环会评估现场、派生 subagents、让事情持续推进。等我醒来，进度已经悄悄向前走了一截。
 
-但这种魔力并不是 Claude 独有；只要你理解了配置的精髓，就能把相同的协议复制到任何遵循相同协议的模型与 Agent runtime 上。
+但这种魔法并不是 Claude 独有；只要你理解了配置的精髓，就能把相同的协议复制到任何遵循相同协议的模型与 Agent runtime 上。
 
 下面就带你从头搭建。
 
 ## 幕后的秘密
 
-事实是：最新的 Claude 4、GPT-5 这类大模型已经在 **Agent 任务** 上被反复训练。它们“知道”如何评估、如何规划、如何调用 Tool，以及如何把控制权交还。你无需庞大的框架，只需要协议和循环。
+事实是：最新的 Claude 4、GPT-5 这类大模型已经在 **Agent 任务** 上被反复训练。它们“知道”如何评估、如何规划、如何调用工具，以及如何把控制权交还。你无需庞大的框架，只需要协议和循环。
 
 ## Agentic Loop 的本质
 
-为了把「协议 + 循环」具体化，先看这张最小化流程图：Evaluator 决定下一步动作，派生 Executor 去执行 Tool，Executor 回报结果，然后控制权回到 Evaluator，直到目标完成。
+为了把「协议 + 循环」具体化，先看这张最小化流程图：evaluator 决定下一步动作，派生 executor 去执行 tool，executor 回报结果，然后控制权回到 evaluator，直到目标完成。
 
 ![A diagram titled “Main Loop” showing evaluators and executors interacting in a repeating five-step cycle where requests to evaluate a situation spawn executors, executors request task details, and responses spawn evaluators](../basic-agentic-loop.png "Basic Agentic Loop")
 
-不过，要让这套流程变成可运行的系统，需要三个组件协同工作：合适的 **模型**、能够落实协议的 **提示词**，以及专为 Tool 设计的 **Agent runtime**：
+不过，要让这套流程变成可运行的系统，需要三个组件协同工作：合适的 **模型**、能够落实协议的 **提示词**，以及专为工具调用设计的 **Agent runtime**：
 
 1. **挑选合适的模型**
 
@@ -32,19 +32,19 @@ tags: [AI, Agent]
 
     - 在提示词压力下仍旧严格遵守 JSON 格式；
     - 对角色、动作与 ID 保持高度自律；
-    - 在进行 Tool 调用时保持理性推理，不胡乱臆测。
+    - 在进行工具调用时保持理性推理，不胡乱臆测。
 
 2. **围绕协议写提示词**
 
-    循环的骨干是固定格式的 Schema。每个 Evaluator 与 Executor 都必须在这份结构下作答，把原本自由的 LLM 对话收束成可预测、可解析的沟通。
+    循环的骨干是固定格式的 schema。每个 evaluator 与 executor 都必须在这份结构下作答，把原本自由的 LLM 对话收束成可预测、可解析的沟通。
 
 3. **支持工具调用**
 
-    没有 Tool 调用，循环只是在自言自语；有了 CLI 命令，它就能跑测试、抓数据、修补代码或监控系统。甚至不需要内建 Subagent，只要通过 `bash` Tool 拉起外部 Agent 实例，也能维持 Evaluator 与 Executor 的心跳。
+    没有工具调用，循环只是在自言自语；有了 CLI 命令，它就能跑测试、抓数据、修补代码或监控系统。甚至不需要内建 subagent，只要通过 `bash` tool 拉起外部 agent 实例，也能维持 evaluator 与 executor 的心跳。
 
 ## 写下首个协议驱动的提示词
 
-角色和循环已经清楚，现在我们用 Claude Code 的 Subagent 和自定义命令，搭出一个清理仓库里 TODO/FIXME 的循环。无需额外的 Schema 文件——协议就在提示词里。Claude 4 非常适合承担 24/7 Agentic Loop。
+角色和循环已经清楚，现在我们用 Claude Code 的 Subagent 和自定义命令，搭出一个清理仓库里 TODO/FIXME 的循环。无需额外的 Schema 文件——协议就在提示词里。Claude 4 非常适合承担 7x24 Agentic Loop。
 
 > 项目地址：[agentic-loop-palyground](https://github.com/WeZZard/agentic-loop-playground.git)
 
@@ -53,24 +53,24 @@ tags: [AI, Agent]
 循环包含三部分：
 
 - `cleanup` 命令
-- `cleanup-evaluator` Subagent
-- `cleanup-executor` Subagent
+- `cleanup-evaluator` subagent
+- `cleanup-executor` subagent
 
 ![A diagram titled “cleanup loop” showing how TODO/FIXME items are collected, reorganized by a cleanup-evaluator, executed by a cleanup-executor, and cycled back through a cleanup process in five repeating steps.](../the-todo-fixme-loop.png "The TODO/FIXME Loop")
 
-`cleanup` 命令是循环的入口，也是 **Main Agent** 所在。它会扫描仓库里的 TODO/FIXME，整理出一份工作清单，再把清单交给 `cleanup-evaluator` Subagent。
+`cleanup` 命令是循环的入口，也是 **Main Agent** 所在。它会扫描仓库里的 TODO/FIXME，整理出一份工作清单，再把清单交给 `cleanup-evaluator` subagent。
 
-`cleanup-evaluator` Subagent 负责分拣并重排清单，然后把整理后的清单以及 `spawn(cleanup-executor)` 这个下一步动作反馈给 **Main Agent**。
+`cleanup-evaluator` subagent 负责分拣并重排清单，然后把整理后的清单以及 `spawn(cleanup-executor)` 这个下一步动作反馈给 **Main Agent**。
 
-**Main Agent** 会按 `cleanup-evaluator` 的指示，拉起 `cleanup-executor` Subagent，并把重排后的清单转交过去。
+**Main Agent** 会按 `cleanup-evaluator` 的指示，拉起 `cleanup-executor` subagent，并把重排后的清单转交过去。
 
-`cleanup-executor` Subagent 会从清单中取出第一条 TODO/FIXME，执行完成后更新清单，再把更新后的清单和 `spawn(cleanup-evaluator)` 这一下一步动作回应给 **Main Agent**。
+`cleanup-executor` subagent 会从清单中取出第一条 TODO/FIXME，执行完成后更新清单，再把更新后的清单和 `spawn(cleanup-evaluator)` 这一下一步动作回应给 **Main Agent**。
 
-**Main Agent** 再次依据 `cleanup-executor` 的回复拉起 `cleanup-evaluator` Subagent，把最新的清单交给它，于是循环回到开头。
+**Main Agent** 再次依据 `cleanup-executor` 的回复拉起 `cleanup-evaluator` subagent，把最新的清单交给它，于是循环回到开头。
 
 ### 2）协议长什么样
 
-让循环持续运转的关键，是确保 **Main Agent** 与所有 Subagent 都遵守协议。好消息是，这份协议很直观。在这个例子里，每个 Subagent 会收到来自 **Main Agent** 的 JSON 对象，格式如下：
+让循环持续运转的关键，是确保 **Main Agent** 与所有 subagent 都遵守协议。好消息是，这份协议很直观。在这个例子里，每个 subagent 会收到来自 **Main Agent** 的 JSON 对象，格式如下：
 
 ```json
 {
@@ -91,9 +91,9 @@ Subagent 回给 **Main Agent** 时，使用的 JSON 结构是：
 }
 ```
 
-### 3）用 Tool 收集 TODO/FIXME
+### 3）通过工具收集 TODO/FIXME
 
-你也许好奇 `[incomplete_item_list]` 是什么。把它视作提示词里的“变量”：它们来自 Tool 调用。在 `cleanup` 命令开头的提示词里，会触发如下指令：
+你也许好奇 `[incomplete_item_list]` 是什么。你可以把它视作提示词里的“变量”：它们来自工具调用。在 `cleanup` 命令开头的提示词，会触发如下指令：
 
 ````markdown path=cleanup.md
 ## MANDATORY: 1. FIND DOCUMENTED TODOs and FIXMEs
@@ -160,9 +160,9 @@ You SHALL NOTE a JSON object with and empty "items" array as [postponed_item_lis
 ```
 ````
 
-### 4）用提示词把协议钉死
+### 4）用提示词强制贯彻协议
 
-这份协议直接写在提示词里——没有任何隐藏技巧，而是用清晰的命令一遍遍强调，直到模型完全照做。
+这里的协议直接写在提示词里——没有任何隐藏技巧，而是用清晰的命令一遍遍强调，直到模型完全照做。
 
 下面这段展示了 **Main Agent** 如何在循环开始时拉起 `cleanup-evaluator`：
 
@@ -198,7 +198,7 @@ YOU WILL RECEIVE a JSON object of the following format:
 ```
 ````
 
-当 `cleanup-evaluator` 完成评估后，它会按照协议准备回给 Main Agent 的响应。这个例子里，`next_action` 只有两种：拉起 `cleanup-executor`，或者宣布 "mission complete"。
+当 `cleanup-evaluator` 完成评估后，它会按照协议准备回给 main agent 的响应。这个例子里，`next_action` 只有两种：拉起 `cleanup-executor`，或者宣布 "mission complete"。
 
 ````markdown path=cleanup-evaluator.md
 ## MANDATORY: RESPOND TO THE MAIN AGENT
@@ -219,7 +219,7 @@ The `next_action` field SHALL BE `mission_complete` when NO ITEMS ARE LEFT in [r
 Otherwise, the `next_action` field SHALL BE `spawn(cleanup-executor)`.
 ````
 
-回到 Main Agent，它会依据 `cleanup-evaluator` 的反馈拉起 `cleanup-executor` Subagent，并把三个列表传过去：
+回到 main agent，它会依据 `cleanup-evaluator` 的反馈拉起 `cleanup-executor` subagent，并把三个列表传过去：
 
 ````markdown path=cleanup.md
 ## MANDATORY: 3. UNDERSTAND THE CLEANUP-EVALUATOR'S RESPONSE
@@ -266,7 +266,7 @@ YOU MUST transfer the [incomplete_items], [completed_items], [postponed_items] f
 ```
 ````
 
-此时协议允许 Main Agent 拉起 `cleanup-executor` 来执行下一条 TODO/FIXME。不过我们还需要告诉 **Main Agent** 如何处理 `cleanup-evaluator` 之外的 Subagent 的反馈：
+此时协议允许 main agent 拉起 `cleanup-executor` 来执行下一条 TODO/FIXME。不过我们还需要告诉 **main agent** 如何处理 `cleanup-evaluator` 之外的 subagent 的反馈：
 
 ````markdown path=cleanup.md
 ## MANDATORY: 4. UNDERSTAND THE RESPONSE FROM OTHER SUBAGENTS
@@ -297,7 +297,7 @@ You MUST SEND the cleanup-evaluator a JSON object of the following format:
 ```
 ````
 
-最后，让 **Main Agent** 知道何时应该收尾：
+最后，让 **main agent** 知道何时应该收尾：
 
 ````markdown path=cleanup.md
 ## MANDATORY: 5. HANDLING MISSION COMPLETE
@@ -307,51 +307,51 @@ If `next_action` in the response from the cleanup-evaluator subagent is `mission
 You SHALL STOP ALL THE SUBAGENTS AND EXIT THE WORKFLOW.
 ````
 
-到这里，我们已经用整套协议驱动的提示词搭好了第一个 Agentic Loop。
+到这里，我们已经用整套协议驱动的提示词搭好了第一个 agentic 循环。
 
 ## 不止 Claude Code
 
-你也许会问：如果我不用 Claude Code，而是用 Codex 呢？答案很简单：流程不变。这个循环和供应商无关，它只靠三样东西：协议、循环、Agent runtime。换句话说，Evaluator 决定下一步，Executor 负责执行，Main Agent 负责路由和守护，其余都是实现细节。
+你也许会问：如果我不用 Claude Code，而是用 Codex 呢？答案很简单：流程不变。这个循环和 agent 厂商无关，它只靠三样东西：协议、循环、Agent runtime。换句话说，evaluator 决定下一步，executor 负责执行，main agent 负责路由和守护，其余都是实现细节。
 
 Claude Code 的优势在于提供了两个顺手的原语：
 
-- Subagent：带有提示词和角色的轻量 Agent 实例。
-- 自定义命令：携带提示词和 Tool 接线的一等命令块。
+- Subagent：带有提示词和角色的轻量 agent 实例。
+- Custom command：触手可及的携带提示词和工具调用的命令块。
 
 但它们都不是必需的。你可以替换成：
 
-- 用会拉起其他 AI Agent 的 Tool 调用取代 Subagent（例如执行 CLI，启动新的 Agent 并返回结构化结果）；
-- 用 shell 脚本向 AI Agent 发送自定义提示词，取代自定义命令。
+- 用工具调用拉起其他 AI Agent 用取代 subagent（例如执行 CLI，启动新的 Agent 并返回结构化结果）；
+- 用 shell 脚本向 AI Agent 发送自定义提示词，取代 custom command。
 
-只要协议和循环仍在，执行机制就能自由互换。Main Agent 负责路由、执行 Schema，并让循环持续运转，直到 `next_action` 变成 `mission_complete`。
+只要协议和循环仍在，执行机制就能自由互换。Main agent 负责路由、执行 schema，并让循环持续运转，直到 `next_action` 变成 `mission_complete`。
 
-## 让循环 24×7 运作
+## 让循环 7x24 运作
 
-要让循环全天候运行，重点不在在线率，而是持续供给“饲料”。循环靠把 A 持续变成 B 活下去：把一种产出不断转换成另一种。假如 A 是点子、B 是程序（或修复、测试、发布），那么想要 24×7 地运转，就需要源源不断的点子。
+要让循环全天候运行，重点不在在线率，而是持续供给“饲料”。循环靠把 A 持续变成 B 活下去：把一种产出不断转换成另一种。假如 A 是点子、B 是程序（或修复、测试、发布），那么想要 7x24 地运转，就需要源源不断的点子。
 
-现实里，我们不可能拥有无限点子。更实际的做法是：让循环承担足够大、值得托付的工作，为你腾出思考时间。当 Agent 在完成 A→B（例如编译、测试、打包、部署）时，你就能利用空档决定下一个 A。像 TODO/FIXME 扫描器或 issue 跟踪器这样的“饲料器”可以提供候选项，但无法代替你的判断。循环负责落实有意义的任务，你负责策展输入，这就是维持 24×7 节奏的正确姿势。
+现实里，我们不可能拥有无限点子。更实际的做法是：让循环承担足够大、值得托付的工作，为你腾出思考时间。当 Agent 在完成 A→B（例如编译、测试、打包、部署）时，你就能利用空档决定下一个 A。像 TODO/FIXME 扫描器或 issue 跟踪器这样的“饲料器”可以提供候选项，但无法代替你的判断。循环负责落实有意义的任务，你负责策展输入，这就是维持 7x24 节奏的正确姿势。
 
 ## 对比 LangChain 与 LangGraph
 
 你可能还在想：为什么不用 LangChain 或 LangGraph？下面这张表能更清楚地说明取舍。
 
-| Aspect | Agent runtime | LangChain or LangGraph |
+| 考虑点 | Agent runtime | LangChain 或者 LangGraph |
 |---|---|---|
-| Requirements | Appropriate model | SDK + tools + memory abstractions |
-| Setup | Prompts | Chains or graphs |
-| Tool calling | Via prompts | Via prompts and system-level adapters |
+| 要求 | 合适的模型 | SDK + 工具 + 记忆抽象层 |
+| 配置 | 提示词 | 链或者图 |
+| 工具调用 | 通过提示词调用 | 通过提示词及系统级适配层 |
 
-这张对比表呈现了本文所述 **Agent runtime** 路线，与 LangChain 或 LangGraph 框架之间的差异：搭建循环需要什么、如何搭建、以及如何进行 Tool 调用。
+这张对比表呈现了本文所述 **Agent runtime** 路线，与 LangChain 或 LangGraph 框架之间的差异：搭建循环需要什么、如何搭建、以及如何进行工具调用。
 
-从表格可见，**Agent runtime** 这条路线更轻量，依靠原生 Tool 就能融入任意技术栈，同时保持对供应商的中立，让人类掌控输入，而循环本身则可以 24×7 地产出成果。
+从表格可见，**Agent runtime** 这条路线更轻量，依靠原生工具就能融入任意技术栈，同时保持对 agent 厂商的中立，让人类掌控输入，而循环本身则可以 7x24 地产出成果。
 
 ## 总结
 
-要打造一个 24×7 的循环，你并不需要 LangChain 或 AutoGen。真正需要的是：
+要打造一个 7x24 的循环，你并不需要 LangChain 或 LangGraph。真正需要的是：
 
 - 一个在 Agent 任务上经过训练的模型；
 - 由提示词严格执行的协议；
-- 一个能安全派生 Executor 的 Agent runtime。
+- 支持工具调用的 agent runtime。
 
 具备这些条件，就能让 Claude Code（或 Codex）在循环里持续工作，即便你已经入睡。
 
