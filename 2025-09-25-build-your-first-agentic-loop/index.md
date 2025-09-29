@@ -359,7 +359,7 @@ You SHALL STOP ALL THE SUBAGENTS AND EXIT THE WORKFLOW.
 Now we've built our first agentic loop with a collection of
 contract-driven prompts.
 
-## Have A Try
+## Have a Try
 
 Here's what happens when you run this loop against the llama.cpp project.
 The loop processes exactly 10 TODOs and FIXMEs before completing—no
