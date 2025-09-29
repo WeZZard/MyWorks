@@ -376,8 +376,7 @@ But neither is mandatory. You can replace both:
 (for example, invoke a CLI that spins up a new agent and returns its
 structured response).
 - Replace Custom Commands with a shell script that sends a custom prompt
-to launch an AI agent (for example, a script wrapping curl to post a
-prompt to your agent service, then relay JSON back to the main loop).
+to launch an AI agent.
 
 As long as you preserve the contract and the loop, the mechanics are
 interchangeable. Your main agent routes, enforces the schema, and keeps
