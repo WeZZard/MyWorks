@@ -126,7 +126,7 @@ and responds to the **main agent** in the following format:
 
 You might be wondering what `[incomplete_item_list]` means. Think of these
 as “variables” inside the prompt. They’re gathered through tool calls, triggered
-by the opening prompt of the cleanup command:
+by the prompt at the beginning of the `cleanup` command:
 
 ````markdown path=cleanup.md
 ## MANDATORY: 1. FIND DOCUMENTED TODOs and FIXMEs
@@ -134,7 +134,13 @@ by the opening prompt of the cleanup command:
 You SHALL use the `grep` tool piped with `head` to find the first `10` documented TODOs and FIXMEs in the repository.
 
 Command: grep -r -n -E "TODO|FIXME" . | head -n 10
+````
 
+However, the raw outputs of this command aren’t ready to use as-is. We need to
+guide the agent on the expected format and instruct it to reshape the results into
+a JSON object that follows the required schema.
+
+````markdown path=cleanup.md
 The outputs are in the following format.
 
 ```shell
@@ -393,8 +399,8 @@ work; you curate the input stream. That’s a perfectly valid way to run a
 
 ## Comparison with LangChain and LangGraph
 
-At this point, you might be wondering: why not just use LangChain or LangGraph?
-The table below makes the trade-offs clearer.
+However, you might be wondering: why not just use LangChain or LangGraph? The
+table below makes the trade-offs clearer.
 
 | Aspect | Agent runtime | LangChain or LangGraph |
 |---|---|---|
