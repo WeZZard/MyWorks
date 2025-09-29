@@ -8,15 +8,15 @@ tags: [AI, Agent]
 
 ![3000 美元 Claude Code 用量](../3k-usd-usage-of-claude-code.jpg "3000 美元 Claude Code 用量")
 
-原因很简单：我把 Claude Code 放进了一个 **7x24 Agent 循环** 里帮我打理业余项目。我睡着时，循环会评估现场、派生 subagents、让事情持续推进。等我醒来，进度已经悄悄向前走了一截。
+原因很简单：我把 Claude Code 放进了一个 **7x24 agent 循环** 里帮我打理业余项目。我睡着时，循环会评估现场、派生 subagents、让事情持续推进。等我醒来，进度已经悄悄向前走了一截。
 
-但这种魔法并不是 Claude 独有；只要你理解了配置的精髓，就能把这个魔法复刻到任何实现了相同要件的模型与 Agent runtime 上。
+但这种魔法并不是 Claude 独有；只要你理解了配置的精髓，就能把这个魔法复刻到任何实现了相同要件的模型与 agent runtime 上。
 
 下面就带你从头搭建。
 
 ## 幕后的秘密
 
-事实是：最新的 Claude 4、GPT-5 这类大模型已经在 **Agent 任务** 上被反复训练。它们“知道”如何评估、如何规划、如何调用工具，以及如何把控制权交还。你无需庞大的框架，只需要协议和循环。
+事实是：最新的 Claude 4、GPT-5 这类大模型已经在 **agent 任务** 上被反复训练。它们“知道”如何评估、如何规划、如何调用工具，以及如何把控制权交还。你无需庞大的框架，只需要协议和循环。
 
 ## Agent 循环的本质
 
@@ -24,7 +24,7 @@ tags: [AI, Agent]
 
 ![一张标题为“Main Loop”的示意图，展示了 evaluator 与 executor 在五步循环中反复互动：evaluator 请求触发 executor，executor 请求任务细节，回应再触发 executor](../basic-agentic-loop.png "基础 Agent 循环")
 
-不过，要让这套流程变成可运行的系统，需要三个组件协同工作：合适的 **模型**、能够落实协议的 **提示词**，以及专为工具调用设计的 **Agent runtime**：
+不过，要让这套流程变成可运行的系统，需要三个组件协同工作：合适的 **模型**、能够落实协议的 **提示词**，以及专为工具调用设计的 **agent runtime**：
 
 1. **挑选合适的模型**
 
@@ -43,7 +43,7 @@ tags: [AI, Agent]
 
 ## 写下你的第一份协议驱动提示词
 
-角色和循环已经清楚，现在我们用 Claude Code 的 subagent 和 custom command，搭出一个清理仓库里 TODO/FIXME 的循环[^1]。无需额外的 Schema 文件——协议就在提示词里。Claude 4 非常适合承担 7x24 Agent 循环。
+角色和循环已经清楚，现在我们用 Claude Code 的 subagent 和 custom command，搭出一个清理仓库里 TODO/FIXME 的循环[^1]。无需额外的 Schema 文件——协议就在提示词里。Claude 4 非常适合承担 7x24 agent 循环。
 
 ### 循环结构
 
@@ -304,23 +304,23 @@ If `next_action` in the response from the cleanup-evaluator subagent is `mission
 You SHALL STOP ALL THE SUBAGENTS AND EXIT THE WORKFLOW.
 ````
 
-到这里，我们已经用整套协议驱动的提示词搭好了第一个 Agent 循环。
+到这里，我们已经用整套协议驱动的提示词搭好了第一个 agent 循环。
 
 ## 试一试
 
 当你把这个循环跑在 llama.cpp 项目上时，会发生以下情况：循环会精确处理 10 条 TODO 和 FIXME 后结束——无需宏大目标，只需一次专注的清理循环，就能让核心机制完整跑通。
 
-![Try with Claude Code](../try-with-claude-code.png)
+![试一试](../try-with-claude-code.png "试一试")
 
 ## 让循环 7x24 运作
 
 要让循环全天候运行，重点是持续供给“饲料”，而不仅仅是持续时间。循环靠把 A 持续变成 B 活下去：把一种产出不断转换成另一种。假如 A 是点子、B 是程序（或修复、测试、发布），那么想要 7x24 地运转，就需要源源不断的点子。
 
-现实里，我们不可能拥有无限点子。更实际的做法是：让循环承担足够大、值得托付的工作，为你腾出思考时间。当 Agent 在完成 A→B（例如编译、测试、打包、部署）时，你就能利用空档决定下一个 A。像 TODO/FIXME 扫描器或 issue 跟踪器这样的“饲料器”可以提供候选项，但无法代替你的判断。循环负责落实有意义的任务，你负责策展输入，这就是维持 7x24 节奏的正确姿势。
+现实里，我们不可能拥有无限点子。更实际的做法是：让循环承担足够大、值得托付的工作，为你腾出思考时间。当 agent 在完成 A→B（例如编译、测试、打包、部署）时，你就能利用空档决定下一个 A。像 TODO/FIXME 扫描器或 issue 跟踪器这样的“饲料器”可以提供候选项，但无法代替你的判断。循环负责落实有意义的任务，你负责策展输入，这就是维持 7x24 节奏的正确姿势。
 
 ## 不止 Claude Code
 
-你也许会问：如果我不用 Claude Code，而是用 Codex 呢？答案很简单：流程不变。这个循环和 agent 厂商无关，它只靠三样东西：协议、循环、Agent runtime。换句话说，evaluator 决定下一步，executor 负责执行，main agent 负责路由和护栏，其余都是实现细节。
+你也许会问：如果我不用 Claude Code，而是用 Codex 呢？答案很简单：流程不变。这个循环和 agent 厂商无关，它只靠三样东西：协议、循环、agent runtime。换句话说，evaluator 决定下一步，executor 负责执行，main agent 负责路由和护栏，其余都是实现细节。
 
 Claude Code 的优势在于提供了两个顺手的原语：
 
@@ -329,8 +329,8 @@ Claude Code 的优势在于提供了两个顺手的原语：
 
 但它们都不是必需的。你可以替换成：
 
-- 用工具调用拉起其他 AI Agent 用取代 subagent（例如执行 CLI，启动新的 Agent 并返回结构化结果）；
-- 用 shell 脚本向 AI Agent 发送自定义提示词，取代 custom command。
+- 用工具调用拉起其他 AI agent 用取代 subagent（例如执行 CLI，启动新的 agent 并返回结构化结果）；
+- 用 shell 脚本向 AI agent 发送自定义提示词，取代 custom command。
 
 只要协议和循环仍在，执行机制就能自由互换。Main agent 负责路由、执行 schema，并让循环持续运转，直到 `next_action` 变成 `mission_complete`。
 
@@ -338,21 +338,21 @@ Claude Code 的优势在于提供了两个顺手的原语：
 
 你可能还在想：为什么不用 LangChain 或 LangGraph？下面这张表能更清楚地说明取舍。
 
-| 考虑点 | Agent runtime | LangChain 或者 LangGraph |
+| 考虑点 | Agent Runtime | LangChain 或者 LangGraph |
 |---|---|---|
 | 要求 | 合适的模型 | SDK + 工具 + 记忆抽象层 |
 | 配置 | 提示词 | 链或者图 |
 | 工具调用 | 通过提示词调用 | 通过提示词及系统级适配层 |
 
-这张对比表呈现了本文所述 **Agent runtime** 路线，与 LangChain 或 LangGraph 框架之间的差异：搭建循环需要什么、如何搭建、以及如何进行工具调用。
+这张对比表呈现了本文所述 **agent runtime** 路线，与 LangChain 或 LangGraph 框架之间的差异：搭建循环需要什么、如何搭建、以及如何进行工具调用。
 
-从表格可见，**Agent runtime** 这条路线更轻量，依靠原生工具就能融入任意技术栈，同时保持对 agent 厂商的中立，让人类掌控输入，而循环本身则可以 7x24 地产出成果。
+从表格可见，**agent runtime** 这条路线更轻量，依靠原生工具就能融入任意技术栈，同时保持对 agent 厂商的中立，让人掌控输入，而循环本身则可以 7x24 地产出成果。
 
 ## 总结
 
 要打造一个 7x24 的循环，你并不需要 LangChain 或 LangGraph。真正需要的是：
 
-- 一个在 Agent 任务上经过训练的模型；
+- 一个在 agent 任务上经过训练的模型；
 - 由提示词严格执行的协议；
 - 支持工具调用的 agent runtime。
 

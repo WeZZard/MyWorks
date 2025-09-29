@@ -366,7 +366,7 @@ The loop processes exactly 10 TODOs and FIXMEs before completing—no
 ambitious mission required, just a focused cleanup cycle that demonstrates
 the core mechanics in action.
 
-![Try with Claude Code](./try-with-claude-code.png)
+![Try with Claude Code](./try-with-claude-code.png "Have a Try")
 
 ## Running 24×7
 
