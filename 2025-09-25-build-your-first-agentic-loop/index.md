@@ -393,16 +393,19 @@ work; you curate the input stream. That’s a perfectly valid way to run a
 
 ## Comparison with LangChain and LangGraph
 
-This comparison lays out the trade-offs between the **agent runtime** approach
-described here and frameworks like LangChain or LangGraph. It highlights three
-essentials: what you need to build a loop, how you set it up, and how tools are
-called.
+At this point, you might be wondering: why not just use LangChain or LangGraph?
+The table below makes the trade-offs clearer.
 
 | Aspect | Agent runtime | LangChain or LangGraph |
 |---|---|---|
 | Requirements | Appropriate model | SDK + tools + memory abstractions |
 | Setup | Prompts | Configure chains/graphs |
 | Tool calling | Via prompts | Prompts and system-level adapters |
+
+This comparison lays out the trade-offs between the **agent runtime** approach
+described here and frameworks like LangChain or LangGraph. It highlights three
+essentials: what you need to build a loop, how you set it up, and how tools are
+called.
 
 From the table, it’s clear the **agent runtime** path is lighter to boot, leans
 on native tools so it fits any stack, stays vendor-neutral, and keeps humans in
