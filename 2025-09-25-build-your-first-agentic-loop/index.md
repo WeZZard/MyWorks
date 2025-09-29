@@ -31,6 +31,8 @@ minimal flow: the evaluator chooses the next action, spawns executors to
 use tools, executors report results, and control returns to the evaluator
 until the goal is met.
 
+![A diagram titled “Main Loop” showing evaluators and executors interacting in a repeating five-step cycle where requests to evaluate a situation spawn executors, executors request task details, and responses spawn evaluators](./basic-agentic-loop.png "Basic Agentic Loop")
+
 However, to turn that flow into a working system, three components must
 work together: the right **model**, **prompts** that enforce the contract,
 and an **agent runtime** designed for tool use:
