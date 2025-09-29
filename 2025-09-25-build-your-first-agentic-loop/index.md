@@ -423,11 +423,11 @@ charge of the input stream—while the loop itself does meaningful work 24×7.
 
 ## Conclusion
 
-Building a 24×7 loop doesn't require LangChain or AutoGen. All you need is:
+Building a 24×7 loop doesn't require LangChain or LangGraph. All you need is:
 
 - A model trained with agent tasks.
 - A prompt-enforced contract.
-- A runtime that can spawn executors safely.
+- A runtime that supports tool use.
 
 With that, you can run Claude Code (or Codex) in a loop that works while
 you sleep.
