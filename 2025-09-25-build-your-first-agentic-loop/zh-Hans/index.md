@@ -31,7 +31,7 @@ tags: [AI, Agent]
     在提示词压力下仍旧严格遵守 JSON 格式；
 
     对角色、动作保持高度自律；
-    
+
     在进行工具调用时保持理性推理，不胡乱臆测。
 
 2. **围绕协议写提示词**
@@ -333,7 +333,7 @@ Claude Code 的优势在于提供了两个顺手的原语：
 - 用工具调用拉起其他 AI agent 用取代 subagent（例如执行 CLI，启动新的 agent 并返回结构化结果）；
 - 用 shell 脚本向 AI agent 发送自定义提示词，取代 custom command。
 
-只要协议和循环仍在，执行机制就能自由互换。Main agent 负责路由、执行 schema，并让循环持续运转，直到 `next_action` 变成 `mission_complete`。
+只要协议和循环仍在，执行机制就能自由互换。Main agent 负责路由、约束模式，并让循环持续运转，直到 `next_action` 变成 `mission_complete`。
 
 ## 对比 LangChain 与 LangGraph
 
