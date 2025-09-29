@@ -323,23 +323,21 @@ candidates, but they don’t replace your judgment. The loop does meaningful
 work; you curate the input stream. That’s a perfectly valid way to run a
 24×7 operation.
 
-## Comparison with LangChain and AutoGen
+## Comparison with LangChain/Graph
 
-This comparison clarifies the pros and cons of the agent runtime-based
-solution presented in this article, contrasted with LangChain and AutoGen.
-It focuses on the aspects we discussed: what you need to build a loop,
-setup and bootstrapping, tool calling, and best fit.
+This comparison clarifies the pros and cons of the **agent runtime**-based
+solution presented in this article, contrasted with LangChain or
+LangGraph. It focuses on the aspects we discussed: what you need to build
+a loop, setup and bootstrapping, tool calling, and best fit.
 
-| Aspect | Agent runtime-based solution (Contract + Loop + Runtime) | LangChain | AutoGen |
-|---|---|---|---|
-| What you need to build a loop | Contract JSON + loop control + runtime executors | Chains + tools + memory abstractions layered over model calls | Multi-agent chat framework + orchestration + tool calls |
-| Setup & bootstrapping | Minimal: prompt + schema + runner; start tonight | Configure chains/agents before useful loops | Define roles and coordination to begin work |
-| Tool calling | OS processes, scripts, custom commands — your choice | Tool wrappers; adapters for system-level work | Built-in tools; Python-first integrations |
-| Best fit | Production loops, ops/infra tasks, TODO/FIXME cleanup | Rapid prototypes, simple chains | Multi-agent research, complex simulations |
+| Aspect | Agent runtime | LangChain/Graph |
+|---|---|---|
+| Needs | Appropriate model | SDK + tools + memory abstractions |
+| Setup | Prompts | Configure chains/graphs before useful loops |
+| Tool calling | stdio or MCP | Adapters for system-level work |
 
-Why this approach: It’s minimal to stand up (prompt + contract + small
-runner), uses native tools (OS processes, scripts, CLI) so it fits any
-stack, stays vendor-agnostic, and keeps humans in control of the input
+Why this approach: It’s minimal to stand up, uses native tools so it fits
+any stack, stays vendor-agnostic, and keeps humans in control of the input
 stream while the loop does substantial work 24×7.
 
 ## Conclusion
@@ -350,7 +348,7 @@ Building a 24×7 loop doesn't require LangChain or AutoGen. All you need is:
 - A prompt-enforced contract.
 - A runtime that can spawn executors safely.
 
-With that, you can run Claude Code (or GPT-5 Codex) in a loop that works
-while you sleep.
+With that, you can run Claude Code (or Codex) in a loop that works while
+you sleep.
 
 Try it tonight. Tomorrow morning, you might wake up to progress already made.
