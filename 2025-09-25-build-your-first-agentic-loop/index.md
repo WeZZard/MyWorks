@@ -406,8 +406,8 @@ table below makes the trade-offs clearer.
 | Aspect | Agent runtime | LangChain or LangGraph |
 |---|---|---|
 | Requirements | Appropriate model | SDK + tools + memory abstractions |
-| Setup | Prompts | Configure chains/graphs |
-| Tool calling | Via prompts | Prompts and system-level adapters |
+| Setup | Prompts | Chains or graphs |
+| Tool calling | Via prompts | Via prompts and system-level adapters |
 
 This comparison lays out the trade-offs between the **agent runtime** approach
 described here and frameworks like LangChain or LangGraph. It highlights three
