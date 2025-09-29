@@ -42,7 +42,7 @@ tags: [AI, Agent]
 
     没有工具调用，循环只是在自言自语；有了 CLI 命令，它就能跑测试、抓数据、修补代码或监控系统。甚至不需要内建 subagent，只要通过 `bash` tool 拉起外部 agent 实例，也能维持 evaluator 与 executor 的心跳。
 
-## 写下首个协议驱动的提示词
+## 写下你的第一份协议驱动提示词
 
 角色和循环已经清楚，现在我们用 Claude Code 的 Subagent 和自定义命令，搭出一个清理仓库里 TODO/FIXME 的循环。无需额外的 Schema 文件——协议就在提示词里。Claude 4 非常适合承担 7x24 Agentic Loop。
 
