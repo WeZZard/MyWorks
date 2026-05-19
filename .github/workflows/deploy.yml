@@ -8,7 +8,7 @@ on:
 jobs:
   deploy-blog:
     name: Deploy blog (wezzard.com)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout blog renderer
         uses: actions/checkout@v4
@@ -25,11 +25,11 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '16.20.2'
+          node-version: '12.22.12'
 
       - name: Install dependencies
         working-directory: blog
-        run: npm install
+        run: npm ci
 
       - name: Build
         working-directory: blog
