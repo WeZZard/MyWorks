@@ -30,7 +30,7 @@ jobs:
       - name: Install dependencies
         working-directory: blog
         run: |
-          npm install --ignore-scripts
+          npm install --ignore-scripts --legacy-peer-deps
           find node_modules -path '*/node_modules/sharp' -type d -exec rm -rf {} + 2>/dev/null || true
           rm -rf node_modules/sharp
           npm install --no-save --ignore-scripts sharp@0.30.7
