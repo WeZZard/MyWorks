@@ -38,6 +38,11 @@ jobs:
           ./clear_cache
           npx gatsby build
 
+      - name: Switch to modern Node for deploy
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
         with:
