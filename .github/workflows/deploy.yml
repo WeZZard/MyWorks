@@ -29,7 +29,10 @@ jobs:
 
       - name: Install dependencies
         working-directory: blog
-        run: npm ci
+        run: |
+          npm ci --ignore-scripts
+          rm -rf node_modules/sharp
+          npm install --no-save sharp@0.28.7
 
       - name: Build
         working-directory: blog
