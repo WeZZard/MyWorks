@@ -34,6 +34,7 @@ jobs:
           find node_modules -path '*/node_modules/sharp' -type d -exec rm -rf {} + 2>/dev/null || true
           rm -rf node_modules/sharp
           npm install --no-save --ignore-scripts --legacy-peer-deps sharp@0.30.7
+          find node_modules -not -path 'node_modules/sharp' -path '*/node_modules/sharp' -type d -exec rm -rf {} + 2>/dev/null || true
           cd node_modules/sharp && npx prebuild-install || npx node-gyp rebuild
 
       - name: Build
