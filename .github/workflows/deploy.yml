@@ -8,7 +8,7 @@ on:
 jobs:
   deploy-blog:
     name: Deploy blog (wezzard.com)
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout blog renderer
         uses: actions/checkout@v4
@@ -25,14 +25,16 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '12.22.12'
+          node-version: '16.20.2'
 
       - name: Install dependencies
         working-directory: blog
         run: |
-          npm ci --ignore-scripts
+          npm install --ignore-scripts
+          find node_modules -path '*/node_modules/sharp' -type d -exec rm -rf {} + 2>/dev/null || true
           rm -rf node_modules/sharp
-          npm install --no-save sharp@0.28.3
+          npm install --no-save --ignore-scripts sharp@0.30.7
+          cd node_modules/sharp && npx prebuild-install || npx node-gyp rebuild
 
       - name: Build
         working-directory: blog
