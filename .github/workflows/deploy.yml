@@ -1,0 +1,87 @@
+name: Deploy to Cloudflare Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy-blog:
+    name: Deploy blog (wezzard.com)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout blog renderer
+        uses: actions/checkout@v4
+        with:
+          repository: WeZZard/Gatsblog
+          path: blog
+
+      - name: Checkout content into blog
+        uses: actions/checkout@v4
+        with:
+          path: blog/content/_posts
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '12.22.12'
+
+      - name: Install dependencies
+        working-directory: blog
+        run: npm ci
+
+      - name: Build
+        working-directory: blog
+        run: |
+          chmod +x ./clear_cache
+          ./clear_cache
+          gatsby build
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy public --project-name=wezzard-blog
+          workingDirectory: blog
+
+  deploy-wmp:
+    name: Deploy WMP (wmp.wezzard.com)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout WMP renderer
+        uses: actions/checkout@v4
+        with:
+          repository: WeZZard/gatsby-wpw-renderer-wmp
+          path: wmp
+
+      - name: Checkout content alongside WMP
+        uses: actions/checkout@v4
+        with:
+          path: MyWorks.wpw
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '16.14.2'
+
+      - name: Install dependencies
+        working-directory: wmp
+        run: npm ci
+
+      - name: Build
+        working-directory: wmp
+        env:
+          GATSBY_WPW_SOURCE_URL: file://${{ github.workspace }}/MyWorks.wpw
+          GATSBY_WPW_SOURCE_KIND: git
+          GATSBY_WPW_SOURCE_BRANCH: main
+          GATSBY_BUILD_FOR_DIRECT_PASTE: '1'
+        run: gatsby build
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy public --project-name=wezzard-wmp
+          workingDirectory: wmp
