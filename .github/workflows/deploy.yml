@@ -48,7 +48,7 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy public --project-name=wezzard-blog
+          command: pages deploy public --project-name=wezzard-blog --branch=main
           workingDirectory: blog
 
   deploy-wmp:
@@ -90,5 +90,5 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy public --project-name=wezzard-wmp
+          command: pages deploy public --project-name=wezzard-wmp --branch=main
           workingDirectory: wmp
