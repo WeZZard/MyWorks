@@ -4,9 +4,9 @@ category: Programming
 tags: [AI,Agent]
 ---
 
-If you follow the coding-agent race, the story is settled: Codex caught up to Claude Code, and by a lot of accounts, passed it. Sharper model, real autonomy, hard-to-argue price.
+If you follow the coding-agent race, you've heard the story: Codex surged this year — faster, cheaper, more autonomous, and neck-and-neck with Claude Code on the benchmarks. Plenty of developers reach for it first now.
 
-On the benchmarks, I agree — until I tried to move one of my own agent workflows onto Codex, and hit a wall: not in the model, but in how the agent is allowed to talk to me.
+On speed and cost, I get it — until I tried to move one of my own agent workflows onto Codex, and hit a wall: not in the model, but in how the agent is allowed to talk to me.
 
 So let me answer the title up front, honestly: for someone driving by hand, no, Codex hasn't fallen behind. For anyone trying to *build a workflow* on top of it, yes — and the reason is small, specific, and very fixable.
 
@@ -101,8 +101,8 @@ Two guardrails, so this doesn't become a different problem: keep it **author-pla
 
 On the leaderboard, no — Codex caught up, fair and square.
 
-On whether you can build a workflow you trust to run on its own, Claude Code is still ahead, for one unglamorous reason: it lets the *workflow* raise a real checkpoint, and Codex only lets *you* do it, by hand.
+On whether you can build a workflow you trust to run on its own, Claude Code is still ahead, for one unglamorous reason: it lets the *workflow* raise a real checkpoint, while in Codex that checkpoint appears only when you switch on Plan Mode by hand.
 
-The strange part is that Codex has every piece already — the question modal, the plan-review modal, even the flag that frees the question modal from Plan Mode. It built the whole collaborative loop and then locked the controls in the human's cockpit.
+The strange part is that Codex has every piece already — the question modal, the plan-review modal, even the flag that frees the question modal from Plan Mode. It built the whole collaborative loop and then hid it behind one manual switch: only when you turn Plan Mode on by hand do both modals appear; leave it off, and the workflow gets neither.
 
-Hand the workflow the keys. You already cut them.
+> Fun fact: this post is created with Claude Opus 4.6
