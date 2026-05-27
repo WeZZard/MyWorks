@@ -6,9 +6,9 @@ tags: [AI,Agent]
 
 If you follow the coding-agent race, you've heard the story: Codex surged this year — faster, cheaper, more autonomous, and neck-and-neck with Claude Code on the benchmarks. Plenty of developers reach for it first now.
 
-On speed and cost, I get it — until I tried to move one of my own agent workflows onto Codex, and hit a wall: not in the model, but in how the agent is allowed to talk to me.
+On speed and cost, I get it — until I tried to move one of my own agent skills onto Codex, and hit a wall: not in the model, but in how the agent is allowed to talk to me.
 
-So let me answer the title up front, honestly: for someone driving by hand, no, Codex hasn't fallen behind. For anyone trying to *build a workflow* on top of it, yes — and the reason is small, specific, and very fixable.
+So let me answer the title up front, honestly: for someone driving by hand, no, Codex hasn't fallen behind. For anyone trying to *build a skill-based workflow* on top of it, yes — and the reason is small, specific, and very fixable.
 
 Here's the wall.
 
@@ -62,17 +62,17 @@ A skill can't.
 
 I tested this against Codex 0.133.0 every way I could, and Codex says it plainly itself. Ask it to "switch to plan mode" and it answers: *"I can't switch the session mode from a user request; the active mode is still Default."* Send `/plan` and it's the same: *"mode changes only come from developer instructions, so /plan doesn't switch it on my side."* What it offers instead is to work *"plan-first"* — to outline the steps in chat before it edits.
 
-That offer is the whole problem in miniature. It's a promise in the stream, not the real Plan Mode — no reviewable plan, no checkpoint, nothing you can't scroll past. The mode itself flips only two ways: you, switching it by hand in Codex's own interface, or the host app via an experimental, undocumented call. Never the workflow.
+That offer is the whole problem in miniature. It's a promise in the stream, not the real Plan Mode — no reviewable plan, no checkpoint, nothing you can't scroll past. The mode itself flips only two ways: you, switching it by hand in Codex's own interface, or the host app via an experimental, undocumented call. Never the skill.
 
-So the whole gap lives in one place: **skills and predefined workflows.** By hand, Codex equals Claude Code. Inside a workflow — the thing the entire ecosystem is racing to build — the workflow can't open either modal. It's stuck handing you a chat line and hoping you notice.
+So the whole gap lives in one place: **skills.** By hand, Codex equals Claude Code. Inside a skill — the thing the entire ecosystem is racing to build — the skill can't open either modal. It's stuck handing you a chat line and hoping you notice.
 
-> **Worth knowing:** `<proposed_plan>` only renders as a real, reviewable plan when the session is actually in Plan Mode. Outside it, the tags show up as literal text. And `request_user_input` returns a hard error — "unavailable in Default mode" — when a workflow tries to use it without Plan Mode. The model then falls back to a plain chat question. Verified, both.
+> **Worth knowing:** `<proposed_plan>` only renders as a real, reviewable plan when the session is actually in Plan Mode. Outside it, the tags show up as literal text. And `request_user_input` returns a hard error — "unavailable in Default mode" — when a skill tries to use it without Plan Mode. The model then falls back to a plain chat question. Verified, both.
 
 ## Why a modal, and for whom
 
 You might still say: a chat question is good enough. For you, hand-driving a yes/no, maybe. The necessity shows up the moment you look at the three people who actually depend on this.
 
-**The skill/plugin author** is where the need is sharpest. A workflow has to *branch* on the answer. A free-text reply means the model re-parses your words — unreliably, differently each run. A modal returns a *structured choice* the workflow branches on with certainty, the same shape every time. You can't ship a dependable product on "it usually asks, and usually understands my reply." The modal is what turns *asking* into something you can build on.
+**The skill/plugin author** is where the need is sharpest. A skill has to *branch* on the answer. A free-text reply means the model re-parses your words — unreliably, differently each run. A modal returns a *structured choice* the skill branches on with certainty, the same shape every time. You can't ship a dependable product on "it usually asks, and usually understands my reply." The modal is what turns *asking* into something you can build on.
 
 **OpenAI** gets the cleanest signal to improve their models. A modal answer is a labeled record — *this context, these options, the user picked B* — which is exactly the thing models are worst at: knowing when to ask, what to ask, and which choice you wanted. A chat question that scrolls by unanswered teaches nothing. Structured checkpoints also make a real plugin ecosystem possible, and cut the wasted compute of confidently-wrong runs.
 
@@ -86,11 +86,11 @@ Here's the part that should make this easy.
 
 OpenAI already built the unlock. There's a feature flag — `default_mode_request_user_input` — that turns the structured question modal on in normal mode, no Plan Mode required. I flipped it on and tested it: the modal fires, full structured payload, in default mode. It works *today*.
 
-It's just shipped **off by default and marked "under development."** So a power user can set it in their config and have it now — but no plugin author can ship a workflow that depends on a flag the user has to discover and enable, on a feature that isn't finished.
+It's just shipped **off by default and marked "under development."** So a power user can set it in their config and have it now — but no plugin author can ship a skill that depends on a flag the user has to discover and enable, on a feature that isn't finished.
 
-And it's barely a build: Plan Mode exists, both modals exist, and the host can already enter Plan Mode programmatically. The only missing wire is letting a *workflow* do the same. Two ways to grant it:
+And it's barely a build: Plan Mode exists, both modals exist, and the host can already enter Plan Mode programmatically. The only missing wire is letting a *skill* do the same. Two ways to grant it:
 
-- **Let a user prompt enter Plan Mode.** Give a workflow an `EnterPlanMode` / `ExitPlanMode` it can call from the prompt — exactly what issue [#11180](https://github.com/openai/codex/issues/11180) asks for. Grant that one capability and *both* modals — the question box and the reviewable plan — open from inside a workflow, instead of only from a human's hands. This is the real fix.
+- **Let a user prompt enter Plan Mode.** Give a skill an `EnterPlanMode` / `ExitPlanMode` it can call from the prompt — exactly what issue [#11180](https://github.com/openai/codex/issues/11180) asks for. Grant that one capability and *both* modals — the question box and the reviewable plan — open from inside a skill, instead of only from a human's hands. This is the real fix.
 - **Or, at the very least, ship `default_mode_request_user_input`.** Flip the flag you already built from under-development-and-off to supported and on-by-default, so at least the question modal works in default mode — no Plan Mode required.
 
 Two guardrails, so this doesn't become a different problem: keep it **author-placed and sparing** — a modal on every turn is worse than none — and keep the human as the one who approves. The agent gets to *raise* the checkpoint; you still *make* the call.
@@ -101,8 +101,8 @@ Two guardrails, so this doesn't become a different problem: keep it **author-pla
 
 On the leaderboard, no — Codex caught up, fair and square.
 
-On whether you can build a workflow you trust to run on its own, Claude Code is still ahead, for one unglamorous reason: it lets the *workflow* raise a real checkpoint, while in Codex that checkpoint appears only when you switch on Plan Mode by hand.
+On whether you can build a skill you trust to run on its own, Claude Code is still ahead, for one unglamorous reason: it lets the *skill* raise a real checkpoint, while in Codex that checkpoint appears only when you switch on Plan Mode by hand.
 
-The strange part is that Codex has every piece already — the question modal, the plan-review modal, even the flag that frees the question modal from Plan Mode. It built the whole collaborative loop and then hid it behind one manual switch: only when you turn Plan Mode on by hand do both modals appear; leave it off, and the workflow gets neither.
+The strange part is that Codex has every piece already — the question modal, the plan-review modal, even the flag that frees the question modal from Plan Mode. It built the whole collaborative loop and then hid it behind one manual switch: only when you turn Plan Mode on by hand do both modals appear; leave it off, and the skill gets neither.
 
 > Fun fact: this post is created with Claude Opus 4.6
