@@ -72,7 +72,7 @@ So the whole gap lives in one place: **skills and predefined workflows.** By han
 
 You might still say: a chat question is good enough. For you, hand-driving a yes/no, maybe. The necessity shows up the moment you look at the three people who actually depend on this.
 
-**The skill/plugin author** is the load-bearing case. A workflow has to *branch* on the answer. A free-text reply means the model re-parses your words — unreliably, differently each run. A modal returns a *structured choice* the workflow branches on with certainty, the same shape every time. You can't ship a dependable product on "it usually asks, and usually understands my reply." The modal is what turns *asking* into something you can build on.
+**The skill/plugin author** is where the need is sharpest. A workflow has to *branch* on the answer. A free-text reply means the model re-parses your words — unreliably, differently each run. A modal returns a *structured choice* the workflow branches on with certainty, the same shape every time. You can't ship a dependable product on "it usually asks, and usually understands my reply." The modal is what turns *asking* into something you can build on.
 
 **OpenAI** gets the cleanest signal to improve their models. A modal answer is a labeled record — *this context, these options, the user picked B* — which is exactly the thing models are worst at: knowing when to ask, what to ask, and which choice you wanted. A chat question that scrolls by unanswered teaches nothing. Structured checkpoints also make a real plugin ecosystem possible, and cut the wasted compute of confidently-wrong runs.
 
