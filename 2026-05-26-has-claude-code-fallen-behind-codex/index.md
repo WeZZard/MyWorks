@@ -8,7 +8,7 @@ If you follow the coding-agent race, you've heard the story: Codex surged this y
 
 On speed and cost, I get it — until I tried to move one of my own agent skills onto Codex, and hit a wall: not in the model, but in how the agent is allowed to talk to me.
 
-So let me answer the title up front, honestly: for someone driving by hand, no, Codex hasn't fallen behind. For anyone trying to *build a skill-based workflow* on top of it, yes — and the reason is small, specific, and very fixable.
+So let me answer the title up front, honestly: for someone driving by hand, no — Codex caught up, and you'd be happy on either. For anyone trying to *build a skill-based workflow* on top of it, Claude Code is still ahead, and the reason is small, specific, and very fixable.
 
 Here's the wall.
 
