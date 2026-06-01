@@ -6,9 +6,7 @@ Last week, Opus 4.8 shipped with Claude Code **dynamic workflows**. Four months 
 
 I dropped the project soon after. Dynamically spawning subagent workflows and reusing them turned out to be a false need. Even so, subagent orchestration still sits at the center of my daily work in Claude Code—now through **[amplify](https://github.com/WeZZard/skills)** (`amplify@wezzard-skills`), which applies what I learned from `charge` via skills and hooks.
 
-If you build agents, I hope this story helps you spot the next meaningful capability jump in a new model—and design systems like Claude Code’s dynamic workflow without repeating my detours. Anthropic does not publish implementation details or design notes; open repos and a clear story can fill that gap.
-
-Anthropic does not document the implementation details or the design notes; open repos and a clear story can fill that gap.
+If you build agents, I hope this story helps you spot the next meaningful capability jump in a new model—and design systems like Claude Code’s dynamic workflow without repeating my detours. Anthropic does not publish implementation details or design notes; this post and open repos do.
 
 ## Why I Built Charge?
 
@@ -22,9 +20,9 @@ This loop contains an evaluator and several executor subagents to carry out deve
 
 In Sep. 2025, I published [a post](https://wezzard.com/post/2025/09/build-your-first-agentic-loop-9d22) explaining how the system works. Two months later, Anthropic published a post that introduced the “harness” concept with a similar design.
 
-But when Opus 4.5 was released, I found that because the subagent response contains information about the task running on the loop, the main agent sometimes didn’t follow the evaluator-executor pattern that comes with this loop but just proceeded to push the task to completion itself. And since Claude Code had just introduced background tasks and parallel subagents at the same time, it was observed that this leak-to-main-agent phenomenon often resulted in faster execution because the leaked tasks sometimes were decomposed and processed in parallel. Meanwhile, I had just spawned over 70 subagents in a file-processing task on Claude Code in Jan. 2026.
+But when Opus 4.5 was released, I found that because the subagent response contains information about the task running on the loop, the main agent sometimes didn’t follow the evaluator-executor pattern that comes with this loop but just proceeded to push the task to completion itself. At the same time, Claude Code had just introduced background tasks and parallel subagents. Two things changed at once, I noticed this leak-to-main-agent phenomenon often resulted in faster execution because the leaked tasks sometimes were decomposed and processed in parallel. Meanwhile, I had just spawned over 70 subagents in a file-processing task on Claude Code in Jan. 2026.
 
-Adding all this up, we can see that starting from Opus 4.5, the capability of orchestrating subagents improved significantly. Then I had a question: what if I could create and manage reusable workflows driven by subagents and build dependencies between them by borrowing concepts from structured concurrent programming—task trees and directed acyclic graphs?
+Adding it all up, we can see that starting from Opus 4.5, running and coordinating subagents got much easier. Then I had a question: what if I could create and manage reusable workflows driven by subagents and build dependencies between them by borrowing concepts from structured concurrent programming—task trees and directed acyclic graphs?
 
 ## Implementation Details and Design Philosophy
 
@@ -71,7 +69,7 @@ The tasks are stored in the `tasks` array and have a `depends_on` field to repre
 
 By reading the task dependency graph in the JSON object, Claude Code can just “magically” execute the tasks in the dependency order.
 
-Anthropic implemented this part with a deterministic-algorithm-based execution engine written in JS, which I think is the right move for a system meant to orchestrate subagents at scale. Because LLMs work by next-token prediction, a prompt-based execution engine has to rely on the model to infer execution order and to generate the correct tool call to launch the next agent when a preceding task completes in the dependency graph.
+Anthropic implemented this part with a deterministic-algorithm-based execution engine written in JS, which I think is the right move for a system meant to orchestrate a large scale of subagents. Because LLMs work by next-token prediction, a prompt-based execution engine has to rely on the model to infer execution order and to generate the correct tool call to launch the next agent when a preceding task completes in the dependency graph.
 
 However, the execution engine could be implemented with the generator pattern and run in the main agent:
 
@@ -110,13 +108,13 @@ This was because dynamically generating subagents based on tasks is billed as ou
 
 This is another edge `charge` has that Claude Code’s dynamic workflows do not. Because workflow orchestration in `charge` stays in the main agent, the user can interrupt and steer at any time during execution.
 
-## Why I Call It A Fake Requirement
+## Why I Call It A False Need
 
 After using `charge` for a while, I found that the most reused workflows in the real world are better represented with deterministic algorithms. That work should be implemented in code, not prompts.
 
 Introduce an LLM only when creativity is required. In reusable workflows, LLMs commonly appear in analysis tasks, diagnostic tasks, or “code laundering” tasks like laundering Bun from Zig to Rust, which Anthropic listed as a showcase of dynamic workflows. If you are creating something totally new, keeping the human in the loop and steering as you go is the right choice.
 
-But even for analysis and diagnostic tasks, you can still write code to produce better-structured, more digestible tool outputs and to coalesce tool calls by inlining multiple tool calls in a script. That improves execution speed and reduces noise in the context. These optimizations matter because they can significantly improve workflow performance and the bottom line of the results—and we care about the feasibility of the analysis and diagnostic results.
+But even for analysis and diagnostic tasks, you can still write code to produce better-structured, more digestible tool outputs and to coalesce tool calls by inlining multiple tool calls in a script. That improves execution speed and reduces noise in the context. These optimizations matter because they can significantly improve workflow performance and the bottom line of the results—and we care about whether the analysis or diagnosis is actually right.
 
 Research tasks are an exception, because research is too far from the results. There are still many judgments to make before turning research into action. I think that is why Claude Code bundles a `/deep-research` workflow.
 
@@ -128,7 +126,7 @@ So here I can draw a decision tree to help you pick the right tool:
  +-- YES -> Use your agent normally and keep the human in the loop
  +-+ NO -> Is creativity required for the task?
    |
-   +-+ YES -> Does the feasibility matter?
+   +-+ YES -> Does getting it right matter?
    | |
    | +-+ YES -> Does the cost matter?
    | | |
@@ -138,15 +136,17 @@ So here I can draw a decision tree to help you pick the right tool:
    +-- NO -> Just write the code
 ```
 
-## The Settlement
+## Where I Landed
 
-With this decision tree, we can clearly see that:
+With this decision tree, it comes down to:
 - To create something totally new, we still need to keep the human in the loop to steer the agent as you go.
-- To perform reusable workflows, we can choose more economical options: build with OpenCode and an affordable model, or write code that only burns CPU time.
-And obviously, the first item is the bottleneck for users working with Claude Code.
+- To perform reusable workflows, we can have more economical options: build with OpenCode and an affordable model, or write code that only costs CPU time, not tokens.
+And obviously, the first item is the bottleneck in my daily use of Claude Code.
 
 Then I created `amplify` by borrowing the following design from `charge`:
 
 1. Task dependency graph and per-task subagent.
 2. The plan-based task graph review.
 3. Execute in the main agent to allow steering as you go.
+
+On top of that, to prevent Claude Code from ending prematurely, it also creates audit subagents to check whether the planned work was actually completed.
