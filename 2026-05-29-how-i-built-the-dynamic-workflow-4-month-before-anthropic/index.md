@@ -6,7 +6,7 @@ tags: [AI,Agent]
 
 Last week, Opus 4.8 shipped with Claude Code **dynamic workflows**. Four months earlier, I had built an equivalent plugin, [charge](https://github.com/WeZZard/charge), on Opus 4.5: you give it a prompt, and it creates and orchestrates reusable subagent-driven workflows.
 
-I abandoned the project soon after. Dynamically spawning and reusing subagent workflows turned out to be a false need. Subagent orchestration nonetheless remains central to my daily work in Claude Code—now through **[amplify](https://github.com/WeZZard/skills)** (`amplify@wezzard-skills`), which applies lessons from `charge` through skills and hooks.
+I abandoned the project soon after since dynamically spawning and reusing subagent workflows turned out to be a false need. However, subagent-based orchestration remains central to my daily work in Claude Code—now through **[amplify](https://github.com/WeZZard/skills)** (`amplify@wezzard-skills`), which applies lessons I learned in building `charge`.
 
 If you build agents, I hope this story helps you spot the next meaningful capability jump in a new model—and design systems like Claude Code's dynamic workflow without repeating my detours. Anthropic does not publish implementation details or design notes; this post and open repos do.
 
@@ -22,7 +22,7 @@ The loop includes an evaluator and several executor subagents that carry out dev
 
 In September 2025, I published [a post](https://wezzard.com/post/2025/09/build-your-first-agentic-loop-9d22) explaining how the system works. Two months later, Anthropic published a post that introduced the "harness" concept with a similar design.
 
-When Opus 4.5 shipped, subagent responses carried enough detail about the in-loop task that the main agent would sometimes skip the evaluator-executor pattern and push work to completion on its own. Claude Code had just introduced background tasks and parallel subagents—two new capabilities landing at once. The leak-to-main-agent phenomenon often ran faster anyway, because leaked tasks were sometimes decomposed and processed in parallel. By January 2026, I had spawned more than 70 subagents in a single file-processing task on Claude Code.
+When Opus 4.5 shipped, the main agent would sometimes skip the evaluator-executor pattern of this loop and push work to completion on its own since subagent responses carried details about the in-loop task. Almost the same time, Claude Code had just introduced background tasks and parallel subagents. With these new features, the leak-to-main-agent phenomenon often ran faster anyway, because leaked tasks were sometimes decomposed and processed in parallel. By January 2026, I had spawned more than 70 parallel subagents in a file-processing task on Claude Code.
 
 Adding it all up, from Opus 4.5 onward, running and coordinating subagents became much easier. That raised a question: what if I could create and manage reusable workflows driven by subagents, and build dependencies between them by borrowing concepts from structured concurrent programming—task trees and directed acyclic graphs?
 
@@ -134,7 +134,7 @@ With that decision tree in hand, it comes down to:
 
 The first item is the bottleneck in my daily use of Claude Code.
 
-I then created `amplify` by borrowing the following design elements from `charge`:
+I then created `amplify` in Feb, 2026 by borrowing the following design elements from `charge`:
 
 1. Task dependency graph and per-task subagent.
 2. The plan-based task graph review.
