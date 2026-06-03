@@ -12,6 +12,8 @@ You **MUST** re-write the texts as you are a native Chinese speaker that familia
 You **MUST** re-think how to express the idea of the original texts in native Chinese language that has a good fluency, coherence and cohesion and achieve these goals by connecting, splitting the expressions in the original texts.
 You **MUST** use the translation lookup table below to translate terminologies, brand and product names.
 You **MUST** spawn subagents to process each paragraph independently then compile them up in the main agent.
+You **MUST** use `「」` instead of `“”` to quote Chinese texts.
+You **MUST** use `""` instead of `“”` to quote English texts.
 You **MUST** spawn subagents to review and challenge the rewriting results of each paragraph independently by evaluating whether the fluency, coherence and cohesion aligns to native Chinese.
 
 **MUST NOT:**
