@@ -126,7 +126,7 @@ $> complete-task.sh task_1
 
 你可以参考下面的决策树来选择最适合的工具：
 
-![一张标题为 "Which workflow should you use?" 的 decision tree，它通过询问任务是否全新、是否需要 creativity、是否要求 correctness 以及是否对 cost 敏感来引导选择。对于全新任务，YES 分支建议保持 human in the loop；其他分支则推荐 Write Code、Claude Code Dynamic Workflow、搭配高性价比 model 的 OpenCode SDK，或 Claude Code SDK。](./figure-3-decision-tree.png "Workflow decision tree")
+![一张纵向决策树，依次提出四个是否问题：「你在创造全新的东西吗？」选「是」则建议「保持 human in the loop」，选「否」继续；「结果是否需要创造性？」选「否」则建议「写代码」，选「是」继续；「可行性是否重要？」选「否」则建议 "Claude Code Dynamic Workflows"，选「是」继续；「成本是否重要？」选「是」则建议「OpenCode SDK + 高性价比模型」（图中含 OpenCode 与 DeepSeek 标识），选「否」则建议 "Claude Agent SDK"。](./figure-3-decision-tree.png "决策树")
 
 ## 我的最终选择
 

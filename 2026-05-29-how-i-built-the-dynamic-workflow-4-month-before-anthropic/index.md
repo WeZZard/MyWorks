@@ -126,7 +126,7 @@ Research tasks are an exception. Research sits too far from actionable output; m
 
 Here is a decision tree to help you pick the right tool:
 
-![A decision tree titled "Which workflow should you use?" asks whether the task creates something totally new, requires creativity, makes correctness matter, and is cost-sensitive. The YES branch for new work says to keep the human in the loop. The other branches recommend Write Code, Claude Code Dynamic Workflow, OpenCode SDK with an affordable model, or Claude Code SDK.](./figure-3-decision-tree.png "Workflow Decision Tree")
+![A vertical decision tree with four yes-or-no questions. "Create something totally new?" — yes leads to "Keep human in the loop"; no continues to "Is creativity required?" — no leads to "Write code"; yes continues to "Feasibility matters?" — no leads to "Claude Code Dynamic Workflows"; yes continues to "Cost matters?" — yes leads to "OpenCode SDK + affordable models" (OpenCode and DeepSeek logos); no leads to "Claude Agent SDK."](./figure-3-decision-tree.png "Decision Tree")
 
 ## Where I Landed
 
