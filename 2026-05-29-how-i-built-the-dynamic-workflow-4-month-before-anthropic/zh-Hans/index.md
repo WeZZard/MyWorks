@@ -136,7 +136,7 @@ $> complete-task.sh task_1
 
 而第一项，正是我日常使用 Claude Code 时的瓶颈所在。
 
-于是，我借鉴了 `charge` 的以下设计元素，我在 2026 年 2 月开发了 `amplify`：
+于是，我借鉴了 `charge` 的以下设计元素并在 2026 年 2 月开发了 `amplify`：
 
 1. 任务依赖图以及每个任务专属的 subagent。
 2. 基于 plan 的任务图 review 机制。
