@@ -6,6 +6,8 @@ tags: [AI,Agent]
 
 Last week, Opus 4.8 shipped with Claude Code **dynamic workflows**. Four months earlier, I had built an equivalent plugin, [charge](https://github.com/WeZZard/charge), on Opus 4.5: you give it a prompt, and it creates and orchestrates reusable subagent-driven workflows.
 
+> “Charge” here means sending a lot of subagents charging into the task you assigned.
+
 I abandoned the project soon after since dynamically spawning and reusing subagent workflows turned out to be a false need. However, subagent-based orchestration remains central to my daily work in Claude Code—now through **[amplify](https://github.com/WeZZard/skills)** (`amplify@wezzard-skills`), which applies lessons I learned in building `charge`.
 
 If you build agents, I hope this story helps you spot the next meaningful capability jump in a new model—and design systems like Claude Code's dynamic workflow without repeating my detours. Anthropic does not publish implementation details or design notes; this post and open repos do.
