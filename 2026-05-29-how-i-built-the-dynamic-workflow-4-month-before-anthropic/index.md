@@ -75,7 +75,7 @@ Read the task dependency graph from that JSON object, and Claude Code can "magic
 
 Anthropic implemented this part with a deterministic execution engine written in JS, which I think is the right move for a system meant to orchestrate subagents at scale. LLMs work by next-token prediction; a prompt-based execution engine must rely on the model to infer execution order and emit the correct tool call to launch the next agent when a predecessor finishes—neither is guaranteed.
 
-However, despite writing all the subagents in JS, you can implement the engine with the generator pattern and run it in the main agent:
+However, despite wiring all the subagents with JS, you can implement the engine with the generator pattern and run it in the main agent:
 
 ```shell
 # Main agent found task 1 is completed
