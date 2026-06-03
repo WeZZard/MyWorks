@@ -16,7 +16,7 @@ In practice, it was a subagent-driven loop. Subagents segregate context well bec
 
 The loop includes an evaluator and several executor subagents that carry out development, testing, troubleshooting, and integration gatekeeping against the plan. Each step benefits from the context segregation that subagent-driven design provides.
 
-// TODO: Figure out how to explain the production-level loop
+![A diagram titled “Production Loop” with three columns: Me, Claude Code, and External Agents. The user starts a milestone epic iteration into Claude Code’s /implement hub, which requests work from implementation-evaluator, developer, troubleshooter, integration-tester, and integration gate keeper subagents and spawns the next agent from their responses. Dotted arrows show handoffs when the evaluator finds a gap, the developer finds issues, only unit tests remain, or integration finds no gap. Developer and integration-tester can call external OpenAI Codex agents. Environmental errors, missing tools, or similar failures go to an unexpected-error handler and back to the user as a reported error.](./figure-1-production-loop.png "Production Loop")
 
 In Sep. 2025, I published [a post](https://wezzard.com/post/2025/09/build-your-first-agentic-loop-9d22) explaining how the system works. Two months later, Anthropic published a post that introduced the “harness” concept with a similar design.
 
@@ -100,9 +100,9 @@ With this design, the main agent of Claude Code still orchestrates the workflow.
 
 When a workflow is built and about to execute, `charge` leverages Claude Code’s plan mode to let the user review the decomposed workflow.
 
-// TODO: A figure showing charge workflow confirmation with plan mode
+![A screenshot of Claude Code plan mode in a Zellij terminal showing a charge workflow review before execution. Task semantics define three tasks—discover-new-plugins, generate-plugin-webpage (per plugin), and verify-and-report—with inputs, outputs, and npm commands. A bordered ASCII flowchart shows the dependency chain from discovery through generation to build verification.](./figure-2-review-charge-plan.png "Review Workflow Plan Created by Charge")
 
-That mattered because dynamically generating subagents from tasks is billed as output tokens—the main agent outputs the spawning prompts for those subagents-which is way more expensive than input tokens. You can read the design as “progressive disclosure” in token consumption.
+This plan-mode-based review process matters because dynamically generating subagents from tasks is billed as output tokens—the main agent outputs the spawning prompts for those subagents-which is way more expensive than input tokens. You can read the design as “progressive disclosure” in token consumption.
 
 ### Control and Steering
 
@@ -110,33 +110,19 @@ Here `charge` has another edge over Claude Code’s dynamic workflows. Because w
 
 ## Why I Call It a False Need
 
-After using `charge` for a while, I found that the most reused workflows in the real world are better represented with deterministic algorithms. That work belongs in code, not prompts.
+After using `charge` for a while, I found that the most reused workflows in the real world **are better represented with deterministic algorithms**. That work belongs in code, not prompts.
 
 Introduce an LLM only when creativity is required. In reusable workflows, LLMs commonly appear in analysis tasks, diagnostic tasks, or “code laundering” tasks like laundering Bun from Zig to Rust, which Anthropic listed as a showcase of dynamic workflows. If you are creating something totally new, keeping the human in the loop and steering as you go is the right choice.
 
-Even for analysis and diagnostic tasks, you can still write code to produce better-structured, more digestible tool outputs and to coalesce tool calls by inlining multiple tool calls in a script. That improves execution speed and reduces noise in the context. These optimizations matter because they can significantly improve workflow performance and the bottom line of the results—and we care about whether the analysis or diagnosis is actually right.
+Even for analysis and diagnostic tasks, you can still write code to produce better-structured, more digestible tool outputs and to coalesce tool calls by inlining multiple tool calls in a script. That improves execution speed and reduces noise in the context. These optimizations matter because they can significantly improve workflow performance and the bottom line of the results—and we care about whether the suggestion given by an analysis or diagnosis is actually feasible.
+
+On top of that, for the tasks that feasibility matters, you can even built upon an agent SDK like OpenCode SDK to introduce type safety in data transfer and in-process communication instead of inter-process tool calls. OpenCode SDK and OpenCode shares the same session format. This means an OpenCode SDK session can be resumed in OpenCode client. This interoperability futher introduced debuggability of an LLM-driven workflow -- which is an overlook gem in the agent ecosystem.
 
 Research tasks are an exception. Research sits too far from the results; many judgments remain before you turn research into action. I think that is why Claude Code bundles a `/deep-research` workflow.
 
 Here is a decision tree to help you pick the right tool:
 
-// TODO: Create diagram for the following decision tree
-
-```
--+ Are you creating something totally new?
- |
- +-- YES -> Use your agent normally and keep the human in the loop
- +-+ NO -> Is creativity required for the task?
-   |
-   +-+ YES -> Does getting it right matter?
-   | |
-   | +-+ YES -> Does the cost matter?
-   | | |
-   | | +-- Pick OpenCode with an affordable model like DeepSeek. Write code to accomplish the deterministic steps and compose a well-organized context, then delegate the creative part to the agent or its subagents
-   | | +-- Pick Claude Code. Write code to accomplish the deterministic steps and compose a well-organized context, then delegate the creative part to the agent or its subagents
-   | +-- NO -> Use the dynamic workflow
-   +-- NO -> Just write the code
-```
+![A decision tree titled “Which workflow should you use?” asks whether the task creates something totally new, requires creativity, makes correctness matter, and is cost-sensitive. The YES branch for new work says to keep the human in the loop. The other branches recommend Write Code, Claude Code Dynamic Workflow, OpenCode SDK with an affordable model, or Claude Code SDK.](./figure-3-decision-tree.png "Workflow Decision Tree")
 
 ## Where I Landed
 
@@ -152,8 +138,8 @@ Then I created `amplify` by borrowing the following design from `charge`:
 2. The plan-based task graph review.
 3. Execute in the main agent to allow steering as you go.
 
-// TODO Figures about amplify plan mode
+![A screenshot of Claude Code plan mode in a Zellij terminal showing an amplify workflow plan with six tasks: authorize DeepSeek API access (marked as a human gate), generalize DeepSeek generation in generate-content.ts, refresh plugin JSON on skill-list change, retire using-skills from the presentation, run npm run generate:all, and verify the build. An ASCII flowchart shows parallel tracks converging on content generation, then verification; a human verification gate explains paid API credit use.](./figure-4-review-amplify-plan.png "Review Workflow Plan Created by Amplify")
 
 On top of that, to prevent Claude Code from ending prematurely, it also introduces audit subagents to check whether the planned work was actually completed.
 
-// TODO Figures about audit subagents
+![A screenshot of Claude Code in a Zellij terminal after amplify audit subagents finish. Three explore agents report done status with token counts; a consolidated audit summary table lists six tasks (human gate, code edits, content edit, generate:all, and build verification) as Done with file-level evidence; the Issues Found section reports none.](./figure-5-audit-amplify-plan.png "Amplify Audit Summary")
