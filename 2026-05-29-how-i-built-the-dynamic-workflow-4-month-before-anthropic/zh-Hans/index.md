@@ -4,7 +4,7 @@ category: Programming
 tags: [AI,Agent]
 ---
 
-上周，Opus 4.8 发布，搭载了 Claude Code 的 **dynamic workflows**。而早在四个月前，我就在 Opus 4.5 上构建了一个等效插件 [charge](https://github.com/WeZZard/charge)，只需提供 prompt，它就能创建并编排由 subagent 驱动的可复用工作流。
+上周，Opus 4.8 与 Claude Code **dynamic workflows** 同时发布。而早在四个月前，我就在 Opus 4.5 上构建了一个等效插件 [charge](https://github.com/WeZZard/charge)，只需提供 prompt，它就能创建并编排由 subagent 驱动的可复用工作流。
 
 > Charge 在这里是「冲锋」的意思——即很多个 subagents 冲锋帮你完成任务。
 
