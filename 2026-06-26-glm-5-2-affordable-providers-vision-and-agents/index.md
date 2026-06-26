@@ -70,8 +70,11 @@ The official docs describe this path directly. Use it before trying any manual p
 Use these values:
 
 **Base URL:** https://opencode.ai/zen/go/v1
+
 **API Format:** Chat Completions
+
 **Model Name:** glm-5.2
+
 **Context Window Size:** 976000
 
 ### Using Ollama Pro/Max
@@ -105,8 +108,11 @@ ollama launch codex --model glm-5.2:cloud
 Use these values:
 
 **Base URL:** https://ollama.com/v1
+
 **API Format:** Chat Completions or Responses
+
 **Model Name:** glm-5.2-cloud
+
 **Context Window Size:** 976000
 
 ## Where I Landed
