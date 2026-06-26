@@ -18,18 +18,18 @@ My current provider map looks like this.
 
 | Provider | Price | Usage Limits | Context Window | Speed | Vision Support |
 | --- | --- | --- | --- | --- | --- |
-| Cursor | $0 USD/mon for paid users. | Almost no practical limit while it is free. | 200K | 5/5 | Auto-routes to vision-capable models. |
-| Devin | $0 USD/mon for paid users until July 5. | Almost no practical limit while it is free. | 200K | Unverified. | Unverified. |
-| OpenCode Go | First month: $5 USD/mon. Later months: $10 USD/mon. | $60 USD/mon usage cap. | 1M | 5/5 | Not supported. |
-| Ollama Pro/Max | Pro: $20 USD/mon. Max: $100 USD/mon. | About 3,200 requests per week in my observed use. | 1M | 5/5 | Not supported. |
+| Cursor | $0 USD/month for paid users. | Almost no practical limit while it is free. | 200K | 5/5 | Auto-routes to vision-capable models. |
+| Devin | $0 USD/month for paid users until July 5. | Almost no practical limit while it is free. | 200K | Unverified. | Unverified. |
+| OpenCode Go | First month: $5 USD/month. Later months: $10 USD/month. | $60 USD/month usage cap. | 1M | 5/5 | Not supported. |
+| Ollama Pro/Max | Pro: $20 USD/month. Max: $100 USD/month. | About 3,200 requests per week in my observed use. | 1M | 5/5 | Not supported. |
 
-Cursor is the easiest path if you already pay for it. GLM-5.2 High is free for paid users, and I have not found an official announcement calling this a limited-time offer. While that remains true, usage feels close to unlimited.
+**Cursor** is the easiest path if you already pay for it. GLM-5.2 High is free for paid users, and I have not found an official announcement calling this a limited-time offer. While that remains true, usage feels close to unlimited.
 
-Devin is attractive during the free window. GLM-5.2 is free for paid users until July 5, and usage also feels close to unlimited while it remains free. I cannot speak to its vision path because I do not have a paid Devin account to test it.
+**Devin** is attractive during the free window. GLM-5.2 is free for paid users until July 5, and usage also feels close to unlimited while it remains free. I cannot speak to its vision path because I do not have a paid Devin account to test it.
 
-OpenCode Go is cheap and fast, but its $60 USD/mon usage cap changes the feel of long agent runs. It is a good fit when you want GLM-5.2 in OpenCode or when you want to experiment with a low-cost provider across agents.
+**OpenCode Go** is cheap and fast, but its $60 USD/month usage cap changes the feel of long agent runs. It is a good fit when you want GLM-5.2 in OpenCode or when you want to experiment with a low-cost provider across agents.
 
-Ollama Pro/Max is the better fit for heavy users. My observed usage: 412 requests for 87.2 session usage, and 961 requests for 30% weekly usage, which implies about 3,200 requests per week. I built two client-server web apps within 8 hours and spent 15% weekly usage.
+**Ollama Pro/Max** is the better fit for heavy users. My observed usage: 412 requests for 87.2 session usage, and 961 requests for 30% weekly usage, which implies about 3,200 requests per week. I built two client-server web apps within 8 hours and spent 15% weekly usage.
 
 I do not recommend `bigmodel.cn` or `z.ai` as the default route for this setup. Both are run by Zhipu, the lab builds GLM 5.2. `bigmodel.cn` does not guarantee SLA and requires KYC verification. `z.ai` is twice as expensive as `bigmodel.cn`.
 
@@ -49,7 +49,7 @@ In OpenCode, the workaround is to delegate visual tasks to a subagent backed by 
 
 The setup details are mechanical, but the distinction matters: OpenCode Go and Ollama Pro/Max expose different routes. Keep their endpoints separate.
 
-### Using OpenCode Go
+### OpenCode Go
 
 #### Using OpenCode Go in OpenCode
 
@@ -77,7 +77,7 @@ Use these values:
 
 **Context Window Size:** 976000
 
-### Using Ollama Pro/Max
+### Ollama Pro/Max
 
 #### Using Ollama Pro/Max in OpenCode
 
@@ -119,8 +119,8 @@ Use these values:
 
 If you already pay for Cursor, start there. It gives the best GLM-5.2 experience right now because the model is free for paid users in my account, and the client handles vision routing.
 
-If you work mostly in terminal agents and want a larger context window, use Ollama Pro/Max. It is fast, it has a 1M-class context window, and the launch commands remove most setup work.
+If you work mostly in terminal agents and want a larger context window, Ollama Pro is the practical starting point. If you are a heavy user, Ollama Max is the one that makes sense. Both are fast, both give you a 1M-class context window, and the launch commands remove most setup work.
 
-If you want the cheapest cross-agent subscription, OpenCode Go is still useful, but the USD 60 monthly usage cap makes it the least comfortable option for heavy loops.
+If you want the cheapest cross-agent subscription, OpenCode Go is still useful, but the $60 USD/month usage cap makes it the least comfortable option for heavy loops.
 
 That is where I land: GLM-5.2 is a strong text-first coding model, and the affordable providers make it practical. Vision remains the boundary. The provider or agent has to supply the eyes.
