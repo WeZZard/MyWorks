@@ -20,12 +20,12 @@ My current provider map looks like this.
 
 | Provider | Price | Usage Limits | Context Window | Speed | Vision Support |
 | --- | --- | --- | --- | --- | --- |
-| Cursor | $0 USD/month for paid users. | Almost no practical limit while it is free. | 200K | 5/5 | Auto-routes to vision-capable models. |
+| Cursor | $20 USD/month | Depends on Cursor's current paid model limits. | 200K | 5/5 | Auto-routes to vision-capable models. |
 | Devin | $0 USD/month for paid users until July 5. | Almost no practical limit while it is free. | 200K | Unverified. | Unverified. |
 | OpenCode Go | First month: $5 USD/month. Later months: $10 USD/month. | $60 USD/month usage cap. | 1M | 5/5 | Not supported. |
 | Ollama Pro/Max | Pro: $20 USD/month. Max: $100 USD/month. | About 3,200 requests per week in my observed use. | 1M | 5/5 | Not supported. |
 
-**Cursor** is the easiest path if you already pay for it. GLM-5.2 High is free for paid users, and I have not found an official announcement calling this a limited-time offer. While that remains true, usage feels close to unlimited.
+**Cursor** used to be the easiest path if you already paid for it because GLM-5.2 High came at no extra cost. Now that paid users no longer get it for free, Cursor is no longer the obvious affordable route. It still has the edge when you need the client to route visual work to another model, but for low-cost GLM-5.2 access, I would start elsewhere.
 
 **Devin** is attractive during the free window. GLM-5.2 is free for paid users until July 5, and usage also feels close to unlimited while it remains free. I cannot speak to its vision path because I do not have a paid Devin account to test it.
 
@@ -117,7 +117,7 @@ Use these values:
 
 ## Where I Landed
 
-If you already pay for Cursor, start there. It gives the best GLM-5.2 experience right now because the model is free for paid users in my account, and the client handles vision routing.
+Cursor is no longer the default starting point now that GLM-5.2 High is not free for paid users. It still handles vision routing better than the other paths, so keep it in mind when visual tasks matter and you accept Cursor's current pricing.
 
 If you work mostly in terminal agents and want a larger context window, Ollama Pro is the practical starting point. If you are a heavy user, Ollama Max is the one that makes sense. Both are fast, both give you a 1M-class context window, and the launch commands remove most setup work.
 
