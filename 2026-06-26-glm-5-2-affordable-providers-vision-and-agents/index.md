@@ -65,8 +65,6 @@ Use OpenCode's native setup:
 6. Run `/models`.
 7. Select `GLM-5.2`.
 
-The official docs describe this path directly. Use it before trying any manual provider file.
-
 #### Using OpenCode Go in ZCode
 
 Use these values:
