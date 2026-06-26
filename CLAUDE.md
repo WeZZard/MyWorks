@@ -43,6 +43,11 @@ Follow these principles when writing and revising.
 
 ## Additional Guidelines
 
+**Price formatting:**
+
+- For recurring monthly prices in English prose, use `$N USD/month` so the currency is explicit for international readers, e.g., `$60 USD/month`, `$5 USD/month for the first month, then $10 USD/month`.
+- Avoid nonstandard forms such as `$60 USD/mon`, `USD 60/month`, and `$60/month` unless quoting a source verbatim.
+
 **MUST:**
 
 - You **MUST** use commonly used idioms — established expressions a native reader recognizes as real (e.g., "in the driver's seat," "calling the shots," "at the helm").

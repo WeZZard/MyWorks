@@ -31,7 +31,7 @@ My current provider map looks like this.
 
 **Ollama Pro/Max** is the better fit for heavy users. My observed usage: 412 requests for 87.2 session usage, and 961 requests for 30% weekly usage, which implies about 3,200 requests per week. I built two client-server web apps within 8 hours and spent 15% weekly usage.
 
-I do not recommend `bigmodel.cn` or `z.ai` as the default route for this setup. Both are run by Zhipu, the lab builds GLM 5.2. `bigmodel.cn` does not guarantee SLA and requires KYC verification. `z.ai` is twice as expensive as `bigmodel.cn`.
+I do not recommend `bigmodel.cn` or `z.ai` as the default route for this setup. Both of them are run by Zhipu, the lab builds GLM 5.2. `bigmodel.cn` does not guarantee SLA and requires KYC verification. `z.ai` is twice as expensive as `bigmodel.cn`.
 
 ## Vision Support
 
