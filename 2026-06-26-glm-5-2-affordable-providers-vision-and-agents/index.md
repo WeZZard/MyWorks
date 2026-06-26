@@ -29,7 +29,7 @@ Devin is attractive during the free window. GLM-5.2 is free for paid users until
 
 OpenCode Go is cheap and fast, but its $60 USD/mon usage cap changes the feel of long agent runs. It is a good fit when you want GLM-5.2 in OpenCode or when you want to experiment with a low-cost provider across agents.
 
-Ollama Pro/Max is the better fit for long text-only sessions. My observed usage: 412 requests for 87.2 session usage, and 961 requests for 30% weekly usage, which implies about 3,200 requests per week. I built two client-server web apps within 8 hours and spent 15% weekly usage.
+Ollama Pro/Max is the better fit for heavy users. My observed usage: 412 requests for 87.2 session usage, and 961 requests for 30% weekly usage, which implies about 3,200 requests per week. I built two client-server web apps within 8 hours and spent 15% weekly usage.
 
 I do not recommend `bigmodel.cn` or `z.ai` as the default route for this setup. Both are run by Zhipu, the lab builds GLM 5.2. `bigmodel.cn` does not guarantee SLA and requires KYC verification. `z.ai` is twice as expensive as `bigmodel.cn`.
 
