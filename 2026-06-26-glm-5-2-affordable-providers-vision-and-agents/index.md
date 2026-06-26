@@ -4,7 +4,9 @@ category: Programming
 tags: [AI,Agent]
 ---
 
-After using GLM-5.2 on real code, I would put it in the GPT-5.5 tier for coding-agent work.
+After running out of Claude Code and Codex quota last week, I tried GLM-5.2 on real code. It felt like a GPT-5.5-tier model for coding-agent work.
+
+The official China domestic plans were not practical for me: it is always out of stock, and the stability and speed were poor. So I tested alternative ways to use GLM-5.2.
 
 This post gives you three things:
 
@@ -29,9 +31,9 @@ My current provider map looks like this.
 
 **OpenCode Go** is cheap and fast, but its $60 USD/month usage cap changes the feel of long agent runs. It is a good fit when you want GLM-5.2 in OpenCode or when you want to experiment with a low-cost provider across agents.
 
-**Ollama Pro/Max** is the better fit for heavy users. My observed usage: 412 requests for 87.2 session usage, and 961 requests for 30% weekly usage, which implies about 3,200 requests per week. I built two client-server web apps within 8 hours and spent 15% weekly usage.
+**Ollama Pro/Max** is the better fit for heavy users. My observed usage: 412 requests for 87.2% session usage, and 961 requests for 30% weekly usage, which implies about 3,200 requests per week. I built two client-server web apps within 8 hours and spent 15% weekly usage.
 
-I do not recommend `bigmodel.cn` or `z.ai` as the default route for this setup. Both of them are run by Zhipu, the lab builds GLM 5.2. `bigmodel.cn` does not guarantee SLA and requires KYC verification. `z.ai` is twice as expensive as `bigmodel.cn`.
+I do not recommend `bigmodel.cn` or `z.ai` as the default route for this setup. Zhipu, the lab that builds GLM-5.2, runs both. `bigmodel.cn` does not guarantee SLA and requires KYC verification. `z.ai` is twice as expensive as `bigmodel.cn`.
 
 ## Vision Support
 
@@ -47,7 +49,7 @@ In OpenCode, the workaround is to delegate visual tasks to a subagent backed by 
 
 ## Configure Your Agents
 
-The setup details are mechanical, but the distinction matters: OpenCode Go and Ollama Pro/Max expose different routes. Keep their endpoints separate.
+The setup is simple, but the routes differ. Keep the OpenCode Go and Ollama Pro/Max endpoints separate.
 
 ### OpenCode Go
 
@@ -123,4 +125,4 @@ If you work mostly in terminal agents and want a larger context window, Ollama P
 
 If you want the cheapest cross-agent subscription, OpenCode Go is still useful, but the $60 USD/month usage cap makes it the least comfortable option for heavy loops.
 
-That is where I land: GLM-5.2 is a strong text-first coding model, and the affordable providers make it practical. Vision remains the boundary. The provider or agent has to supply the eyes.
+That is where I land: GLM-5.2 is a strong text-first coding model, and the affordable providers make it practical. Vision remains the boundary.
