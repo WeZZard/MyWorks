@@ -19,14 +19,14 @@ Here is my current provider map.
 
 | Provider | Price | Usage Limits | Context Window | Speed | Vision Support |
 | --- | --- | --- | --- | --- | --- |
-| Cursor | $0 USD/mon for paid users. | Almost no practical limit while it is free. | 200K | 3/5 | Auto-routes to vision-capable models. |
-| Devin | $0 USD/mon for paid users until July 5. | Almost no practical limit while it is free. | 200K | 3/5 | Unverified. |
+| Cursor | $0 USD/mon for paid users. | Almost no practical limit while it is free. | 200K | 5/5 | Auto-routes to vision-capable models. |
+| Devin | $0 USD/mon for paid users until July 5. | Almost no practical limit while it is free. | 200K | Unverified. | Unverified. |
 | OpenCode Go | First month: $5 USD/mon. Later months: $10 USD/mon. | $60 USD/mon usage cap. | 1M | 5/5 | Not supported. |
 | Ollama Pro/Max | Pro: $20 USD/mon. Max: $100 USD/mon. | About 3,200 requests per week in my observed use. | 1M | 5/5 | Not supported. |
 
 Cursor is the easiest path if you already pay for it. GLM-5.2 High is free for paid users, and I have not found an official announcement calling this a limited-time offer. Usage feels close to unlimited while it remains free.
 
-Devin is attractive during the free window. GLM-5.2 High is free for paid users until July 5, and usage also feels close to unlimited while it remains free. I cannot speak to its vision path because I do not have a paid Devin account to test it.
+Devin is attractive during the free window. GLM-5.2 is free for paid users until July 5, and usage also feels close to unlimited while it remains free. I cannot speak to its vision path because I do not have a paid Devin account to test it.
 
 OpenCode Go is cheap and fast, but its $60 USD/mon usage cap matters. It is a good fit when you want GLM-5.2 in OpenCode or when you want to experiment with a low-cost provider across agents.
 
@@ -50,19 +50,7 @@ In OpenCode, the workaround is to delegate visual tasks to a subagent backed by 
 
 The setup depends on the provider. OpenCode Go and Ollama Pro/Max expose different routes, so keep their endpoints separate.
 
-### Using OpenCode Go in Mainstream Agents
-
-OpenCode Go's docs describe it as a low-cost subscription: $5 USD/mon for the first month, then $10 USD/mon. The same docs list GLM-5.2 as an available model, publish the $60 USD/mon usage limit, and show the GLM-5.2 endpoint as:
-
-```text
-https://opencode.ai/zen/go/v1/chat/completions
-```
-
-Use this model ID:
-
-```text
-glm-5.2
-```
+### Using OpenCode Go
 
 #### Using OpenCode Go in OpenCode
 
@@ -78,30 +66,6 @@ Use OpenCode's native setup:
 
 The official docs describe this path directly, so I would use it before trying any manual provider file.
 
-#### Using OpenCode Go in Claude Code
-
-Use CC Switch. The lowest-friction path is to add a provider in CC Switch, then let it write the Claude Code configuration.
-
-Use these values:
-
-**Endpoint URL:** https://opencode.ai/zen/go/v1
-**API Format:** OpenAI Chat
-**Model:** glm-5.2
-
-Then enable the provider for Claude Code. CC Switch can manage Claude Code provider configuration, and its provider docs describe both app-specific providers and universal providers.
-
-#### Using OpenCode Go in Codex
-
-Use CC Switch here as well.
-
-Use these values:
-
-**Endpoint URL:** https://opencode.ai/zen/go/v1
-**API Format:** OpenAI Chat
-**Model:** glm-5.2
-
-Then enable the provider for Codex and restart Codex after switching. CC Switch's docs say Codex configuration uses `~/.codex/auth.json` for the API key and `~/.codex/config.toml` for model and endpoint settings. A CC Switch issue about OpenCode Go and Codex also shows that the endpoint needs the `/v1` suffix, so use `https://opencode.ai/zen/go/v1`, not `https://opencode.ai/zen/go`.
-
 #### Using OpenCode Go in ZCode
 
 Use these values:
@@ -111,9 +75,7 @@ Use these values:
 **Model Name:** glm-5.2
 **Context Window Size:** 976000
 
-### Using Ollama Pro/Max in Mainstream Agents
-
-Ollama Pro is $20 USD/mon. Ollama Max is $100 USD/mon. Ollama's GLM-5.2 page lists the model as `glm-5.2:cloud` with a 976K context window and shows launch commands for OpenCode, Claude Code, and Codex.
+### Using Ollama Pro/Max
 
 #### Using Ollama Pro/Max in OpenCode
 
@@ -125,26 +87,6 @@ ollama launch opencode --model glm-5.2:cloud
 
 That is the easiest setup because Ollama writes the OpenCode configuration for you.
 
-#### Using Ollama Pro/Max in Claude Code
-
-Use the official launch command:
-
-```shell
-ollama launch claude --model glm-5.2:cloud
-```
-
-Ollama also documents Anthropic compatibility for Claude Code, but the launch command is the simplest route.
-
-#### Using Ollama Pro/Max in Codex
-
-Use the official launch command:
-
-```shell
-ollama launch codex --model glm-5.2:cloud
-```
-
-That is easier than hand-writing Codex provider config.
-
 #### Using Ollama Pro/Max in ZCode
 
 Use these values:
@@ -155,6 +97,14 @@ Use these values:
 **Context Window Size:** 976000
 
 This gives ZCode a text-only GLM-5.2 route through Ollama Pro/Max. It does not add vision support.
+
+### Why I Do Not List Claude Code or Codex Setups
+
+I do not list OpenCode, OpenCode Go, or Ollama Pro/Max as recommended replacement paths for Claude Code or Codex.
+
+I tried CC Switch, but I could not get the setup clean enough to recommend. I have never managed to configure OpenCode Go through CC Switch, and I have never used OpenCode Go in Claude Code or Codex.
+
+The simpler reason is model quality: Opus 4.5 and GPT-4.5 are already in the same tier as GLM-5.2. If you are using Claude Code or Codex, replacing Claude or GPT with GLM-5.2 is not worth the configuration cost to me.
 
 ## Where I Landed
 
