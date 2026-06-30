@@ -46,14 +46,14 @@ opencode plugin opencode-vision -g
 
 ZCode 实现视觉支持的方式是把图像路由到官方订阅计划里包含的具备视觉能力的模型。所以 ZCode 能看懂你发给它的图片；而通过非官方 provider 使用 GLM-5.2 时，这一能力就会消失。
 
-但 OpenCode 没法配置模型路由或融合模型。如何让 OpenCode 处理视觉内容？
+但 OpenCode 没法配置模型路由或融合模型。那么如何让 OpenCode 处理视觉内容？
 
-OpenCode 已经接入了 OpenAI ChatGPT、Kimi for Coding、OpenCode Go、Ollama Pro/Max 等 provider，其中不少都提供具备视觉能力的模型。借助 OpenCode 已有的原语，我们可以搭一个很轻量的架构：
+其实 OpenCode 已经接入了 OpenAI ChatGPT、Kimi for Coding、OpenCode Go、Ollama Pro/Max 等 provider，其中不少都提供具备视觉能力的模型。借助 OpenCode 已有的原语，我们可以搭一个很轻量的架构：
 
 1. 创建使用具备视觉能力的模型处理视觉内容的 subagent。
 2. 需要时通过 skill 把视觉任务委派给这些 subagent。
 
-凭借现有的 agent tooling，这两条思路已经足够让 agent 把这个插件搭出来。
+凭借现有的 agent 工具，这两条思路已经足够让 agent 把这个插件搭出来。
 
 不过有两个细节仍然关键：
 
