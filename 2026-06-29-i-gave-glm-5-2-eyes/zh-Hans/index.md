@@ -23,7 +23,7 @@ tags: [AI,Agent]
 如果你想马上安装这个插件，请执行以下命令：
 
 ```shell
-opencode 插件opencode-vision -g
+opencode plugin opencode-vision -g
 ```
 
 这个插件带有一个 `vision` skill。把图片拖入输入框即可使用它。
