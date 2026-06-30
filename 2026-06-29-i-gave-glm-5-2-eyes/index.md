@@ -66,13 +66,13 @@ Both are critical to the quality of vision-task results.
 
 Stable agent-to-agent communication usually starts with a rigid contract that structures subagent inputs and outputs.
 
-However, to handle as many visual tasks as possible, that contract cannot be too narrow or rigid.
+However, to support a wide range of visual tasks, that contract cannot be too narrow or rigid.
 
 For example, if we add a field for the task purpose but allow only a small set of values, our subagents cannot handle other kinds of work.
 
 **Bad Design:**
 
-The following code comes from my first agent-to-agent contract design. It had several design smells:
+The following code comes from my first agent-to-agent contract design. It had several design flaws:
 
 1. The `role` field in the `Image` object is designed for comparison tasks, but not every visual task is a comparison task.
 2. The `judgment` field covers only a limited set of visual tasks, and we cannot list every possible task when we design the skill.
