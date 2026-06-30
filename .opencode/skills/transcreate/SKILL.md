@@ -1,9 +1,9 @@
 ---
-name: translate
-description: Translate English into Simplified Chinese
+name: transcreate
+description: Transcreate English into Simplified Chinese
 ---
 
-Rewrite this post into Simplified Chinese
+Transcreate this post into Simplified Chinese
 
 **MUST:**
 
@@ -89,4 +89,28 @@ Expected translations: 可行性
 **debuggability**
 Usages: debuggability
 Expected translations: 可调式性
+
+**vision-capable**
+Usages: vision-capable model
+Expected translations: 具备视觉能力的模型
+
+**plugin**
+Usages: plugin
+Expected translations: 插件
+
+**spawning prompt**
+Usages: spawning prompt
+Expected translations: 初始化 prompt
+
+**screenshots**
+Usages: screenshots
+Expected translations: 截图
+
+**model router**
+Usages: model router
+Expected translations: 模型路由
+
+**fusion model**
+Usages: fusion model
+Expected translations: 融合路由
 </ENGLISH_TO_SIMPLIFIED_CHINESE_TRANSLATION_LOOUP_TABLE>
