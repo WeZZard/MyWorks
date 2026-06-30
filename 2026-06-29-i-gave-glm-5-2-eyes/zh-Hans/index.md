@@ -1,5 +1,5 @@
 ---
-title: "我给了 GLM-5.2 一双眼睛"
+title: "为 GLM 5.2 添加视觉能力：动态 agent 间通信协议及多模态陷阱"
 category: Programming
 tags: [AI,Agent]
 ---
