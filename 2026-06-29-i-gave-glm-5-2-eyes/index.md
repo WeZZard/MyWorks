@@ -26,15 +26,15 @@ If you want the plugin right away, here is the install command:
 opencode plugin opencode-vision -g
 ```
 
-This plugin comes with a `vision` skill. To use it, you can just simply drag-and-drop an image to the input box.
+This plugin comes with a `vision` skill. To use it, drag an image into the input box.
 
 ![OpenCode session demonstrating an image prompt before the vision plugin handles it.](./example-drop-image-1.png "Image Prompt Before Vision Routing")
 
-For the first time, you must pick a vision-capable model detected from your configured providers.
+When the first time you use it, you must pick a vision-capable model detected from your configured providers.
 
 ![OpenCode session where the plugin starts vision routing and discovers available image-capable models.](./example-drop-image-2.png "Discovering Vision Models")
 
-Then the image would be evaluated with a subagent configured with a vision-capable model. GLM 5.2 in the main agent would get what the subagent get.
+Then a subagent configured with that vision-capable model evaluates the image. GLM-5.2 in the main agent receives the subagent's findings as text.
 
 ![OpenCode session asking the user to select a vision-capable model for image analysis.](./example-drop-image-3.png "Selecting a Vision Model")
 
@@ -44,18 +44,18 @@ This skill also works with images returned by computer-use and browser-use tools
 
 ## The Architecture
 
-ZCode implements vision support by routing image input to a vision-capable model included in its official subscription plan. That is why ZCode can understand the images you send to it, and why that behavior disappears when you use GLM-5.2 through unofficial providers.
+ZCode implements vision support by routing image input to a vision-capable model included in its official subscription plan. That is why ZCode can understand the images you send it, and why that behavior disappears when you use GLM-5.2 through unofficial providers.
 
 But OpenCode cannot configure a model router or fusion models. So how can we make OpenCode handle visual content?
 
-Many providers available through OpenCode already offer vision-capable models: OpenAI ChatGPT, Kimi for Coding, OpenCode Go, and Ollama Pro/Max. With the primitives OpenCode already provides, we can build a lightweight architecture:
+Since many providers available through OpenCode already offer vision-capable models: OpenAI ChatGPT, Kimi for Coding, OpenCode Go, and Ollama Pro/Max. With the primitives OpenCode already provides, we can build a lightweight architecture:
 
 1. Create subagents that use vision-capable models to process visual content.
 2. Delegate visual tasks to these subagents through a skill when needed.
 
-With today's agent tooling, that design is enough to build the plugin.
+With today's agent tooling, those two ideas are enough to prompt an agent into building the plugin.
 
-Two details still matter:
+However, two details still matter:
 
 1. Agent-to-agent communication design
 2. What the skill description covers
@@ -66,15 +66,17 @@ Both are critical to the quality of vision-task results.
 
 Stable agent-to-agent communication usually starts with a rigid contract that structures subagent inputs and outputs.
 
-To handle as many visual tasks as possible, that contract cannot be too narrow or rigid. For example, if we add a field for the task purpose but allow only a small set of values, our subagents cannot handle other kinds of work.
+However, to handle as many visual tasks as possible, that contract cannot be too narrow or rigid.
+
+For example, if we add a field for the task purpose but allow only a small set of values, our subagents cannot handle other kinds of work.
 
 **Bad Design:**
 
 The following code comes from my first agent-to-agent contract design. It had several design smells:
 
-1. The `Image` object is designed for comparison tasks, but not every visual task is a comparison.
+1. The `role` field in the `Image` object is designed for comparison tasks, but not every visual task is a comparison task.
 2. The `judgment` field covers only a limited set of visual tasks, and we cannot list every possible task when we design the skill.
-3. The `judgment` field can contain only one object. What if I want to check an object's alignment on both the X and Y axes?
+3. The `judgment` field can contain only one object such that can only have one `Alignemnt` object. What if I want to check an object's alignment on both the X and Y axes?
 
 ```typescript
 interface Image { path: string; label: string; role: "baseline" | "current" | "reference" }
@@ -99,17 +101,19 @@ interface Describe { kind: "describe"; focus: string }
 
 **Good Design:**
 
-A better approach is to let the agent design the contract using clear principles:
+A better approach is to let the agent design the contract using clear principles.
 
-![Prompt template diagram showing how the main agent defines a visual task, images, response template, and response rules for a subagent.](./agent-to-agent-prompt-example.png "Dynamic Vision Subagent Prompt Template")
+The following diagram reflects the key points and the outline of the "meta" prompt that dynamically generates the agent-to-agent communication contract in the skill.
 
 With this design, communication between agents stays structured while remaining dynamic enough to represent a wide range of visual tasks.
 
+![Prompt template diagram showing how the main agent defines a visual task, images, response template, and response rules for a subagent.](./agent-to-agent-prompt-example.png "Dynamic Vision Subagent Prompt Template")
+
 ## Skill Description
 
-People may think multimodal support is only about user input. However, tool results can introduce multimodal content too.
+People may think multimodal support is only about user input. However, tool results can introduce multimodal content.
 
-The skill description should cover cases where tool results include multimodal content. In OpenCode, this is straightforward because images in tool results have two recognizable traits:
+This means the skill description should cover cases where tool results include multimodal content. In OpenCode, this is straightforward because images in tool results have two recognizable traits:
 
 ```yaml
 description: >-
@@ -125,20 +129,20 @@ description: >-
 
 **Native Multimodality:**
 
-A plugin cannot add native multimodal support to a text-only model like GLM-5.2.
+This plugin does not add native multimodality to a text-only model like GLM-5.2.
 
-The model's training process sets that limit. As users, we cannot close the gap.
+Multimodal content carries details that text cannot fully capture. Native multimodality lets the model see those details directly.
 
-What we can do is route multimodal requests to another capable model and ask that model to return its findings to the text-only model as text. But multimodal content carries subtle details that text cannot fully express, even when a trained vision model can capture them. A "fused" model built this way is not as strong as a native multimodal model.
+This plugin cannot do that. It sends a vision model's findings back to the main agent as text, so some visual information still gets compressed or lost.
 
 **Disable the Plugin:**
 
-Sometimes you may switch to a vision-capable model like GPT. In this case, evaluate visual contents within the main agent can get better results due to the native multimodality understanding.
+Sometimes you may switch to a vision-capable model like GPT. In that case, keeping that model in the driver's seat for visual tasks is a better choice -- it can inspect images natively and may produce better results.
 
-However, plugins installed with `opencode plugin` would not appear in OpenCode's plugin management UI.
+However, plugins installed with `opencode plugin` do not appear in OpenCode's plugin management UI.
 
-In this case, you can simply prepend "You MUST not use the vision skill." to your prompt, then the vision skill comes with this plugin would not be invoked.
+To disable the plugin for a single task, prepend this sentence to your prompt: **"You MUST not use the vision skill."** OpenCode will then skip the `vision` skill that comes with this plugin.
 
 **Video Content:**
 
-Models like Kimi K2.7 Code support video input. However, OpenCode does not accept video input. So this plugin also does not support video content.
+Models like Kimi K2.7 Code support video input. OpenCode does not accept video input, so this plugin does not support video either.
