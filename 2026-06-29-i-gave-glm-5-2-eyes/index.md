@@ -18,7 +18,7 @@ To solve both problems, I built a plugin that gives GLM-5.2 eyes in OpenCode. Th
 2. How to design agent-to-agent communication.
 3. How to make skills trigger reliably on multimodal content.
 
-## Installation and Usage
+## Installing and Using the Plugin
 
 If you want the plugin right away, here is the install command:
 
