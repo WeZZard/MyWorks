@@ -101,9 +101,12 @@ interface Describe { kind: "describe"; focus: string }
 
 **Good Design:**
 
-A better approach is to let the agent design the contract using clear principles.
+A better approach is to let the agent design the contract from a prompt template and a few explicit principles:
 
-The following diagram reflects the key points and the outline of the "meta" prompt that dynamically generates the agent-to-agent communication contract in the skill.
+1. Declare the subagent's spawning prompt as a template.
+2. **Inside** the spawning prompt, declare the subagent's **response schema** as a template.
+3. **Inside** the spawning prompt, add principles that enforce the subagent to responds with the **response schema**.
+4. **Outside** the spawning prompt, add principles that guide the main agent to spawn the subagent with a dynamically designed **response schema**.
 
 With this design, communication between agents stays structured while remaining dynamic enough to represent a wide range of visual tasks.
 
