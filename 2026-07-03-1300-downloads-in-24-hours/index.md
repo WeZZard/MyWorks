@@ -9,7 +9,7 @@ I am the author of the `opencode-vision` plugin. It lets you delegate visual tas
 npmjs.com showed that this plugin hit 1,300+ downloads in the first 24 hours after the release. However, I also made a basic and costly mistake: my first Reddit post and X article did not mention the GitHub repository. People had no clear place to file issues or leave feedback. Even worse, another project already used the name `opencode-vision`, so search results could send users to the wrong place.
 
 ![npm package page for opencode-vision showing 1,358 weekly downloads](npmjs.png)
-*1,358 downloads in 24 hours.*
+1,358 downloads in 24 hours.
 
 So let me fix that first: if you installed the plugin with `opencode plugin opencode-vision -g`, please file issues and feedback in the [correct GitHub repository](https://github.com/WeZZard/opencode-vision).
 
@@ -34,7 +34,7 @@ I first solved the problem for myself with a subagent backed by Kimi K2.7 Code. 
 After GLM-5.2 launched, a Zhipu employee asked on X for the most wanted features. The replies were full of requests for vision support. That was a strong demand signal. I knew I was not alone.
 
 ![X post by jietang asking for GLM feature requests, with replies overwhelmingly requesting vision support](gtm-1.png)
-*Top replies all asked for vision support.*
+Top replies all asked for vision support.
 
 So I raised the priority of turning my workaround into a plugin. OpenCode plugins do not have a paid marketplace, but a useful plugin can still become a distribution asset and a trust asset in a developer community.
 
@@ -45,7 +45,7 @@ Because I was building an OpenCode plugin, while Zhipu had also shipped ZCode, I
 While building the plugin, I posted a screenshot on X showing my own GLM-5.2 setup completing a visual task in OpenCode. People liked it. More than one person asked how it worked and whether I could share it.
 
 ![X post by WeZZard showing GLM 5.2 completing a visual task in OpenCode, with replies asking to share the approach](gtm-2.png)
-*People asked me to share the setup.*
+People asked me to share the setup.
 
 At that point, I knew that the vision gap in GLM-5.2 inside OpenCode was a common user pain, not only my private annoyance. I prioritized the plugin building.
 
