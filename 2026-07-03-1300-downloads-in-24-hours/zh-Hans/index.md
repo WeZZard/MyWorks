@@ -8,10 +8,9 @@ tags: [AI,Agent,Product]
 
 这个插件在我发布这个后的 24 小时内，npmjs.com 显示下载量达到了 1300+。但我犯了一个很低级、也很昂贵的错误：我在 Reddit 和 X 的首发内容里没有提及 GitHub 仓库。用户很难找到正确的反馈入口。更糟的是，opencode-vision 这个名字已经存在同名项目，搜索结果会造成混淆。
 
-![opencode-vision 在 npm 上的页面，显示 1,358 次周下载量](../npmjs.png)
-24 小时内 1,358 次下载。
+![opencode-vision 在 npm 上的页面，显示 1,358 次周下载量](../npmjs.png "24 小时内 1,358 次下载")
 
-所以这篇文章先做一件事：如果你是通过 `opencode plugin opencode-vision -g` 安装的用户，请到[正确的 GitHub 仓库](https://github.com/WeZZard/opencode-vision)提 issue、给反馈。
+所以进入正文前让我先说明一件事：如果你是通过 `opencode plugin opencode-vision -g` 安装的用户，请到[正确的 GitHub 仓库](https://github.com/WeZZard/opencode-vision)提 issue、给反馈。
 
 因为我的学科背景是工业设计，而我们设计系出身的人在升学和求职时都依赖「作品集」来讲述我们在创作每一件作品时的每一个关键时刻做出了什么样关键的决定、对作品产生了什么影响、后面又学习到了什么，所以这篇文章属于我个人作品集的一部分，用来记录这个插件创作，go-to-market 和 distribute 过程中的关键决策和心得感悟。
 
@@ -33,8 +32,7 @@ tags: [AI,Agent,Product]
 
 GLM 5.2 发布后智谱的员工在 X 收集最想要的新需求，下面基本都是视觉支持的特性请求。这是非常强的需求信号。我马上知道了 —— 原来不止我一个人在痛。
 
-![智谱员工 jietang 在 X 上征集 GLM 新功能需求，回复中大量用户请求视觉支持](../gtm-1.png)
-热门回复几乎都在要视觉功能。
+![智谱员工 jietang 在 X 上征集 GLM 新功能需求，回复中大量用户请求视觉支持](../gtm-1.png "热门回复几乎都在要视觉功能")
 
 于是我提升了将我解决方案插件化的优先级 —— 虽然 OpenCode 插件无法盈利，但是依然可以作为提升 distribution channel、构筑开发者社区信任的一个资产。
 
@@ -44,8 +42,7 @@ GLM 5.2 发布后智谱的员工在 X 收集最想要的新需求，下面基本
 
 于是我在构建插件的过程中将我使用我自己解决方案解决 GLM-5.2 视觉能力缺失的问题的截图发到了 X 上。然后就看到了很多人点赞，也有不下一个人来询问具体应该怎么做、是否能分享。
 
-![WeZZard 在 X 上发布 GLM 5.2 在 OpenCode 中完成视觉任务的截图，网友请求分享方案](../gtm-2.png)
-网友来问实现方法。
+![WeZZard 在 X 上发布 GLM 5.2 在 OpenCode 中完成视觉任务的截图，网友请求分享方案](../gtm-2.png "网友来问实现方法")
 
 到了这里我知道了：有这个痛点的 OpenCode 用户应该是不少的。
 
