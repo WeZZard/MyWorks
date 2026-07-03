@@ -7,11 +7,11 @@ isPublished: false
 
 I am the author of the `opencode-vision` plugin. It lets you delegate visual tasks to a vision model from one of your existing AI subscriptions while using a text-only model, such as GLM-5.2 or DeepSeek V4, as the main model in OpenCode.
 
-npmjs.com showed me this plugin hit 1,300+ downloads in the first 24 hours after the release. However, I also made a basic and costly mistake: my first Reddit post and X article did not mention the GitHub repository. People had no clear place to file issues or leave feedback. Even worse, another project already used the name `opencode-vision`, so search results could send users to the wrong place.
+npmjs.com showed that this plugin hit 1,300+ downloads in the first 24 hours after the release. However, I also made a basic and costly mistake: my first Reddit post and X article did not mention the GitHub repository. People had no clear place to file issues or leave feedback. Even worse, another project already used the name `opencode-vision`, so search results could send users to the wrong place.
 
 So let me fix that first: if you installed the plugin with `opencode plugin opencode-vision -g`, please file issues and feedback in the [correct GitHub repository](https://github.com/WeZZard/opencode-vision).
 
-My background is industrial design. Design students rely on portfolios when they apply for schools and jobs. A good portfolio explains the key decisions a designer made at each pivotal moment in a project: what changed, why it changed, what effect it had, and what the designer learned. This post belongs to that kind of portfolio. It records the decisions and takeaways behind this plugin's creation, go-to-market, and distribution.
+My background is industrial design. Design students rely on portfolios when they apply for schools and jobs. A good portfolio explains the key decisions a designer made at each pivotal moment in a project: what changed, why it changed, what effect it had, and what the designer learned. This post is that kind of portfolio. It records the decisions and takeaways behind this plugin's creation, go-to-market, and distribution.
 
 I hope this post helps if you are building your own product and struggling with go-to-market or distribution.
 
@@ -55,10 +55,10 @@ In other words:
 
 1. The user desires the product.
 2. The user gets the product.
-3. The user used the product **for the first time**.
+3. The user uses the product **for the first time**.
 4. The user succeeds with the product **for the first time**.
 
-This path decides how many interested users actually reach the experience you designed. If that number is low, your feedback and word of mouth become distorted, even the negative ones.
+This path decides how many interested users actually reach the experience you designed. If that number is low, your feedback and word of mouth become distorted — and so do the negative signals you need most.
 
 We see this problem all the time. Some physical products only ship to one country. Some digital products require a credit card from one country. We may want to try them, but the product experience never reaches us. That hurts revenue, distribution, and product iteration.
 
@@ -70,7 +70,7 @@ opencode plugin opencode-vision -g
 
 That command works well in Reddit posts, Discord messages, and articles. It also supports impulse trials.
 
-But before a user can finish the first visual task, the plugin still faces several forks:
+But before a user can finish the first visual task, there are still several forks:
 
 1. How does the user provide a vision model?
 2. How does the user choose a vision model?
@@ -142,9 +142,9 @@ I fixed the traffic chain only after the first 24 hours. At the time, I thought 
 
 ### 1. The Product Can't Teach Me Pricing
 
-This plugin consumes the user's own AI subscriptions, and OpenCode has no paid plugin marketplace. That makes it a bad idea to turn it into a direct-revenue product. It works better as a distribution asset and a trust asset.
+This plugin consumes the user's own AI subscriptions, and OpenCode has no paid plugin marketplace. That makes it a bad idea to turn the plugin into a direct-revenue product. It works better as a distribution asset and a trust asset.
 
-But that also means it did not train my ability to price a product and charge directly.
+But that also means it did not develop my ability to price a product and charge directly.
 
 That ability matters, especially for people from mainland China. Many of us grew up with a line often translated as: "A gentleman understands righteousness; a petty person understands profit" (「君子喻于义、小人喻于利」). But real business does not work that way. In business, profit comes first.
 
