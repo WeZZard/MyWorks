@@ -1,5 +1,5 @@
 ---
-title: "我是如何做到 24 小时内 1300+ 海外下载量的"
+title: "我是如何做到 24 小时内 1300+ 海外下载的"
 category: Programming
 tags: [AI,Agent,Product]
 ---
