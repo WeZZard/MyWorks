@@ -2,7 +2,6 @@
 title: "我是如何做到 24 小时内 1300+ 海外下载量的"
 category: Programming
 tags: [AI,Agent,Product]
-isPublished: false
 ---
 
 大家好，我是 opencode-vision 插件作者。通过这个插件你可以在 OpenCode 使用纯文本模型（比如 GLM 5.2 或者 DeepSeek V4）作为主模型时，将视觉任务委托给在你 AI 订阅中的视觉模型上。

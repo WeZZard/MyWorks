@@ -2,7 +2,6 @@
 title: "How I got 1,300+ Downloads in 24 Hours"
 category: Programming
 tags: [AI,Agent,Product]
-isPublished: false
 ---
 
 I am the author of the `opencode-vision` plugin. It lets you delegate visual tasks to a vision model from one of your existing AI subscriptions while using a text-only model, such as GLM-5.2 or DeepSeek V4, as the main model in OpenCode.
