@@ -56,4 +56,11 @@ Follow these principles when writing and revising.
 
 - You **MUST NOT** use near-idioms — phrases that carry the cadence of a saying but are not one, usually a blend of two or more real idioms or a reworded one (e.g., "locked the controls in the human's cockpit," which welds "at the controls" + "in the pilot's seat" + "under lock and key"). Before committing to any vivid phrase, apply both tests; if it fails either, replace it with one real idiom or plain words:
   1. Is this an actual established expression, or does it only *sound* like one?
-  2. Does its metaphor still hold one sentence later, without clashing with an adjacent image?
+   2. Does its metaphor still hold one sentence later, without clashing with an adjacent image?
+
+## Cover Image Ratios
+
+When generating cover images for posts:
+
+- **X article cover**: 5:2 aspect ratio (e.g., 2000×800).
+- **WeChat public platform cover**: 2.35:1 aspect ratio (e.g., 2256×960).
