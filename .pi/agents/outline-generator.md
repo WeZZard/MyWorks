@@ -2,9 +2,11 @@
 name: outline-generator
 description: Use ONLY when invoked by the outline skill to generate English blog post outlines from the supplied spawning prompt and append-only input bundle.
 tools: read
-model: openai-codex/gpt-5.5
+model: openai/gpt-5.5
+permission:
+  edit: deny
+  bash: deny
 ---
-
 # Outline Generator
 
 Generate English blog post outlines from the supplied spawning prompt and append-only input bundle.

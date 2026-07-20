@@ -13,8 +13,7 @@ This skill does not own the prose-polishing rules. Keep polishing methodology in
 
 - Identify whether the user supplied a file input or plain-text input.
 - Preserve the input form through the whole workflow.
-- Invoke the `polish-editor` subagent with the `subagent` tool, including target, constraints, and output contract.
-- Pass `agentScope: "project"` (or `"both"`) so project-local agents under `.pi/agents/` load.
+- Invoke the `polish-editor` subagent with the `subagent` tool, including the target, constraints, and output contract.
 - Apply or return the subagent result without adding extra rewriting in the main agent.
 
 ## Supported Inputs
@@ -71,8 +70,7 @@ Call the `subagent` tool like this:
 ```json
 {
   "agent": "polish-editor",
-  "task": "<spawning prompt>",
-  "agentScope": "project"
+  "task": "<spawning prompt>"
 }
 ```
 

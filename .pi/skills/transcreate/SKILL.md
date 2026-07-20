@@ -11,10 +11,10 @@ You **MUST** align the register to everyday technical writing.
 You **MUST** re-write the texts as you are a native Chinese speaker that familiar with English tech terminologies and tend to use the English term instead of Chinese.
 You **MUST** re-think how to express the idea of the original texts in native Chinese language that has a good fluency, coherence and cohesion and achieve these goals by connecting, splitting the expressions in the original texts.
 You **MUST** use the translation lookup table below to translate terminologies, brand and product names.
-You **MUST** process each paragraph independently, then compile them in the main agent. Prefer the `subagent` tool for paragraph work when isolation helps.
+You **MUST** spawn subagents via the `subagent` tool to process each paragraph independently then compile them up in the main agent.
 You **MUST** use `「」` instead of `“”` to quote Chinese texts.
 You **MUST** use `""` instead of `“”` to quote English texts.
-You **MUST** review and challenge the rewriting of each paragraph independently by evaluating whether the fluency, coherence and cohesion aligns to native Chinese. Prefer the `subagent` tool for those reviews when isolation helps.
+You **MUST** spawn subagents via the `subagent` tool to review and challenge the rewriting results of each paragraph independently by evaluating whether the fluency, coherence and cohesion aligns to native Chinese.
 
 **MUST NOT:**
 You **MUST NOT** add or remove paragraphs in the post while rewriting the post into the target language.

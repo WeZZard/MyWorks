@@ -1,3 +1,6 @@
 {
-  "extensions": ["./extensions/subagent"]
+  "packages": [
+    "npm:pi-subagents",
+    "npm:pi-codex-image-gen"
+  ]
 }

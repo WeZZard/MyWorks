@@ -13,8 +13,7 @@ This skill does not own outline design principles. Keep outline methodology in t
 
 - Summarize the current conversation and any source notes.
 - Form an append-only spawning prompt for `outline-generator`.
-- Invoke the `outline-generator` subagent with the `subagent` tool.
-- Pass `agentScope: "project"` (or `"both"`) so project-local agents under `.pi/agents/` load.
+- Invoke the `outline-generator` subagent with the `subagent` tool and that prompt.
 - Read the subagent response.
 - Present the useful output to the user and ask what to change next.
 
@@ -50,8 +49,7 @@ Call the `subagent` tool like this:
 ```json
 {
   "agent": "outline-generator",
-  "task": "<spawning prompt>",
-  "agentScope": "project"
+  "task": "<spawning prompt>"
 }
 ```
 

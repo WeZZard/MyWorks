@@ -7,7 +7,7 @@ description: An illustration skill derived from Frédéric Forest's artwork.
 
 请围绕我输入的主题，创作一张大留白、少线条、少文字、具有思想张力的极简艺术封面。
 
-You **MUST** generate the image with the best available image tool in this environment. Prefer Jimeng via the `jimeng` CLI when that fits the request.
+You **MUST** use `codex_generate_image` to generate image.
 
 【用户输入】
 

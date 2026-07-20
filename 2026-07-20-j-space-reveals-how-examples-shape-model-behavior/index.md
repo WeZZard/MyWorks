@@ -167,7 +167,7 @@ Many AI evals lean on deterministic metrics, such as tool-error counts, or on LL
 
 The reverse also works. Place pure rules at different positions in context and measure how attention distributes. Because rules do not install a temporary behavior distribution the way examples do, they make a cleaner probe of where the model is looking.
 
-## Appendix I: Related Resources
+## Appendix I: Resources
 
 J-lens repository: [WeZZard/jlens-qwen36](https://github.com/WeZZard/jlens-qwen36)
 

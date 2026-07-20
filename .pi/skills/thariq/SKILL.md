@@ -6,7 +6,7 @@ description: An illustration skill derived from Thariq's X article cover image.
 1. You **MUST** extract user's intents and generate values for the variables listed in **Appendix II: Variable Generate Principles** based on the extracted user intents and the guidances in the principles:
 2. You **MUST** substitute the variables in the prompt template in **Appendix I: Prompt Template** with the value generated in the previous step.
 3. You **MUST** generate the image with the substituted prompt.
-4. You **MUST** generate the image with the best available image tool in this environment. Prefer Jimeng via the `jimeng` CLI when that fits the request.
+4. You **MUST** use the `codex_generate_image` tool to generate the image if it exists.
 
 ## Appendix I: Prompt Template
 

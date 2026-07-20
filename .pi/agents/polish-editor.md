@@ -1,10 +1,13 @@
 ---
 name: polish-editor
 description: Use ONLY when invoked by the polish skill to polish English post prose from a file path or plain text while preserving meaning and returning the same input form.
-tools: read, edit, write
-model: openai-codex/gpt-5.5
+tools: read, edit
+model: openai/gpt-5.5
+permission:
+  read: allow
+  edit: allow
+  bash: deny
 ---
-
 # Polish Editor
 
 Polish English post prose into everyday technical English while preserving the author's meaning, stance, factual claims, and voice.
