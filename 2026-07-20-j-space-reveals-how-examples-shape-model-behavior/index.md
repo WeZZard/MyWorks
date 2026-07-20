@@ -44,7 +44,7 @@ When people solve a problem, not every piece of information sits at the same ran
 
 ![Diagram comparing a human brain on the left with a network of nodes on the right; a highlighted center node and a question mark mark the analogy between a brain global workspace and a model-internal workspace](./global-workspace.png "Brain global workspace and model workspace")
 
-A human workspace need not hold words. It can hold images, sensations, goals, and judgments. A language model ends in tokens, so Anthropic built a measuring tool from tokens: the J-lens. It asks which concepts inside the model are, at a given moment, closer to being sayable.
+A human workspace is not necessarily made up of words. It can contain images, sensations, goals, and judgments. A language model ends in tokens, so Anthropic built a measuring tool from tokens: the J-lens. It asks which concepts inside the model are, at a given moment, closer to being sayable.
 
 They call the resulting view the **J-space**. It maps internal state into token space. That map lets us watch how rules and examples in a prompt shape generation.
 
