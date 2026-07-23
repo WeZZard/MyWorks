@@ -1,0 +1,10 @@
+{
+  "abstract-art": [
+    {"id": "malevich-suprematist-composition", "artist": "Kazimir Malevich", "work": "Suprematist Composition", "year": 1916, "google_art_url": "https://artsandculture.google.com/asset/suprematist-composition-kazimir-malevich/3gEa_AWAHpuU9A", "wikimedia_query": "Malevich Suprematist Composition"},
+    {"id": "kandinsky-ten-elements-chromatique-circle", "artist": "Wassily Kandinsky", "work": "Ten Elements forming a Chromatique Circle", "year": 1931, "google_art_url": "https://artsandculture.google.com/asset/ten-elements-forming-a-chromatique-circle-kandinsky-vassily/cwEx7V9aJSjBlw", "wikimedia_query": "Kandinsky Ten Elements forming a Chromatique Circle"},
+    {"id": "kandinsky-auf-spitzen", "artist": "Wassily Kandinsky", "work": "Auf Spitzen (On the Points)", "year": 1923, "google_art_url": "https://artsandculture.google.com/asset/auf-spitzen-on-the-points-kandinsky-vassily/rAG56tsUz7EFdw", "wikimedia_query": "Kandinsky Auf Spitzen On the Points"},
+    {"id": "kandinsky-kleine-welten-vi", "artist": "Wassily Kandinsky", "work": "Kleine Welten VI", "year": 1922, "google_art_url": "https://artsandculture.google.com/asset/kleine-welten-vi-wassily-kandinsky/tAGhsIDRJ-rWkg", "wikimedia_query": "Kandinsky Kleine Welten VI"},
+    {"id": "lissitzky-proun-study-1a", "artist": "El Lissitzky", "work": "Proun Study 1A (the Bridge)", "year": 1919, "google_art_url": "https://artsandculture.google.com/asset/proun-study-1a-proun-s-k-the-bridge-lazar-el-lissitzky/qgFSuamn93SI8g", "wikimedia_query": "Lissitzky Proun Study 1A"},
+    {"id": "kandinsky-study-komposition-viii", "artist": "Wassily Kandinsky", "work": "Study for Komposition VIII", "year": 1923, "google_art_url": "https://artsandculture.google.com/asset/study-for-komposition-viii-vassily-kandinsky/aQHOSyOTTmNCPA", "wikimedia_query": "Kandinsky Study for Komposition VIII"}
+  ]
+}

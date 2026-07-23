@@ -1,0 +1,6 @@
+# SAM 2 image segmentation (Apple Silicon MPS). Pinned to known-good lines.
+# Install SAM 2 from the facebookresearch git repo in setup.sh, not from here.
+torch>=2.5.1
+torchvision>=0.20.1
+numpy>=1.26
+pillow>=10.4

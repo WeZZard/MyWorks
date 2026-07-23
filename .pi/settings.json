@@ -1,6 +1,6 @@
 {
   "packages": [
-    "npm:pi-subagents",
+    "https://github.com/WeZZard/pi-subagents",
     "npm:pi-codex-image-gen"
   ]
 }

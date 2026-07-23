@@ -1,0 +1,216 @@
+#!/usr/bin/env python3
+"""Preflight deterministic checks for a blog post before publish.
+
+Usage:
+    bin/preflight <post-dir>            # e.g. 2026-07-20-j-space-...
+    bin/preflight <post-dir> --json     # machine-readable output
+
+Checks (no model, no SAM):
+  - frontmatter: title, category, tags, optional subtitle
+  - body: non-empty, no TODO/FIXME, local image refs resolve to files
+  - feed exposure: title length, subtitle presence, ~300-char excerpt sanity
+  - cover images: presence + aspect ratio (X article 5:2, WeChat 2.35:1)
+
+The cover safe-crop (SAM + VLM) check is NOT run here. The preflight skill
+runs bin/cover-crop-candidates and the cover-crop-verifier subagent after this
+script passes.
+"""
+import json
+import os
+import re
+import subprocess
+import sys
+from pathlib import Path
+
+# --- spec -------------------------------------------------------------------
+
+X_RATIO = 5.0 / 2.0          # 2.5 : 1
+WMP_RATIO = 2.35 / 1.0       # 2.35 : 1   (WeChat 头条; share = center 1:1 crop of this file)
+RATIO_TOL = 0.02             # 2% tolerance
+EXCERPT_PRUNE = 300          # matches gatsby Index.js pruneLength
+TITLE_SOFT_MAX = 60          # feed readability soft cap (chars)
+
+
+# --- frontmatter ------------------------------------------------------------
+
+FRONT_RE = re.compile(r"^---\s*\n(.*?)\n---\s*\n(.*)$", re.S)
+
+
+def parse_frontmatter(text):
+    m = FRONT_RE.match(text)
+    if not m:
+        return {}, text
+    raw, body = m.group(1), m.group(2)
+    fm = {}
+    for line in raw.splitlines():
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        if ":" not in line:
+            continue
+        key, val = line.split(":", 1)
+        key, val = key.strip(), val.strip()
+        if val.startswith("[") and val.endswith("]"):
+            val = [x.strip().strip('"\'') for x in val[1:-1].split(",") if x.strip()]
+        else:
+            val = val.strip('"\'')
+        fm[key] = val
+    return fm, body
+
+
+# --- checks -----------------------------------------------------------------
+
+def img_dims(path):
+    """Return (w, h) via macOS sips; (None, None) if unavailable."""
+    try:
+        out = subprocess.check_output(
+            ["sips", "-g", "pixelWidth", "-g", "pixelHeight", str(path)],
+            stderr=subprocess.DEVNULL,
+        ).decode()
+    except Exception:
+        return None, None
+    w = h = None
+    for line in out.splitlines():
+        if "pixelWidth" in line:
+            w = int(line.split(":")[-1].strip())
+        if "pixelHeight" in line:
+            h = int(line.split(":")[-1].strip())
+    return w, h
+
+
+def check_ratio(path, target, label):
+    w, h = img_dims(path)
+    if not w or not h:
+        return ("warn", f"{label}: could not read dimensions for {path.name}")
+    ratio = w / h
+    delta = abs(ratio - target) / target
+    if delta > RATIO_TOL:
+        return ("fail", f"{label}: ratio {ratio:.3f}:1 deviates from target {target:.3f}:1 ({w}x{h})")
+    return ("ok", f"{label}: {w}x{h} ({ratio:.3f}:1)")
+
+
+def strip_markdown(md):
+    md = re.sub(r"```.*?```", " ", md, flags=re.S)        # code blocks
+    md = re.sub(r"`[^`]*`", " ", md)                       # inline code
+    md = re.sub(r"!\[[^\]]*\]\([^)]*\)", " ", md)          # images
+    md = re.sub(r"\[[^\]]*\]\([^)]*\)", " ", md)           # links
+    md = re.sub(r"^#{1,6}\s+", "", md, flags=re.M)         # headings
+    md = re.sub(r"^>\s?", "", md, flags=re.M)              # blockquote markers
+    md = re.sub(r"[*_~]", "", md)                          # emphasis
+    md = re.sub(r"\s+", " ", md).strip()
+    return md
+
+
+def approx_excerpt(body, prune=EXCERPT_PRUNE):
+    plain = strip_markdown(body)
+    if len(plain) <= prune:
+        return plain
+    cut = plain[:prune]
+    # prune back to the last word boundary, like gatsby's pruneLength
+    space = cut.rfind(" ")
+    if space > prune * 0.6:
+        cut = cut[:space]
+    return cut.rstrip() + "…"
+
+
+IMG_REF_RE = re.compile(r"!\[[^\]]*\]\(([^)]+)\)")
+
+
+def run(post_dir):
+    post_dir = Path(post_dir)
+    issues = []  # (severity, check, message)
+
+    def add(sev, check, msg):
+        issues.append((sev, check, msg))
+
+    en_path = post_dir / "index.md"
+    zh_path = post_dir / "zh-Hans" / "index.md"
+
+    for label, path in (("en", en_path), ("zh-Hans", zh_path)):
+        if not path.exists():
+            if label == "en":
+                add("fail", "content", f"missing {path}")
+            continue
+        text = path.read_text(encoding="utf-8")
+        fm, body = parse_frontmatter(text)
+
+        # frontmatter
+        title = fm.get("title")
+        if not title:
+            add("fail", "frontmatter", f"[{label}] title is missing")
+        else:
+            if len(title) > TITLE_SOFT_MAX:
+                add("warn", "feed", f"[{label}] title {len(title)} chars > {TITLE_SOFT_MAX} (feed readability)")
+        cat = fm.get("category")
+        if not cat:
+            add("info", "frontmatter", f"[{label}] category missing")
+        tags = fm.get("tags")
+        if not tags or (isinstance(tags, list) and not any(tags)):
+            add("warn", "frontmatter", f"[{label}] tags missing")
+        sub = fm.get("subtitle")
+        if not sub:
+            add("info", "feed", f"[{label}] no subtitle (PostExcerpt shows it inline when present)")
+
+        # body
+        if not body.strip():
+            add("fail", "content", f"[{label}] body is empty")
+        if re.search(r"\b(TODO|FIXME|XXX)\b", body):
+            add("warn", "content", f"[{label}] body contains TODO/FIXME/XXX")
+        # local image refs resolve (relative to the source file's dir)
+        base = path.parent
+        for target in IMG_REF_RE.findall(body):
+            url = target.split()[0]  # drop an optional "title" after the url
+            if url.startswith(("http://", "https://", "/")):
+                continue
+            if not (base / url).exists():
+                add("fail", "content", f"[{label}] broken image ref: {url}")
+
+        # excerpt
+        exc = approx_excerpt(body)
+        if not exc:
+            add("warn", "feed", f"[{label}] excerpt is empty")
+        else:
+            if body.lstrip().startswith(">"):
+                add("warn", "feed", f"[{label}] excerpt leads with a blockquote (reads oddly in feed)")
+            tail = exc[-3:]
+            if not tail.endswith(("…", ".", "!", "?", "。", "！", "？")):
+                add("info", "feed", f"[{label}] excerpt pruned mid-sentence at ~{EXCERPT_PRUNE} chars")
+
+    # cover images
+    x_cover = post_dir / "cover-image-x-article.png"
+    wmp_cover = post_dir / "cover-image-wmp.png"
+    if not x_cover.exists():
+        add("fail", "cover", f"missing X article cover: {x_cover.name}")
+    else:
+        sev, msg = check_ratio(x_cover, X_RATIO, "X article cover")
+        add(sev, "cover", msg)
+    if not wmp_cover.exists():
+        add("fail", "cover", f"missing WeChat cover: {wmp_cover.name}")
+    else:
+        sev, msg = check_ratio(wmp_cover, WMP_RATIO, "WeChat cover (头条, centered visual; share = center crop)")
+        add(sev, "cover", msg)
+
+    return issues
+
+
+def main():
+    args = sys.argv[1:]
+    as_json = "--json" in args
+    args = [a for a in args if a != "--json"]
+    if not args:
+        print("usage: bin/preflight <post-dir> [--json]", file=sys.stderr)
+        sys.exit(2)
+    issues = run(args[0])
+    if as_json:
+        print(json.dumps(
+            [{"severity": s, "check": c, "message": m} for s, c, m in issues],
+            ensure_ascii=False, indent=2))
+    else:
+        for s, c, m in issues:
+            print(f"{s.upper():4} [{c}] {m}")
+    has_fail = any(s == "fail" for s, _, _ in issues)
+    sys.exit(1 if has_fail else 0)
+
+
+if __name__ == "__main__":
+    main()
