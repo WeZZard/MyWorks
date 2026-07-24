@@ -14,10 +14,14 @@ The wpw-specific glue over the generic `cover-image` plugin. The plugin takes `a
 
 If `post-dir` is missing, ask once. If `surfaces` is missing, ask once which surfaces (list the labels); cache the choice in the session (it stays in the transcript). Do not guess.
 
+## Run directory
+
+Create the cover-image skill's work dir at `.pi/cover-image-work/<post-dir-basename>--<YYYYMMDDTHHMMSS>/`, where the timestamp is **UTC** (`date -u +%Y%m%dT%H%M%S`) with no timezone marker. The post-dir basename already starts with the date, so runs sort chronologically under the post. `.pi/cover-image-work/` is gitignored. Do NOT prefix the run dir with the surface name — the post-dir basename is the prefix; if a post has multiple surfaces, each gets its own run dir (the timestamp differs).
+
 ## Workflow
 
-1. Resolve `post-dir`. Set `article-path = <post-dir>/index.md` and `output-dir = <post-dir>`.
-2. **For each requested surface**, invoke the `cover-image` skill (from `pi-cover-image`) with `surface`, `article-path`, and `output-dir`. The plugin runs the full pipeline (idea → rhetoric → palette/layout → artworks → features → prompt → generation via `image-gen` → final-checks) and writes the cover to `<post-dir>/<filename>` (e.g. `cover-image-x-article.png`, `cover-image-wmp.png`). Run the surfaces sequentially (they share the same article read and the same session-cached generation backend).
+1. Resolve `post-dir`. Set `article-path = <post-dir>/index.md` and `output-dir = <post-dir>`. Create the run dir per the naming rule above.
+2. **For each requested surface**, invoke the `cover-image` skill (from `pi-cover-image`) with `surface`, `article-path`, and `output-dir`, using a run dir under `.pi/cover-image-work/<post-dir-basename>--<UTC ts>/`. The plugin runs the full pipeline (idea → rhetoric → palette/layout → artworks → features → prompt → generation via `image-gen` → final-checks) and writes the cover to `<post-dir>/<filename>` (e.g. `cover-image-x-article.png`, `cover-image-wmp.png`). Run the surfaces sequentially (they share the same article read and the same session-cached generation backend).
 3. After every surface has produced its cover, invoke the `preflight` skill on `post-dir` to run the pre-publish checks (deterministic + SAM/VLM cover-safety).
 
 ## MUST
