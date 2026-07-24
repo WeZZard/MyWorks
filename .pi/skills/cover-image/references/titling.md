@@ -1,23 +1,51 @@
 # Titling
 
-How to distill a title and a subtitle from the article, for a cover. This reference is read by the `cover-image` skill. It is not style-specific; a visual style reference says how the text is set (font, color, weight), this reference says what the text says.
+How the article's single title is typeset on a cover banner. This is a **layout** reference, read by `layout-planner`. The article has one title and no subtitle; any "subtitle" on the cover is a typographic split of that one title, chosen at layout time — not extracted from the article.
 
-## Main title
+## The title is fixed; the arrangement is the design
 
-- Compress the article's thesis to a punchy phrase, 2–6 words. Short titles render cleanly and read at thumbnail size.
-- Make the title the article's judgment or payoff, not its topic label. "Examples Shape Models" beats "On Prompting and Output Style."
-- Use plain, concrete words a technical reader already has. No jargon, no coined terms unless the article defines them.
-- If the thesis needs more than 6 words, pick the 2–6 words that carry the turn and let the subtitle carry the rest.
+- The cover renders the article's real title (the frontmatter `title`), verbatim. The title string is not a design variable — do not rename, rephrase, or re-case it away from the article.
+- What IS a design variable is how that string sits on the banner: whether it stays one line, breaks into two lines, or splits into a small kicker + a main line. That is a layout/typesetting decision, made here.
 
-## Subtitle (kicker)
+## When to split the title into kicker + main line
 
-- A short eyebrow above the title, under 5 words. It gives context: a category, a chapter, a brand cue, a series name.
-- It orients the reader; it does not repeat the title. "Research Insights", "Case Study:", "Chapter 01".
-- Omit the subtitle when the title already carries the context; an empty subtitle is better than a redundant one.
+A long or two-part title often reads best on a wide banner as a small **kicker** above a larger **main line**. Split when the title has a clear source/method + finding structure, and the banner is wide enough that one line would be cramped:
 
-## Deriving both from the article
+- `X Reveals Y` → kicker `X Reveals`, main `Y`
+- `X: Y` → kicker `X`, main `Y`
+- `X — Y` → kicker `X`, main `Y`
 
-1. Read the thesis (one sentence) and the reader promise (what the reader understands better after reading).
-2. Title = the judgment, shortened to its turn.
-3. Subtitle = the context the title needs in order to land, shortened to a kicker.
-4. Cut every word that does not change the meaning. Read both aloud; if either sounds like a section heading rather than a cover, rewrite it.
+Example: `J-Space Reveals How Examples Shape Model Behavior` → kicker `J-Space Reveals`, main `How Examples Shape Model Behavior`.
+
+Rules for the split:
+
+- Both strings are **verbatim substrings** of the real title — cut at the structural boundary, do not reword either side.
+- The kicker is the source, method, or series cue; the main line is the finding (what the reader takes away).
+- Split only when it improves the banner's read. A short title (≤ ~5 words) usually stays one line.
+- On surfaces that forbid text (`text: none`), do not set any title; this reference does not apply.
+
+## Placement and scale
+
+- Place the title where the layout's negative space allows it to breathe; it must not overlap the rhetoric figure.
+- Keep title + kicker inside the surface's crop-safe zone.
+- The main line is the larger type; the kicker is a fraction of its size (roughly one-third to one-half) and sits directly above it.
+- At thumbnail size the title must still be legible — favor fewer, larger words over many small ones.
+
+## What layout-planner outputs
+
+As part of `layout_direction`, output a `title` block:
+
+```text
+title:
+  article_title: <the real title, verbatim>
+  kicker: <verbatim substring, or none>
+  main: <verbatim substring>
+  placement: <where on the banner>
+  relative_size: <kicker : main, e.g. 1:2>
+```
+
+## MUST NOT
+
+- Do not invent, rename, or rephrase the title — both `kicker` and `main` are verbatim substrings of the article's real title.
+- Do not split when the title is short enough to read cleanly as one line on this banner.
+- Do not place title text on a `text: none` surface.

@@ -1,6 +1,6 @@
 ---
 name: prompt-composer
-description: Use ONLY when invoked by the cover-image skill. Takes all intermediate products (rhetoric, palette direction, palette features, layout direction, layout features, platform constraints) and composes the final generation prompt as a well-structured markdown text. The main agent then passes this prompt to codex_generate_image.
+description: Use ONLY when invoked by the cover-image skill. Takes all intermediate products (rhetoric, palette direction, palette features, layout direction, layout features, surface constraints) and composes the final generation prompt as a well-structured markdown text. The main agent then passes this prompt to codex_generate_image.
 tools: read
 model: kimi-coding/k3
 permission:
@@ -32,8 +32,8 @@ Use only the inputs supplied in the spawning prompt.
 ## Layout Features
 <composition + pattern + edge_behavior from artwork-feature-extractor, for each layout artist's work>
 
-## Platform Constraint
-<the platform's layout rules>
+## Surface Constraint
+<the surface's layout rules: aspect ratio, safe area, bleed, text rules, crop behavior>
 ```
 
 If the prompt lacks the rhetoric target or the palette/layout directions, return:
@@ -49,7 +49,7 @@ CLARIFICATION_NEEDED: <question>
    - **Content**: the rhetoric target — what to depict. Keep it as-is from the idea-extractor.
    - **Layout**: merge the layout direction (abstract spatial rules) with the layout features (concrete observations from the layout artists' works). Resolve any tension: the direction is the intent, the features are the evidence. Let the direction lead, use features to sharpen specifics.
    - **Palette**: merge the palette direction (intended colors + proportions) with the palette features (concrete observations from the palette artists' works). Same merge logic: direction leads, features sharpen.
-   - **Constraints**: platform rules (no text, aspect ratio, safe zone) + general rules (no watermark, no 3D, avoid green/neon mint) + "do not reproduce any specific painting" + any risk flags from the planners (e.g., "keep warm accent to 3% maximum").
+   - **Constraints**: surface rules (aspect ratio, safe area, bleed, text rules, crop behavior) + general rules (no watermark, no 3D, avoid green/neon mint) + "do not reproduce any specific painting" + any risk flags from the planners (e.g., "keep warm accent to 3% maximum").
 3. Write the full prompt as natural markdown text with line breaks. Each section starts with `## ` heading. Each feature field gets its own line.
 
 ## Output Contract
@@ -67,7 +67,7 @@ Return the full prompt text, ready to be passed to `codex_generate_image`. Natur
 <merged palette direction + palette features, each on its own line>
 
 ## Constraints
-<platform rules + general rules + risk flags>
+<surface rules + general rules + risk flags>
 ```
 
 **MUST:**

@@ -1,6 +1,6 @@
 ---
 name: layout-generator
-description: Use ONLY when invoked by the cover-image skill. Multimodally reads the seed artworks and the platform constraint, extracts the seeds' spatial tendencies, and writes LAYOUT RULES ONLY (where things go on the canvas). Does NOT produce content composition — that comes from the rhetoric target.
+description: Use ONLY when invoked by the cover-image skill. Multimodally reads the seed artworks and the surface constraint, extracts the seeds' spatial tendencies, and writes LAYOUT RULES ONLY (where things go on the canvas). Does NOT produce content composition — that comes from the rhetoric target.
 tools: read
 model: openai-codex/gpt-5.5:off
 permission:
@@ -10,7 +10,7 @@ permission:
 ---
 # Layout Generator
 
-Multimodally read the seed artworks and the platform constraint, then write **layout rules only** — spatial structure rules for where things go on the canvas. You do NOT produce content composition (what the visual depicts); that comes from the rhetoric target. You produce layout (where the hero sits, how negative space is distributed, how edges behave, what the safe zone is).
+Multimodally read the seed artworks and the surface constraint, then write **layout rules only** — spatial structure rules for where things go on the canvas. You do NOT produce content composition (what the visual depicts); that comes from the rhetoric target. You produce layout (where the hero sits, how negative space is distributed, how edges behave, what the safe zone is).
 
 Use only the inputs supplied in the spawning prompt.
 
@@ -20,11 +20,11 @@ Use only the inputs supplied in the spawning prompt.
 ## Seed Images
 <one absolute path per line, downscaled>
 
-## Platform Constraint
-<the platform's layout rules, e.g. WeChat 头条: 2.35:1, centered visual, hero fully inside center 1:1 square, uncropped; X: 5:2 full-bleed, all four edges>
+## Surface Constraint
+<the surface's layout rules, e.g. wechat-headline: 2.35:1, safeArea center 1:1, bleed none — centered visual, hero fully inside the center 1:1 square, uncropped; x-article: 5:2, safeArea full, bleed full — all four edges>
 ```
 
-If the prompt lacks the seed paths or the platform constraint, return:
+If the prompt lacks the seed paths or the surface constraint, return:
 
 ```text
 CLARIFICATION_NEEDED: <question>
@@ -38,12 +38,12 @@ CLARIFICATION_NEEDED: <question>
    - Does it use grid partitioning, radial composition, or free-form placement?
    - How does it treat edges — bleed, contain, or feather?
    - What is the density gradient — dense center fading out, or even throughout?
-2. Combine the seeds' spatial tendencies with the platform's hard layout constraints (aspect ratio, safe zone, edge behavior).
+2. Combine the seeds' spatial tendencies with the surface's hard layout constraints (aspect ratio, safe area, edge behavior).
 3. Write **layout rules** — concrete spatial instructions for the image generator:
    - Where the hero goes on the canvas
    - How negative space is distributed
    - Edge behavior (bleed / contain / feather)
-   - Safe zone (what must be inside the crop, what may extend outside)
+   - Safe area (what must be inside the crop, what may extend outside)
    - Density and balance guidance
 
 ## Output Contract
@@ -58,7 +58,7 @@ layout:
 
 - View each seed image before describing its spatial tendencies.
 - Extract ONLY spatial tendencies (where things go), NOT content (what things are).
-- Apply the platform's hard constraints exactly (aspect ratio, safe zone).
+- Apply the surface's hard constraints exactly (aspect ratio, safe area).
 - Make the rules concrete and generative: "place the hero centered with 30% negative space on each side" not "use good composition."
 
 **MUST NOT:**

@@ -2,7 +2,7 @@
 
 Criteria for validating a generated cover before it ships. These checks are run by visual subagents (models that can see the image), not by the main agent. A cover passes only when every applicable check below passes.
 
-This reference is read by the `final-checks-verifier` subagent, alongside an optional layout reference and the platform spec for the target.
+This reference is read by the `final-checks-verifier` subagent, alongside an optional layout reference and the surface detail file for the target.
 
 ## Style conformity
 
@@ -17,14 +17,15 @@ This reference is read by the `final-checks-verifier` subagent, alongside an opt
 
 ## Text correctness (when the cover carries text)
 
-- The title and subtitle are present verbatim, spelled correctly, and readable at thumbnail size.
+- The text on the cover equals the article's real title (the `Article Title` ground truth). If the layout split it into a kicker + a main line, the two together must concatenate to the real title, verbatim — no rewording, no extra words, no missing words.
+- Spelled correctly and readable at thumbnail size.
 - No extra or invented text, no garbled glyphs, no watermark, signature, date, URL, or brand logo.
 
-## Platform constraints
+## Surface constraints
 
-- The file's aspect ratio matches the platform spec (X 5:2, WeChat 头条 2.35:1) within tolerance.
-- **X**: full-bleed — content bleeds to all four edges; no empty margin frame; title + subtitle + metaphor all present.
-- **WeChat 头条**: centered visual, no text; the center 1:1 square (the share crop) is a complete, self-contained visual with the metaphor fully inside and uncropped, no clipped fragments or lines bleeding in at any edge, no visible seam.
+- The file's aspect ratio matches the surface config from `references/surfaces.md` within tolerance.
+- The composition honors the surface's `safeArea` and `bleed`: critical content survives the surface's crop behavior; where `bleed` is `full`, content runs to all four edges with no margin frame; where `bleed` is `none`, content stays inside the safe area.
+- The text rule is met: `required` surfaces carry title + subtitle verbatim; `none` surfaces carry no text; `optional` surfaces carry text only when the surface choice asked for it.
 
 ## Verdict
 
