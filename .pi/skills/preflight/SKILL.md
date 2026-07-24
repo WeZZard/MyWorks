@@ -5,7 +5,7 @@ description: Run pre-publish checks on a blog post — frontmatter, content, fee
 
 # Preflight
 
-Run pre-publish checks on a post. The skill is a thin orchestrator around a deterministic stage and a VLM verification stage. It owns no checking logic itself. Cover expectations come from the platform specs in `.pi/skills/cover-image/references/` (`platform-*.md`).
+Run pre-publish checks on a post. The skill is a thin orchestrator around a deterministic stage and a VLM verification stage. It owns no checking logic itself. Cover expectations are self-contained here: X article cover is 5:2 full-bleed with readable title + kicker + rhetoric; WeChat 头条 cover is 2.35:1 centered-visual with the rhetoric fully inside the center 1:1 square (the share card).
 
 ## What it checks
 
@@ -54,7 +54,7 @@ Run pre-publish checks on a post. The skill is a thin orchestrator around a dete
 
 5. **X article cover check (when the user asks).** Spawn the `cover-crop-safety-verifier` subagent with `cover-image-x-article.png` and ask whether it is a coherent full-bleed banner with readable title + subtitle + metaphor. Do not apply the center-square rule to X.
 
-6. Present a consolidated report: the deterministic result, the center-crop verdict for the 头条, and (if run) the X verdict. When the 头条 center verdict is `NONE`, say the cover has no complete center crop and suggest regenerating via the `cover-image` skill (WeChat platform spec: centered-visual banner, share = center crop).
+6. Present a consolidated report: the deterministic result, the center-crop verdict for the 头条, and (if run) the X verdict. When the 头条 center verdict is `NONE`, say the cover has no complete center crop and suggest regenerating via the `cover-image-platforms` skill (WeChat 头条: centered-visual banner, share = center crop).
 
 ## Response Handling
 
