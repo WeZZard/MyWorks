@@ -1,7 +1,6 @@
 {
   "packages": [
     "npm:pi-codex-image-gen",
-    "https://github.com/nicobailon/pi-subagents",
     "git:github.com/WeZZard/pi-cover-image"
   ]
 }
