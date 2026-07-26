@@ -47,9 +47,23 @@ tags: [X, Blogging]
 
 ### 安装
 
-前提两个：一个 X Developer app（到 [console.x.com](https://console.x.com) 创建，拿凭据；X API 是 pay-per-use 计费，账户里要有 credits），和 Node.js 18+。
+**第一步，准备 X Developer 侧的凭据和 credits。** 到 [console.x.com](https://console.x.com)，在 Apps 页面点 Create App 创建一个 app：
 
-然后按你的 agent 选一种：
+![Developer Console 的 Apps 页面，右上角是 Create App 按钮。](./x-console-create-app.png "创建 app")
+
+在 app 的 Keys & Tokens 页面拿到 consumer key、consumer secret 和 bearer token（secret 默认隐藏，点 Show 才显示）：
+
+![App 的 Keys & Tokens 页面，Bearer Token、Consumer Key、Access Token 都在这一页。](./x-console-keys-tokens.png "Keys & Tokens 页面")
+
+在 app 的 Settings → Authentication settings 里，把 XMCP 的回调地址 `http://127.0.0.1:8976/oauth/callback` 填进 Callback URI / Redirect URL：
+
+![Authentication settings 页面，App info 下的 Callback URI / Redirect URL 输入框。](./x-console-callback-url.png "注册回调地址")
+
+最后确认账户里有 credits——X API 是 pay-per-use 计费，余额不足会收到 `402 Payment Required`。Credits 在 Billing → Credits 页面购买：
+
+![Billing → Credits 页面，显示余额和 Purchase credits 按钮。](./x-console-credits.png "购买 credits")
+
+**第二步，装插件。** 需要 Node.js 18+，然后按你的 agent 选一种：
 
 - **Claude Code**：先加市场 `/plugin marketplace add wezzard/skills`，再装 `/plugin install x-articles@wezzard-skills`。
 - **pi**：`pi install git:github.com/WeZZard/pi-x-articles`。
