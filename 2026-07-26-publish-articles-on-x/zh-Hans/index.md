@@ -20,8 +20,16 @@ tags: [X, Blogging]
 ### 步骤
 
 1. **安装插件：** VS Code 插件市场找到 Yiyi Wang 的 Markdown Preview Enhanced 插件，然后安装。
+
+   ![VS Code 插件市场里的 Markdown Preview Enhanced。](./vscode-install-mpe-extension.png "安装 Markdown Preview Enhanced 插件")
+
 2. **预览 Markdown 文档：** 打开你想要的 Markdown 文档，按下 command + shift + P 打开命令面板（Command Palette），选择 `Markdown Preview Enhanced: Open Preview`。
+
+   ![选中 Markdown 文件后，在命令面板选择 Markdown Preview Enhanced: Open Preview。](./vscode-open-markdown-preview.png "打开 Markdown 预览")
+
 3. **全文复制预览结果：** 按下 command + A 全选预览结果然后 command + C 复制。
+
+   ![在预览页面全选渲染后的文章内容。](./vscode-preview-select-all.png "全选预览结果")
 4. **粘贴至 X 长文编辑器：** 在 X 长文编辑器 command + V 粘贴。
 5. **[可选]逐张补图片：** 图片粘贴过来之后会丢失，你需要一张一张补。
 6. **[可选]处理代码块：** 代码块粘贴过来之后格式和语言会丢失，你需要使用代码块工具重新输入。
