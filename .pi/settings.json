@@ -1,6 +1,11 @@
 {
   "packages": [
     "npm:pi-codex-image-gen",
-    "git:github.com/WeZZard/pi-cover-image"
+    "git:github.com/WeZZard/pi-cover-image",
+    {
+      "source": "npm:pi-language-tutor",
+      "autoload": false,
+      "extensions": ["-language-learn.ts"]
+    }
   ]
 }
