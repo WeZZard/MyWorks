@@ -43,9 +43,9 @@ tags: [X, Blogging]
 
 然后按你的 agent 选一种：
 
-- **Claude Code**：先加市场 `/plugin marketplace add WeZZard/skills`，再装 `/plugin install x-articles@wezzard-skills`。
+- **Claude Code**：先加市场 `/plugin marketplace add wezzard/skills`，再装 `/plugin install x-articles@wezzard-skills`。
 - **pi**：`pi install git:github.com/WeZZard/pi-x-articles`。
-- **Codex**：先加市场 `codex plugin marketplace add WeZZard/skills`，再装 `codex plugin add x-articles@wezzard-skills`。
+- **Codex**：先加市场 `codex plugin marketplace add wezzard/skills`，再装 `codex plugin add x-articles@wezzard-skills`。
 - **OpenCode**：没有市场概念，clone 仓库后把 `skills/x-articles` 符号链接进 `~/.config/opencode/skills/`。
 
 ### 发文章：一句话
