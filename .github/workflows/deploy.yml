@@ -1,15 +1,24 @@
-name: Deploy to Cloudflare Pages
+name: Deploy to Cloudflare Workers
 
 on:
   push:
     branches: [main]
   workflow_dispatch:
+  repository_dispatch:
+    types: [wpw-upstream-updated]
 
 jobs:
   deploy-blog:
     name: Deploy blog (wezzard.com)
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
+      - name: Checkout shared WPW middleware
+        uses: actions/checkout@v4
+        with:
+          repository: WeZZard/gatsby-source-wpw
+          token: ${{ secrets.GH_PAT }}
+          path: gatsby-source-wpw
+
       - name: Checkout blog renderer
         uses: actions/checkout@v4
         with:
@@ -17,44 +26,47 @@ jobs:
           token: ${{ secrets.GH_PAT }}
           path: blog
 
-      - name: Checkout content into blog
+      - name: Checkout MyWorks content
         uses: actions/checkout@v4
         with:
-          path: blog/content/_posts
+          path: MyWorks
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '11.15.0'
+          node-version: '22'
 
-      - name: Install dependencies
-        working-directory: blog
-        run: npm ci
+      - name: Build shared WPW middleware
+        working-directory: gatsby-source-wpw
+        run: |
+          npm ci
+          npm run build
 
-      - name: Build
+      - name: Install and build blog
         working-directory: blog
         run: |
-          chmod +x ./clear_cache
-          ./clear_cache
-          npx gatsby build
+          npm ci
+          npm run build
 
-      - name: Switch to modern Node for deploy
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: Deploy to Cloudflare Pages
+      - name: Deploy wezzard-blog to Cloudflare Workers
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy public --project-name=wezzard-blog --branch=main
+          command: deploy
           workingDirectory: blog
 
   deploy-wmp:
     name: Deploy WMP (wmp.wezzard.com)
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout shared WPW middleware
+        uses: actions/checkout@v4
+        with:
+          repository: WeZZard/gatsby-source-wpw
+          token: ${{ secrets.GH_PAT }}
+          path: gatsby-source-wpw
+
       - name: Checkout WMP renderer
         uses: actions/checkout@v4
         with:
@@ -62,33 +74,32 @@ jobs:
           token: ${{ secrets.GH_PAT }}
           path: wmp
 
-      - name: Checkout content alongside WMP
+      - name: Checkout MyWorks content
         uses: actions/checkout@v4
         with:
-          path: MyWorks.wpw
+          path: MyWorks
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '16.14.2'
+          node-version: '22'
 
-      - name: Install dependencies
+      - name: Build shared WPW middleware
+        working-directory: gatsby-source-wpw
+        run: |
+          npm ci
+          npm run build
+
+      - name: Install and build WMP renderer (Direct Paste mode)
         working-directory: wmp
-        run: npm ci
+        run: |
+          npm ci
+          npm run build:paste
 
-      - name: Build
-        working-directory: wmp
-        env:
-          GATSBY_WPW_SOURCE_URL: file://${{ github.workspace }}/MyWorks.wpw
-          GATSBY_WPW_SOURCE_KIND: git
-          GATSBY_WPW_SOURCE_BRANCH: main
-          GATSBY_BUILD_FOR_DIRECT_PASTE: '1'
-        run: npx gatsby build
-
-      - name: Deploy to Cloudflare Pages
+      - name: Deploy wezzard-wmp to Cloudflare Workers
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy public --project-name=wezzard-wmp --branch=main
+          command: deploy
           workingDirectory: wmp
