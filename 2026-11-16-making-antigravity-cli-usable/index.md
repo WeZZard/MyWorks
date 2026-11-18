@@ -25,10 +25,10 @@ Antigravity's CLI (agy) and its GUI surfaces do not share the same configuration
 | :--- | :--- | :--- |
 | **Runtime Settings & Tool Permissions** | `~/.gemini/antigravity-cli/settings.json` | `/settings` (or `/config`) and `/permissions` |
 | **Custom Keybindings** | `~/.gemini/antigravity-cli/keybindings.json` | `/keybindings` |
-| **Global Skills Directory** | `~/.gemini/antigravity-cli/skills/` (also scans `~/.gemini/skills/`) | — |
+| **Global Skills Directory** | `~/.gemini/antigravity-cli/skills/` | — |
 
-* **All CLI settings and the permission allowlist live in `~/.gemini/antigravity-cli/settings.json`:** You can edit this JSON file directly on disk, or update it live inside agy using `/settings` (for Agent Mode, Sandbox Mode, Non-Workspace Access, and Tool Permission) and `/permissions` (for the permission allowlist).
-* **Global skills for agy live in `~/.gemini/antigravity-cli/skills/`:** Skills placed outside this directory (and outside `~/.gemini/skills/`) are either missed at startup or treated as external file accesses.
+* **All CLI settings and the permission allowlist live in `~/.gemini/antigravity-cli/settings.json`:** You can edit this JSON file directly on disk, or update it live inside agy using `/settings` and `/permissions`.
+* **Global skills for agy live in `~/.gemini/antigravity-cli/skills/`:** Skills placed outside this directory are either missed at startup or treated as external file accesses.
 
 ## Tame Repetitive Permission Prompts
 
@@ -173,22 +173,13 @@ Here is how the core settings in both recipes interact:
 
 ### Fix Permission Prompts Caused by the Wrong npx skills Install Directory
 
-Global skills installed with `npx skills` fail to load at startup and trigger permission prompts when read because **`npx skills` installs them into the wrong directory**. Running `npx skills add <owner/repo> -g` places skill files in `~/.agents/skills/` instead of agy's actual global skills directory (`~/.gemini/antigravity-cli/skills/`). Because `~/.agents/skills/` sits outside agy's skills directory and outside your active Workspace, reading a skill's `SKILL.md` or helper scripts triggers an external file access prompt.
+Running `npx skills add <owner/repo> -g` installs global skills into `~/.agents/skills/` instead of `~/.gemini/antigravity-cli/skills/`. Because `~/.agents/skills/` sits outside your active Workspace, reading a skill's `SKILL.md` or helper scripts triggers an external file access prompt.
 
-Fix this by linking `~/.agents/skills` back to `~/.gemini/antigravity-cli/skills/` with a symbolic link (`ln -s`, or a macOS Finder alias):
+Link `~/.agents/skills` to `~/.gemini/antigravity-cli/skills` with `ln -sf`:
 
 ```bash
-mkdir -p ~/.gemini/antigravity-cli/skills
-
-# Move any existing global skills into the right directory first
-mv ~/.agents/skills/* ~/.gemini/antigravity-cli/skills/ 2>/dev/null || true
-rm -rf ~/.agents/skills
-
-# Symlink ~/.agents/skills back to ~/.gemini/antigravity-cli/skills
-ln -s ~/.gemini/antigravity-cli/skills ~/.agents/skills
+ln -sf ~/.agents/skills ~/.gemini/antigravity-cli/skills
 ```
-
-* **Subsequent `npx skills` installs land in the right directory:** Every `npx skills add <owner/repo> -g` command now writes straight into `~/.gemini/antigravity-cli/skills/`, so agy discovers your skills at startup and reads them without prompting.
 
 ## Customize the UI, Observability, and Privacy
 
@@ -208,9 +199,6 @@ There is one catch: when you sign in with a Google account, **Enable Telemetry**
   "enableTelemetry": false
 }
 ```
-
-* **Toggling Enable Telemetry to off in `/settings` updates your account-level setting:** Once disabled, sessions signed into your Google account stop sending usage telemetry.
-* **Setting `"enableTelemetry": false` in `settings.json` covers local and API-key sessions:** It ensures CLI-level telemetry stays off even when you run agy without a Google account login.
 
 ### Hide Account Info and the Startup Logo
 
@@ -343,8 +331,5 @@ export AGY_CLI_HIDE_LOGO=1
 Then link the global skills directory once in your terminal:
 
 ```bash
-mkdir -p ~/.gemini/antigravity-cli/skills
-mv ~/.agents/skills/* ~/.gemini/antigravity-cli/skills/ 2>/dev/null || true
-rm -rf ~/.agents/skills
-ln -s ~/.gemini/antigravity-cli/skills ~/.agents/skills
+ln -sf ~/.agents/skills ~/.gemini/antigravity-cli/skills
 ```

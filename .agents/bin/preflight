@@ -8,6 +8,7 @@ Usage:
 Checks (no model, no SAM):
   - frontmatter: title, category, tags, optional subtitle
   - body: non-empty, no TODO/FIXME, local image refs resolve to files
+  - code-safety: no destructive commands in code blocks (e.g. rm -rf, moving/deleting canonical ~/.* dirs)
   - feed exposure: title length, subtitle presence, ~300-char excerpt sanity
   - cover images: presence + aspect ratio (X article 5:2, WeChat 2.35:1)
 
@@ -114,6 +115,26 @@ def approx_excerpt(body, prune=EXCERPT_PRUNE):
 
 
 IMG_REF_RE = re.compile(r"!\[[^\]]*\]\(([^)]+)\)")
+CODE_BLOCK_RE = re.compile(r"```[^\n]*\n(.*?)```", re.S)
+
+DESTRUCTIVE_CMD_PATTERNS = [
+    (re.compile(r"\brm\s+-[a-zA-Z]*r[a-zA-Z]*\b"), "recursive rm in code example"),
+    (re.compile(r"\bmv\s+(?:~|\$HOME)/\.[A-Za-z0-9_.-]+/"), "moving user dot-directory in code example"),
+    (re.compile(r"\bgit\s+reset\s+--hard\b"), "git reset --hard in code example"),
+    (re.compile(r"\bgit\s+clean\s+-[a-zA-Z]*f"), "git clean -f in code example"),
+    (re.compile(r"\b(?:mkfs|dd\s+if=)\b"), "disk-destructive command in code example"),
+]
+
+
+def check_code_blocks_safety(body, label, add):
+    for block in CODE_BLOCK_RE.findall(body):
+        for raw_line in block.splitlines():
+            line = raw_line.strip()
+            if not line or line.startswith("#"):
+                continue
+            for pat, reason in DESTRUCTIVE_CMD_PATTERNS:
+                if pat.search(line):
+                    add("fail", "code-safety", f"[{label}] {reason}: `{line}`")
 
 
 def run(post_dir):
@@ -156,6 +177,7 @@ def run(post_dir):
             add("fail", "content", f"[{label}] body is empty")
         if re.search(r"\b(TODO|FIXME|XXX)\b", body):
             add("warn", "content", f"[{label}] body contains TODO/FIXME/XXX")
+        check_code_blocks_safety(body, label, add)
         # local image refs resolve (relative to the source file's dir)
         base = path.parent
         for target in IMG_REF_RE.findall(body):

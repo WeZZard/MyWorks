@@ -3,22 +3,22 @@ outline.md
 **/outline.md
 
 # Preflight cover-crop tooling: heavy local deps, not content
-.pi/scripts/cover-crop/checkpoints/
-.pi/scripts/cover-crop/sam2-src/
-.pi/scripts/cover-crop/.crops/
+.agents/scripts/cover-crop/checkpoints/
+.agents/scripts/cover-crop/sam2-src/
+.agents/scripts/cover-crop/.crops/
 
 # cover-image per-run working directory (intermediate products, per-run, gitignored)
-.pi/cover-image-work/
+.agents/cover-image-work/
 
 # pi-subagents runtime artifacts
 .pi-subagents/
 
 # cover-image seed-library tool: dezoomify-rs binary + downloaded artwork cache (heavy, recreatable)
-.pi/scripts/seed-library/dezoomify-rs
-.pi/scripts/seed-library/cache/
-.pi/scripts/seed-library/dz.tgz__pycache__/
+.agents/scripts/seed-library/dezoomify-rs
+.agents/scripts/seed-library/cache/
+.agents/scripts/seed-library/dz.tgz__pycache__/
 
 # Python
 .venv
 __pycache__
-.pi/cover-image/
+.agents/cover-image/

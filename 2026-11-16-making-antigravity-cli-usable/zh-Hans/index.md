@@ -25,10 +25,10 @@ Gemini 4 的模型能力很强，但 Google 的 Antigravity 本身确实很难�
 | :--- | :--- | :--- |
 | **运行模式、沙箱与工具权限** | `~/.gemini/antigravity-cli/settings.json` | `/settings`（或 `/config`）与 `/permissions` |
 | **自定义快捷键映射** | `~/.gemini/antigravity-cli/keybindings.json` | `/keybindings` |
-| **全局 Skills 目录** | `~/.gemini/antigravity-cli/skills/`（同时兼容扫描 `~/.gemini/skills/`） | — |
+| **全局 Skills 目录** | `~/.gemini/antigravity-cli/skills/` | — |
 
-* **所有 CLI 运行设置与权限白名单都保存在 `~/.gemini/antigravity-cli/settings.json`**：你可以直接编辑这个 JSON 文件，也可以在 agy 会话内用 `/settings`（设置 Agent Mode、Sandbox Mode、Non-Workspace Access 与 Tool Permission）和 `/permissions`（补齐权限白名单）实时修改。
-* **agy 读取的全局 Skills 目录是 `~/.gemini/antigravity-cli/skills/`**：只要技能文件没装进这个目录（或 `~/.gemini/skills/`），启动时要么识别不到，要么读取时会被当成越界访问而反复弹授权。
+* **所有 CLI 运行设置与权限白名单都保存在 `~/.gemini/antigravity-cli/settings.json`**：你可以直接编辑这个 JSON 文件，也可以在 agy 会话内用 `/settings` 和 `/permissions` 实时修改。
+* **agy 读取的全局 Skills 目录是 `~/.gemini/antigravity-cli/skills/`**：只要技能文件没装进这个目录，启动时要么识别不到，要么读取时会被当成越界访问而反复弹授权。
 
 ## 压住高频权限弹框
 
@@ -173,22 +173,13 @@ agy --add-dir ../backend --add-dir ../shared-specs
 
 ### 修正 npx skills 安装目录错误带来的授权弹框
 
-`npx skills` 装出来的全局技能在 agy 里既扫不到、读取时又会弹授权框，本质上是因为 **`npx skills` 把文件装错了目录**。执行 `npx skills add <owner/repo> -g` 时，它默认会把技能装进 `~/.agents/skills/`，而不是 agy 实际读取的 `~/.gemini/antigravity-cli/skills/`。因为 `~/.agents/skills/` 不在 agy 的技能目录里，也位于当前 Workspace 之外，每次读取 `SKILL.md` 或附带脚本都会被当成越界访问而触发授权弹框。
+执行 `npx skills add <owner/repo> -g` 时，`npx skills` 默认会把全局技能装进 `~/.agents/skills/`，而不是 agy 读取的 `~/.gemini/antigravity-cli/skills/`。因为 `~/.agents/skills/` 位于当前 Workspace 之外，每次读取 `SKILL.md` 或附带脚本都会被当成越界访问而弹出授权框。
 
-解决办法是用 `ln -s` 符号链接（或者 macOS Finder 里的替身），把 `npx skills` 装错的 `~/.agents/skills` 直接链回正确的 `~/.gemini/antigravity-cli/skills` 目录：
+用 `ln -sf` 把 `~/.agents/skills` 链到 `~/.gemini/antigravity-cli/skills` 即可：
 
 ```bash
-mkdir -p ~/.gemini/antigravity-cli/skills
-
-# 先把已有的全局 skills 移进正确目录
-mv ~/.agents/skills/* ~/.gemini/antigravity-cli/skills/ 2>/dev/null || true
-rm -rf ~/.agents/skills
-
-# 把 ~/.agents/skills 链接回 ~/.gemini/antigravity-cli/skills
-ln -s ~/.gemini/antigravity-cli/skills ~/.agents/skills
+ln -sf ~/.agents/skills ~/.gemini/antigravity-cli/skills
 ```
-
-* **后续 `npx skills` 安装的文件自动落进正确目录**：此后每次执行 `npx skills add <owner/repo> -g`，实际写入的都是 `~/.gemini/antigravity-cli/skills/`，agy 启动即可识别，读取时也不会再弹授权框。
 
 ## 界面定制、可观测性与隐私保护
 
@@ -208,9 +199,6 @@ Antigravity 默认开启了 **Enable Telemetry**，用于收集使用数据。�
   "enableTelemetry": false
 }
 ```
-
-* **在 `/settings` 中关闭 Enable Telemetry 会同步更新账号级遥测开关**：关闭后，当前 Google 账号下的会话不再上报使用数据。
-* **在 `settings.json` 中写入 `"enableTelemetry": false` 覆盖本地与 API Key 模式**：确保不走云端账号设置时同样禁用 CLI 遥测。
 
 ### 隐藏顶部账号信息与启动 Logo
 
@@ -343,8 +331,5 @@ export AGY_CLI_HIDE_LOGO=1
 最后在终端执行一次全局 Skills 目录链接：
 
 ```bash
-mkdir -p ~/.gemini/antigravity-cli/skills
-mv ~/.agents/skills/* ~/.gemini/antigravity-cli/skills/ 2>/dev/null || true
-rm -rf ~/.agents/skills
-ln -s ~/.gemini/antigravity-cli/skills ~/.agents/skills
+ln -sf ~/.agents/skills ~/.gemini/antigravity-cli/skills
 ```

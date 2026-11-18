@@ -12,11 +12,11 @@ Pipeline:
   4. Crop each candidate to .crops/ and emit JSON ordered best-first.
 
 Usage:
-    .pi/scripts/cover-crop/.venv/bin/python .pi/scripts/cover-crop/cover-crop-safety-check.py <cover.png> [--top N] [--side H] [--out-dir DIR]
+    .agents/scripts/cover-crop/.venv/bin/python .agents/scripts/cover-crop/cover-crop-safety-check.py <cover.png> [--top N] [--side H] [--out-dir DIR]
 
 Environment:
     Requires the SAM 2 venv from setup.zsh. Run via:
-      .pi/scripts/cover-crop/.venv/bin/python .pi/scripts/cover-crop/cover-crop-safety-check.py <cover>
+      .agents/scripts/cover-crop/.venv/bin/python .agents/scripts/cover-crop/cover-crop-safety-check.py <cover>
 """
 import argparse
 import json

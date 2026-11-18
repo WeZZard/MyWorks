@@ -62,7 +62,7 @@ Follow these principles when writing and revising.
 
 The cover-image pipeline ships as a public pi package, **`pi-cover-image`** (repo at `../pi-cover-image`), depended on by this project. It provides the `cover-image` skill, 8 subagents, the seed-library scripts, and the `references/` (surfaces, poster-principles, visual-rhetoric, titling, final-checks). Generation backends come from its bundled **`pi-image-gen`** package (Codex / Antigravity / Grok).
 
-This project's entry point is the **`cover-image-platforms`** shim skill (`.pi/skills/cover-image-platforms/`). It maps a post directory to the plugin's inputs (`article-path = <post-dir>/index.md`, `output-dir = <post-dir>`), loops over the requested surfaces, and chains `preflight`. It owns no pipeline logic — the `cover-image` skill does it all.
+This project's entry point is the **`cover-image-platforms`** shim skill (`.agents/skills/cover-image-platforms/`). It maps a post directory to the plugin's inputs (`article-path = <post-dir>/index.md`, `output-dir = <post-dir>`), loops over the requested surfaces, and chains `preflight`. It owns no pipeline logic — the `cover-image` skill does it all.
 
 There is no fixed style-transfer step: the aesthetic comes from real artworks matched to the article's orientation, and the layout is read from those artworks by a vision model. The flow: idea + rhetoric + orientation (from article) → [parallel: palette direction + layout direction] → download works → extract features → generate from pure text.
 
@@ -79,7 +79,7 @@ Ten subagents do the judgment work. `idea-extractor` reads the article in a clea
 
 A seed-library tool (in the package) supports the artwork side: `fetch.py` downloads one artwork (Wikimedia Commons first, falling back to Google Art Project via `dezoomify-rs`), `recall.py` recalls a style's seeds with provenance, and `palette.py` extracts a work's exact color distribution. Works are downloaded, then filtered to keep only those whose palette matches the article's color orientation; the kept works become the seed images passed as `referencedImagePaths`. The prompt names each referenced artwork, and the skill records per-candidate provenance — which artwork each candidate referenced, with the seed's local path and a `view_online` URL — so the reference trail is viewable, not just recorded.
 
-The rigorous SAM-based crop-safety check is **host-side**, not in the plugin: `preflight` (`.pi/skills/preflight/`) runs the deterministic pre-publish checks plus a SAM 2 + VLM cover-safety stage (`.pi/scripts/cover-crop/cover-crop-safety-check.py` + the project-local `cover-crop-safety-verifier` subagent). The plugin's `final-checks-verifier` is a lighter post-generation visual check; `preflight` is the strict pre-publish gate.
+The rigorous SAM-based crop-safety check is **host-side**, not in the plugin: `preflight` (`.agents/skills/preflight/`) runs the deterministic pre-publish checks plus a SAM 2 + VLM cover-safety stage (`.agents/scripts/cover-crop/cover-crop-safety-check.py` + the project-local `cover-crop-safety-verifier` subagent). The plugin's `final-checks-verifier` is a lighter post-generation visual check; `preflight` is the strict pre-publish gate.
 
 Style, rhetoric, titling, surface, and final-checks are references rather than skills because none is runnable alone — a cover is the product of all of them. One orchestrator with reference docs preserves a single entry point and lets the dimensions compose. Adding a style, a surface, or a rhetorical device never touches the others.
 

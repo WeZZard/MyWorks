@@ -21,11 +21,11 @@ If `post-dir` is missing, ask once. If `surfaces` is missing, ask once which sur
 
 The mode controls run-dir ownership:
 
-- **`new` (default):** create the cover-image work dir at `.pi/cover-image-work/<post-dir-basename>--<YYYYMMDDTHHMMSS>/`, where the timestamp is **UTC** (`date -u +%Y%m%dT%H%M%S`) with no timezone marker.
+- **`new` (default):** create the cover-image work dir at `.agents/cover-image-work/<post-dir-basename>--<YYYYMMDDTHHMMSS>/`, where the timestamp is **UTC** (`date -u +%Y%m%dT%H%M%S`) with no timezone marker.
 - **`rerun`:** create a fresh dir by the same naming rule and record the supplied `source-run` in its `meta.json`. The source run stays untouched.
 - **`checkpoint-resume`:** use the supplied `source-run` itself. This is the only mode that may write into an existing run dir; before continuing, the cover-image skill snapshots stale downstream artifacts under `revisions/<UTC>/`.
 
-The post-dir basename already starts with the date, so fresh runs sort chronologically under the post. `.pi/cover-image-work/` is gitignored. Do NOT prefix a fresh run dir with the surface name — the post-dir basename is the prefix; if a post has multiple surfaces, each gets its own fresh run dir (the timestamp differs).
+The post-dir basename already starts with the date, so fresh runs sort chronologically under the post. `.agents/cover-image-work/` is gitignored. Do NOT prefix a fresh run dir with the surface name — the post-dir basename is the prefix; if a post has multiple surfaces, each gets its own fresh run dir (the timestamp differs).
 
 ## Workflow
 
