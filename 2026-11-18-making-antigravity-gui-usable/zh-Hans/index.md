@@ -4,7 +4,7 @@ category: Programming
 tags: [AI,Agent]
 ---
 
-写前一篇 [9 招让你的 Antigravity CLI 不那么难用](https://wezzard.com/post/2026/11/making-antigravity-cli-usable) 时，我之所以从命令行端 `agy` 切入，很大程度上是因为当时市面上不少第三方远程控制客户端都是基于 CLI 命令行构建的。但实际上，2.0 的 **Antigravity app** 本身就已经内置了原生远程控制，而且配合右侧多功能面板，它可以提供更立体和丰富的项目创作体验。
+写前一篇 [9 招让你的 Antigravity CLI 不那么难用](https://wezzard.com/zh-Hans/post/2026/11/making-antigravity-cli-usable-7276/) 时，我之所以从命令行端 `agy` 切入，很大程度上是因为当时市面上不少第三方远程控制客户端都是基于 CLI 命令行构建的。但实际上，2.0 的 **Antigravity app** 本身就已经内置了原生远程控制，而且配合右侧多功能面板，它可以提供更立体和丰富的项目创作体验。
 
 如下图所示，**Antigravity app** 围绕复杂项目提供了五个核心工具——**Generative UI**、**Artifacts**、**Walkthrough 检查清单**、**Review** 与 **Side Question**（`/btw`）——外加原生 **Remote Control**（在 iPad 上将 [antigravity.google.com](https://antigravity.google.com) 添加到主屏幕后，它就直接变成了一个在 iPad 上全屏运行的 App）：
 
@@ -96,7 +96,7 @@ tags: [AI,Agent]
 * **远程控制权限（Remote）与本地权限（This Computer）是分开设置的，且 Remote 没有 Auto 档：** 如上方设置截图所示，**Remote** 下拉菜单里只有 **Request Review**、**Default** 和 **Turbo** 三档。如果你只把 **This Computer** 切到了 **Turbo** 而忘了改 **Remote**，用 iPad 远控连接时依然会停留在 **Default** 档并频繁触发权限弹框。
 * **Auto 预设依然锁死 Workspace 文件边界并拦截所有 MCP 与网页请求：** 在 Auto 下，读写当前项目目录之外的任何路径（包括兄弟仓库或外部 Skill 目录）、调用任何 MCP 工具或抓取网页，都会挂起对话并弹出权限弹框等待确认。
 * **需要联网或带 `$(...)`、`{a,b}` 的日常终端命令在 Auto 下照样会弹出权限弹框：** 由于终端 Sandbox 默认禁掉外网，像 `npm install`、`git push` 这类联网命令必须跳出 Sandbox 执行；哪怕白名单里放行了 `git` 或 `mkdir`，只要 Agent 写出像 `git log $(whoami)`、`kill $(lsof -t -i:3000)` 或 `mkdir -p src/{api,ui}` 这样带 `$(...)` 或 `{a,b}` 的命令，Antigravity app 都会一律拦截并弹框让你确认。
-* **Turbo 预设刚好对应 [9 招让你的 Antigravity CLI 不那么难用](https://wezzard.com/post/2026/11/making-antigravity-cli-usable) 中的 Auto + Always Proceed 组合：** 将 **This Computer** 与 **Remote** 双双设为 **Turbo** 会一次性关闭终端 Sandbox、放开全盘文件访问并允许所有终端命令与 MCP 工具直接运行，让本地与 iPad 远控会话都彻底告别权限弹框。
+* **Turbo 预设刚好对应 [9 招让你的 Antigravity CLI 不那么难用](https://wezzard.com/zh-Hans/post/2026/11/making-antigravity-cli-usable-7276/) 中的 Auto + Always Proceed 组合：** 将 **This Computer** 与 **Remote** 双双设为 **Turbo** 会一次性关闭终端 Sandbox、放开全盘文件访问并允许所有终端命令与 MCP 工具直接运行，让本地与 iPad 远控会话都彻底告别权限弹框。
 
 ## 为什么你在 Antigravity 找不到你安装的 Skills？
 
@@ -106,7 +106,7 @@ tags: [AI,Agent]
 
 ![三端连接关系与解法图「为什么你在 Antigravity 找不到你安装的 Skills？」。顶部并排展示带有各自应用图标的三个客户端：「Antigravity app（2.0 桌面客户端）」「Antigravity IDE（独立编辑器）」「Antigravity CLI（终端命令行 agy）」；中部通过绿色实线将三个客户端同时连接到左侧绿色目录卡「三端共读：~/.gemini/config/skills/、~/.gemini/config/skills.json、~/.gemini/config/plugins/」，通过黄色虚线将 Antigravity IDE 单独连接到中间目录卡「仅 IDE 读取：~/.gemini/antigravity/skills/」，通过黄色虚线将 Antigravity CLI 单独连接到右侧目录卡「仅 CLI 读取：~/.gemini/antigravity-cli/skills/、~/.gemini/skills/」；下方红色虚线框标出「三端默认均不读：~/.agents/skills/」；底部落入绿色结果卡「终极解法：统一收敛到 ~/.gemini/config（再在 skills.json 中挂载全局的 /Users/<用户名>/.agents/skills 目录）」。](./figure-2-cross-client-skills-fix.png "为什么你在 Antigravity 找不到你安装的 Skills？")
 
-* **[9 招让你的 Antigravity CLI 不那么难用](https://wezzard.com/post/2026/11/making-antigravity-cli-usable) 中的软链接方案仅针对命令行端：** 将 `~/.agents/skills` 软链到 `~/.gemini/antigravity-cli/skills` 只对 `agy` 生效，多端共用时写进三端共读的 `~/.gemini/config/skills.json` 才是更好的做法。
+* **[9 招让你的 Antigravity CLI 不那么难用](https://wezzard.com/zh-Hans/post/2026/11/making-antigravity-cli-usable-7276/) 中的软链接方案仅针对命令行端：** 将 `~/.agents/skills` 软链到 `~/.gemini/antigravity-cli/skills` 只对 `agy` 生效，多端共用时写进三端共读的 `~/.gemini/config/skills.json` 才是更好的做法。
 * **不要对已存在的 `~/.gemini/config/skills/` 直接跑 `ln -sf`：** Antigravity 对每个技能目录只向下扫描一层，在已存在的目录上跑 `ln -sf` 会生成两层深的嵌套软链接 `~/.gemini/config/skills/skills` 并被静默跳过。
 * **`~/.gemini/config/skills.json` 中的 `path` 必须填写绝对路径：** 清单加载器不会展开 `~`，因此必须写成 `/Users/<用户名>/.agents/skills` 这样的完整路径。
 
