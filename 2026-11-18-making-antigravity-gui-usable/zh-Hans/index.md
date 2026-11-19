@@ -1,6 +1,5 @@
 ---
 title: "为什么你不应该错过 Antigravity app"
-subtitle: "Antigravity app 的核心工具、iPad 远程控制、Turbo 权限与三端 Skills 配置"
 category: Programming
 tags: [AI,Agent]
 ---

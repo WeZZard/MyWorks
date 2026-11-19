@@ -1,6 +1,5 @@
 ---
 title: "Why You Shouldn't Miss Antigravity app"
-subtitle: "Antigravity app's Core Tools, iPad Remote Control, Turbo Permissions, and Cross-Client Skills"
 category: Programming
 tags: [AI,Agent]
 ---
@@ -16,11 +15,11 @@ This guide first walks through the visual side-panel workflow in **Antigravity a
 1. **How permissions are configured:** Why Auto mode still prompts, and how to switch both local permissions (**This Computer**) and Remote Control permissions (**Remote**) to **Turbo**.
 2. **Where to place and install Skills and Plugins:** How to unify global skill discovery and plugin management across **Antigravity app**, **Antigravity IDE**, and **Antigravity CLI** (`agy`).
 
-## Antigravity app's Unique Advantage: Generative UI and the Side Panel
+## Generative UI and the Side Panel
 
 Compared with a terminal-only client or a third-party CLI wrapper, **Antigravity app** earns its keep through Generative UI and its right side panel. It ships with built-in skills like **Generative UI** (whose default prompts we can further upgrade with custom skills of our own), and its side-panel tools—**Artifacts**, **Walkthrough**, **Review**, and **Side Question** (`/btw`)—bring interactive simulation, milestone checklists, diff review, and non-intrusive codebase Q&A into one window.
 
-### Generative UI, Artifacts, and Walkthrough Checklists
+### Generative UI, Artifacts, and Walkthrough
 
 **When building a project in Antigravity app, use the built-in `generative_ui` skill to turn abstract logic into interactive HTML Artifacts, and explicitly ask the agent to generate a Walkthrough so you get a human-readable Markdown checklist to track implementation and verification.**
 
@@ -31,7 +30,7 @@ As shown in the screenshot below from a Token Bucket rate-limiter session, the c
 * **Generative UI and Artifacts make project state tangible:** Using the built-in `generative_ui` skill, the agent renders self-contained interactive HTML widgets either inline in the chat or pinned in the **Artifacts** rail as standalone tabs in the right side panel, helping you inspect and test complex project logic visually.
 * **A Walkthrough is a human-readable Markdown checklist:** Asking the agent to generate a **Walkthrough** produces a structured Markdown audit checklist summarizing what changed and how it was verified, making multi-step projects far easier to steer.
 
-### The Review Pane and Side Question
+### Review and Side Question
 
 **Like many other mainstream agent clients, Antigravity app also supports Review and Side Question (`/btw`) in its right side panel—letting you inspect diffs by turn or branch and commit to Git in place, or fork a read-only background tab to answer mid-task questions without polluting your main conversation.**
 
@@ -48,11 +47,11 @@ When you need a quick answer from the codebase without interrupting the main con
 
 Antigravity app also includes `/automation` for scheduling recurring background tasks (stored under `~/.gemini/config/sidecars/<id>/sidecar.json`) and supports connecting external apps under **Customizations**—though because of Antigravity's current market share, third-party vendor coverage is still sparse, and hardware ecosystems like **Plaud** do not have official support yet.
 
-## Remote Control in Antigravity app and Running It as an iPad App
+## Remote Control on iPad
 
 **Antigravity app includes native Remote Control; adding [antigravity.google.com](https://antigravity.google.com) to your iPad Home Screen turns it into a full-screen app running on your iPad, and paired with the host setup on your Mac, it lets you control your home Mac from the iPad anytime.**
 
-### Turning antigravity.google.com into an App Running on Your iPad
+### Running It as an iPad App
 
 Open [antigravity.google.com](https://antigravity.google.com) in Safari on your **iPad**, sign in with your Antigravity account, and follow the two steps marked below to install it onto your iPad Home Screen:
 
@@ -65,7 +64,7 @@ Launching it from your iPad Home Screen strips away the browser chrome and turns
 
 ![An animated composite of an iPad Pro running the Antigravity Remote Control web app in full screen. On the left is the active remote conversation running in Turbo mode with an inline interactive sandbox architecture card; on the right side panel is the "Workloads And Acceptance" Generative UI tab where the "Continuation Scrub Progress" slider and the "WL-1 · Single-Host Iterative Repository Repair Chain" pipeline animate smoothly from Phase 1/4 through Phase 4/4.](./figure-8-ipad-remote-control.gif "Running antigravity.google.com as a desktop web app on an iPad to remotely control a home Mac")
 
-### Mac Host Keep-Alive Settings and Side-Panel Differences
+### Mac Keep-Alive Settings
 
 To keep your Mac at home ready for incoming iPad connections, open **Settings > Application** in **Antigravity app** on your Mac and turn on all three switches shown below:
 
@@ -99,7 +98,7 @@ Comparing the permission boundaries of the Auto and Turbo presets below shows wh
 * **Everyday shell commands that need network access or use `$(...)` and `{a,b}` still prompt under Auto:** Because the terminal sandbox blocks outbound network access by default, commands like `npm install` or `git push` must leave the sandbox; even if you allow `git` or `mkdir`, any command containing `$(...)` or `{a,b}`—such as `git log $(whoami)`, `kill $(lsof -t -i:3000)`, or `mkdir -p src/{api,ui}`—bypasses your prefix allowlist and pauses for approval.
 * **The Turbo preset is the exact equivalent of Auto + Always Proceed in [9 Tips to Make Antigravity CLI Less Painful](https://wezzard.com/post/2026/11/making-antigravity-cli-usable):** Selecting **Turbo** for both **This Computer** and **Remote** disables the terminal sandbox, opens full filesystem access, and lets all shell commands and MCP tools run without interruption across both local and iPad Remote Control sessions.
 
-## Why You Can't Find Your Installed Skills in Antigravity
+## Why Antigravity Misses Your Installed Skills
 
 **Because Antigravity has shipped multiple clients over time, it has accumulated several different global skill directory configurations; to make global skills work across Antigravity app, Antigravity IDE, and Antigravity CLI (`agy`) simultaneously, converge on `~/.gemini/config`, then mount the global `/Users/<your-username>/.agents/skills` directory by absolute path in `~/.gemini/config/skills.json`.**
 
@@ -145,7 +144,7 @@ else:
 PY
 ```
 
-### How Plugins Work Across the Three Clients
+### Plugins Across All Three Clients
 
 **Unlike loose global skills, Plugins automatically share a single global directory (`~/.gemini/config/plugins/<plugin-name>/`) and state file (`~/.gemini/config/config.json`) across all three clients, syncing enabled states between Antigravity app and `agy`.**
 
